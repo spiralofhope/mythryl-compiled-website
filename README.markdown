@@ -1,7 +1,5 @@
 # About
 
-GitHub pages, coming soon:  http://spiralofhope.github.com/mythryl-compiled-website/
-
   text -> (magic) -> HTML
 
 This compiled website project is the magic.
@@ -19,6 +17,8 @@ Relevant links:
   - http://spiralofhope.com/compiled-website-reasoning.html
   - https://github.com/spiralofhope/mythryl-compiled-website/blob/master/CHANGELOG.md
   - https://github.com/spiralofhope/mythryl-compiled-website/blob/master/TODO.md
+  - GitHub pages, coming soon:  http://spiralofhope.github.com/mythryl-compiled-website/
+
 
 # News
 
