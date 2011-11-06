@@ -13,14 +13,29 @@ Or it will be when I rewrite it from Ruby into Mythryl.
 
 Relevant links:
 
-  - http://spiralofhope.com/compiled-website.html
-  - http://spiralofhope.com/compiled-website-reasoning.html
-  - https://github.com/spiralofhope/mythryl-compiled-website/blob/master/CHANGELOG.md
-  - https://github.com/spiralofhope/mythryl-compiled-website/blob/master/TODO.md
-  - GitHub pages, coming soon:  http://spiralofhope.github.com/mythryl-compiled-website/
+  - [homepage](http://spiralofhope.github.com/mythryl-compiled-website/) (coming soon)
+  - [old homepage](http://spiralofhope.com/compiled-website.html) (to be imported)
+  - [compiled website reasoning](http://spiralofhope.com/compiled-website-reasoning.html) (to be imported)
+  - [CHANGELOG](https://github.com/spiralofhope/mythryl-compiled-website/blob/gh-pages/CHANGELOG.markdown)
+  - [TODO](https://github.com/spiralofhope/mythryl-compiled-website/blob/gh-pages/TODO.markdown)
 
 
 # News
+
+2011-11-06
+
+I deleted and rebuilt the whole repository so that everything can
+cleanly go into the `gh-pages` tree.  The compiled website engine
+needs access to that tree so it can create the website's HTML
+files.
+
+Yes, the compiled website's documentation will be self-generated and
+maintained within the project itself.
+
+I figure this is a nice simple approach, but I'm surprised that I
+have to do things this way.  I can't be the only person with this
+requirement.
+
 
 2011-11-03
 
