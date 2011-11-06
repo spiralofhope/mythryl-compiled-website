@@ -49,9 +49,9 @@ live=$working/live
 /home/user/bin/autotest.sh "$working/git/my/main.my" --nodebug
 
 # Sync the examples from my live website into the git repository.
-\cd $working
-\cp --force  $src/w/compiled-website-demo.asc   $repo/examples/demo.asc
-\cp --force   $live/compiled-website-demo.html  $repo/examples/demo.html
+#\cd $working
+#\cp --force  $src/w/compiled-website-demo.asc   $repo/examples/demo.asc
+#\cp --force   $live/compiled-website-demo.html  $repo/examples/demo.html
 
 # TODO:  Kill just the ruby pid on exit.
 # It's not the pid of autotest.sh, it has to be determine from the /tmp pid files.
