@@ -1,7 +1,8 @@
 #!/usr/bin/mythryl
-
 {
 
 # Code goes here.
+
+printf( "Hello, world!" );
 
 }
