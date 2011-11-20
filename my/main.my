@@ -1,8 +1,119 @@
 #!/usr/bin/mythryl
 {
 
-# Code goes here.
+# --
+# -- Int
+# --
 
-printf( "Hello, world!" );
+fun o_int  ( int: Int )
+    =
+    {
+      fun to_string  ():  String
+          =
+          {
+            int::to_string( int );
+          };
 
-}
+      { to_string };
+    };
+
+
+fun test_to_string( my_int ):  Void
+    =
+    {
+      my_int =  10;
+
+      result =  int::to_string( my_int );
+      printf "%s\n" ( result );
+
+      oo =  o_int( my_int );
+      result =  oo.to_string();
+      printf "OOP:  %s\n" ( result );
+      
+    };
+# test_to_string( 10 );
+
+
+# --
+# -- String
+# --
+
+fun o_string  ( string: String )
+    =
+    {
+      fun to_lower  (): String
+          =
+          {
+            string::to_lower( string );
+          };
+
+      fun length  (): Int
+          =
+          {
+            string::length( string );
+          };
+
+      fun contains  ( char: Char ): Bool
+          =
+          {
+            # Curious how this does not work if typed as:
+            # char::contains( string char );
+            char::contains string char;
+          };
+
+      # Return record of "methods" (functions)
+      { to_lower, length, contains };
+    };
+
+
+
+fun test_to_lower  (): Void
+    =
+    {
+      my_string =  "MAKE THIS LOWERCASE";
+
+      result =  string::to_lower( my_string );
+      printf "%s\n" ( result );
+
+      oo =  o_string( my_string );
+      result =  oo.to_lower();
+      printf "OOP:  %s\n" ( result );
+    };
+# test_to_lower();
+
+
+fun test_length  (): Void
+    =
+    {
+      my_string =  "1234567890";
+
+      printf "%d\n" ( string::length( my_string ) );
+
+      oo =  o_string( my_string );
+      result =  oo.length();
+      printf "OOP:  %d\n" ( result );
+    };
+# test_length();
+
+
+fun test_contains  (): Void
+    =
+    {
+      my_string = "this is a test";
+
+      # Notice how this has the character 't' (single-quotes)
+      #    and not a string-of-length-one "t" (double-quotes)
+      if ( char::contains my_string 't' )
+        printf "'%s' contains 't'.\n" ( my_string );
+      fi;
+
+      oo =  o_string( my_string );
+      result =  oo.contains( 't' );
+      if ( result )
+        printf "OOP:  '%s' contains 't'.\n" ( my_string );
+      fi;
+    };
+# test_contains();
+
+
+};

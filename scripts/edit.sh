@@ -34,6 +34,8 @@ live=$working/live
   "$repo/CHANGELOG.markdown" \
   "$repo/TODO.markdown" \
   "$repo/CHANGELOG.markdown" \
+  "$working/compiled-website.txt" \
+  "$working/../../mythryl.txt" \
   &
 
   #"$working/compiled-website.txt" \
