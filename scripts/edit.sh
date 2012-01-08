@@ -20,7 +20,7 @@ live=$working/live
 
 \cd $working
 
-#/home/user/bin/firefox/firefox \
+#/l/Linux/bin/Firefox/firefox \
         #-new-tab "file://$working/live/compiled-website-to-do.html" \
         #-new-tab "file://$working/live/compiled-website-bugs.html" \
         #-new-tab "file://$working/live/sandbox.html" \
@@ -48,7 +48,7 @@ live=$working/live
 
 
 # TODO:  My autotest script is still to be prepared and made public.
-/home/user/bin/autotest.sh "$working/git/my/main.my" --nodebug
+/l/Linux/bin/sh/autotest.sh "$working/git/my/main.my" --nodebug
 
 # Sync the examples from my live website into the git repository.
 #\cd $working
