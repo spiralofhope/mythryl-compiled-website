@@ -1,2 +1,113 @@
 
-print "test\n";
+# --
+# --  Library-candidate functions, general
+# --
+
+# TODO:  Figure out libraries / using multiple files for a project.  See `random-mythryl/multi-file-test/`
+
+fun check_directory( string: String ): Bool
+    =
+  {
+    directory_list =  dir::entries''( "." );
+    # TODO:  Is it necessary to sort dir::entries  ?
+    directory_list =  strsort( directory_list );
+    current_directory =  head( directory_list );
+    string == current_directory;
+  };
+
+fun test_check_directory( _: Void ): Void
+    =
+  {
+    dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
+    result =  check_directory( dir );
+    if    result
+          printf "yes\n";
+    else  printf "no\n";
+    fi;
+  };
+
+# test_check_directory();
+
+
+
+# TODO:  Only display the current directory's name.  (separate function?)
+fun get_current_directory( _: Void ): String
+    =
+  {
+    directory_list =  dir::entries''( "." );
+    # TODO:  Is it necessary to sort dir::entries  ?
+    directory_list =  strsort( directory_list );
+    head( directory_list );
+  };
+
+fun test_get_current_directory( _: Void ): Void
+    =
+  {
+    result =  get_current_directory();
+    printf "%s\n" result;
+  };
+
+# test_get_current_directory();
+
+
+
+# --
+# --  Library-candidate functions, project-specific
+# --
+
+
+
+# ---
+# ---  Actual programming
+# ---
+
+fun read( _: Void ): Void
+    =
+  {
+
+# Read from a source file.
+# http://mythryl.org/my-File.html
+# http://mythryl.org/my-Read_a_text_file.html
+filename = "compiled-website.txt";
+if    ( exists( filename ) )
+      stream =  open_for_read( filename );
+      # TODO:  Can I read it?
+      # can_read : (Input_Stream , Int) -> Null_Or(Int );
+      list =  read_lines( stream );
+      apply printf "%s\n" list;
+fi;
+
+
+  };
+# read();
+
+
+# Write to a target file.
+# http://mythryl.org/my-File.html
+# http://mythryl.org/my-Write_a_text_file.html
+# TODO:  In the docs, what is a "Writer" ?
+fun write( _: Void ): Void
+    =
+  {
+# TODO:  Delete the file if it exists.
+
+# Failed experimentation.
+# filename =  "test";
+# text =  "this is some example text";
+# stream =  open_for_write( filename );
+# write_substring( stream, text );
+# flush( string );
+# close_output( string );
+
+# TODO:  Check if the file was actually made.
+#        Print its contents.
+
+    fd = file::open_for_write "foo.txt";
+    file::write (fd, "There is no royal road to mathematics.\n");
+    fprintf      fd  "Mathematics is the %s of the sciences.\n" "queen";
+    file::flush  fd;
+    file::close_output  fd;
+
+  };
+write();
+

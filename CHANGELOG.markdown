@@ -1,3 +1,8 @@
+### 2012-01-08
+
+  - File read/write initial experimentation.
+
+
 ### 2012-01-07
 
   - The OOP experimentation was moved into my `mythryl-random` repository.
