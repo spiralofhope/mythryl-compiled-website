@@ -58,3 +58,5 @@ live=$working/live
 # TODO:  Kill just the ruby pid on exit.
 # It's not the pid of autotest.sh, it has to be determine from the /tmp pid files.
 #\killall ruby
+
+\rm --force "main.log~"

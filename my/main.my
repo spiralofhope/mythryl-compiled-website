@@ -7,24 +7,24 @@
 
 fun check_directory( string: String ): Bool
     =
-  {
-    directory_list =  dir::entries''( "." );
-    # TODO:  Is it necessary to sort dir::entries  ?
-    directory_list =  strsort( directory_list );
-    current_directory =  head( directory_list );
-    string == current_directory;
-  };
+{
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  current_directory =  head( directory_list );
+  string == current_directory;
+};
 
 fun test_check_directory( _: Void ): Void
     =
-  {
-    dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
-    result =  check_directory( dir );
-    if    result
-          printf "yes\n";
-    else  printf "no\n";
-    fi;
-  };
+{
+  dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
+  result =  check_directory( dir );
+  if    result
+        printf "yes\n";
+  else  printf "no\n";
+  fi;
+};
 
 # test_check_directory();
 
@@ -33,19 +33,19 @@ fun test_check_directory( _: Void ): Void
 # TODO:  Only display the current directory's name.  (separate function?)
 fun get_current_directory( _: Void ): String
     =
-  {
-    directory_list =  dir::entries''( "." );
-    # TODO:  Is it necessary to sort dir::entries  ?
-    directory_list =  strsort( directory_list );
-    head( directory_list );
-  };
+{
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  head( directory_list );
+};
 
 fun test_get_current_directory( _: Void ): Void
     =
-  {
-    result =  get_current_directory();
-    printf "%s\n" result;
-  };
+{
+  result =  get_current_directory();
+  printf "%s\n" result;
+};
 
 # test_get_current_directory();
 
@@ -61,53 +61,62 @@ fun test_get_current_directory( _: Void ): Void
 # ---  Actual programming
 # ---
 
-fun read( _: Void ): Void
+fun read_print( filename: String ): Void
     =
-  {
-
-# Read from a source file.
-# http://mythryl.org/my-File.html
-# http://mythryl.org/my-Read_a_text_file.html
-filename = "compiled-website.txt";
-if    ( exists( filename ) )
-      stream =  open_for_read( filename );
-      # TODO:  Can I read it?
-      # can_read : (Input_Stream , Int) -> Null_Or(Int );
-      list =  read_lines( stream );
-      apply printf "%s\n" list;
-fi;
-
-
-  };
-# read();
+{
+  # Read from a source file.
+  # http://mythryl.org/my-File.html
+  # http://mythryl.org/my-Read_a_text_file.html
+  if    ( exists( filename ) )
+        stream =  open_for_read( filename );
+        # TODO:  Can I read it?
+        # can_read : (Input_Stream , Int) -> Null_Or(Int );
+        list =  read_lines( stream );
+        apply printf "%s\n" list;
+  fi;
+};
+fun test_read_print( _: Void ): Void
+    =
+{
+  read_print( "compiled-website.txt" );
+};
+# test_read_print();
 
 
 # Write to a target file.
 # http://mythryl.org/my-File.html
 # http://mythryl.org/my-Write_a_text_file.html
 # TODO:  In the docs, what is a "Writer" ?
-fun write( _: Void ): Void
+# I can't realistically convert this into a two-parameter function.
+#   Basically I'd have to pass one List of Strings - the filename, and the content.
+#   But why do something as complex as that?  Just use the original simpler code.
+fun write_file( _: Void ): Void
     =
-  {
-# TODO:  Delete the file if it exists.
+{
+  filename =  "test-write.txt";
 
-# Failed experimentation.
-# filename =  "test";
-# text =  "this is some example text";
-# stream =  open_for_write( filename );
-# write_substring( stream, text );
-# flush( string );
-# close_output( string );
+  file = file::open_for_write filename;
+  list = [ "line one\n", "line two\n" ];
+  apply fprintf file "%s" list;
 
-# TODO:  Check if the file was actually made.
-#        Print its contents.
+  # file::write       ( file, "There is no royal road to mathematics.\n" );
+  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
 
-    fd = file::open_for_write "foo.txt";
-    file::write (fd, "There is no royal road to mathematics.\n");
-    fprintf      fd  "Mathematics is the %s of the sciences.\n" "queen";
-    file::flush  fd;
-    file::close_output  fd;
+  file::flush         file;
+  file::close_output  file;
 
-  };
-write();
+  # Display its contents.
+  if    ( exists( filename ) )
+        printf "%s contains:\n" filename;
 
+        stream =  open_for_read( filename );
+        list =  read_lines( stream );
+        apply printf "%s\n" list;
+
+        # TODO:  How do I use a variable instead of hard-coding the filename?
+        printf "%s\n" ( `\rm --force --verbose test-write.txt` );
+  else
+        printf "%s was not created!\n" filename;
+  fi;
+};
+write_file();
