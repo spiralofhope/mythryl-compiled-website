@@ -89,6 +89,7 @@ fun test_read_print( _: Void ): Void
 # TODO:  In the docs, what is a "Writer" ?
 # I can't realistically convert this into a two-parameter function.
 #   Basically I'd have to pass one List of Strings - the filename, and the content.
+#   (This is probably not true, but I don't know any better)
 #   But why do something as complex as that?  Just use the original simpler code.
 fun write_file( _: Void ): Void
     =
@@ -96,7 +97,7 @@ fun write_file( _: Void ): Void
   filename =  "test-write.txt";
 
   file = file::open_for_write filename;
-  list = [ "line one\n", "line two\n" ];
+  list = [ "line one\n", "line two" ];
   apply fprintf file "%s" list;
 
   # file::write       ( file, "There is no royal road to mathematics.\n" );
@@ -107,16 +108,20 @@ fun write_file( _: Void ): Void
 
   # Display its contents.
   if    ( exists( filename ) )
-        printf "%s contains:\n" filename;
+        printf "%s contains:\n--v\n" filename;
 
         stream =  open_for_read( filename );
         list =  read_lines( stream );
-        apply printf "%s\n" list;
-
-        # TODO:  How do I use a variable instead of hard-coding the filename?
-        printf "%s\n" ( `\rm --force --verbose test-write.txt` );
+        apply printf "%s" list;
+        winix::file::remove_file( filename );
+        print "--^\n";
   else
         printf "%s was not created!\n" filename;
   fi;
 };
-write_file();
+fun test_write_file( _: Void ): Void
+    =
+{
+  write_file();
+};
+test_write_file();
