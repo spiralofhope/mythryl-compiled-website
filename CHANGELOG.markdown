@@ -1,3 +1,9 @@
+### 2012-01-14
+
+  - Search/replace regex baby steps.
+  - Basic header + content + footer merging.
+
+
 ### 2012-01-08
 
   - File read/write initial experimentation.

@@ -153,26 +153,62 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
+# TODO:  Use regex::regex_case , see http://mythryl.org/my-More_Regular_Expressions.html#section:tut:full-monte:regex
+
+fun emphasis( string: String ): String = 
+{
+  # How do I use slashes?  \ doesn't escape them.
+  regex::replace_all_via_fn  ./x(.*)x/  .{ "<em>" + (strcat #stringlist) + "</em>"; }   string;
+};
+
+fun strong( string: String ): String = 
+{
+  # How do I use asterisks?  \ doesn't escape them.
+  regex::replace_all_via_fn  ./x(.*)x/  .{ "<strong>" + (strcat #stringlist) + "</strong>"; }   string;
+};
+
+fun underline( string: String ): String = 
+{
+  regex::replace_all_via_fn  ./_(.*)_/  .{ "<u>" + (strcat #stringlist) + "</u>"; }   string;
+};
+
+fun rebuild_work( list: List( String ) ): List( String )
+    =
+{
+  list =  map  emphasis   list;
+  # "bold" is an outdated term.
+  list =  map  strong     list;
+  list =  map  underline  list;
+  list;
+};
+
+
 fun rebuild( _: Void ): Void
     =
 {
   source_filename =  "test.asc";
   f =  file::open_for_write  source_filename;
   file::write       ( f, "Some example text.\n" );
+  file::write       ( f, "*strong*\n" );
+  file::write       ( f, "/emphasis/\n" );
+  file::write       ( f, "_underlined_\n" );
   file::flush         f;
   file::close_output  f;
 
   target_filename =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+  if    ( exists( target_filename ) )
+        winix::file::remove_file( target_filename );
+  fi;
 
   if   ( exists( target_filename ) == FALSE )
     printf "Rebuilding \"%s\"\n"  target_filename;
-    # Create "header + source file + footer"
 
     stream =  open_for_read( "header.html" );
     content_list =  read_lines( stream );
 
+    # Perform other work here.
     stream =  open_for_read( source_filename );
-    content_list =  content_list @ read_lines( stream );
+    content_list =  content_list @ rebuild_work( read_lines( stream ) );
 
     stream =  open_for_read( "footer.html" );
     content_list =  content_list @ read_lines( stream );
