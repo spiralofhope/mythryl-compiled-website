@@ -156,11 +156,16 @@ fun sanity_check( _: Void ): Void
 fun rebuild_work( list: List( String ) ): List( String )
     =
 {
-  list = map ( fn string = regex::replace_all_via_fn  ./_(.*)_/  .{ "<u>"      + (strcat #stringlist) + "</u>"     ; } string ) list;     # Underline
+  # TODO:  Port my more advanced regular expressions in.
+  # TODO:  Review the Ruby code and figure out how I ought to do things like strong-emphasis.
+  # TODO:  A feature list.
+  list = map ( fn string = regex::replace_all_via_fn  ./-(.*[^-])-/   .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
   # FIXME:  How do I use slashes?  \ doesn't escape them.
-  list = map ( fn string = regex::replace_all_via_fn  ./x(.*)x/  .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;     # Emphasis
-  # FIXME:  How do I use asterisks?  \ doesn't escape them.
-  list = map ( fn string = regex::replace_all_via_fn  ./x(.*)x/  .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;     # Strong      (Bold is an outdated term)
+#   list = map ( fn string = regex::replace_all_via_fn  ./\/(.*)\//     .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
+  # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted.
+  list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/     .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
+  list = map ( fn string = regex::replace_all_via_fn  ./_(.*)_/       .{ "<u>"      + (strcat #stringlist) + "</u>"     ; } string ) list;
+  list = map ( fn string = regex::replace_all         ./^-{3,4}$/        "<hr>\n"                                           string ) list;
 
   list;
 };
@@ -171,10 +176,15 @@ fun rebuild( _: Void ): Void
 {
   source_filename =  "test.asc";
   f =  file::open_for_write  source_filename;
+  # TODO:  Test cases.
+  # TODO:  Open a document and use that as source.  Process it and write it to a target.  Read-display the target.
   file::write       ( f, "Some example text.\n" );
   file::write       ( f, "*strong*\n" );
-  file::write       ( f, "/emphasis/\n" );
+  file::write       ( f, "/slash emphasis/\n" );
+  file::write       ( f, "---\n" );
+  file::write       ( f, "-dash emphasis-\n" );
   file::write       ( f, "_underlined_\n" );
+  file::write       ( f, "----\n" );
   file::flush         f;
   file::close_output  f;
 
