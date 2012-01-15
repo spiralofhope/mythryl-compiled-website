@@ -1,5 +1,7 @@
 ### 2012-01-14
 
+  - Ran into a wall with regular expressions.  I don't know how to escape an asterisk  *  or slash  /  .  Asking for help.
+  - Anonymous functions, neato.
   - Search/replace regex baby steps.
   - Basic header + content + footer merging.
 
