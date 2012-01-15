@@ -1,3 +1,11 @@
+# --
+# --  User-serviceable variables
+# --
+
+source_directory =  ".";
+target_directory =  ".";
+
+
 
 # --
 # --  Library-candidate functions, general
@@ -72,7 +80,7 @@ fun read_print( filename: String ): Void
         # TODO:  Can I read it?
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
-        apply printf "%s\n" list;
+        apply printf "%s" list;
   fi;
 };
 fun test_read_print( _: Void ): Void
@@ -102,7 +110,6 @@ fun write_file( _: Void ): Void
 
   # file::write       ( file, "There is no royal road to mathematics.\n" );
   # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
-
   file::flush         file;
   file::close_output  file;
 
@@ -124,4 +131,58 @@ fun test_write_file( _: Void ): Void
 {
   write_file();
 };
-test_write_file();
+# test_write_file();
+
+
+
+# In source directory
+#   check if the equivalent file exists in the target directory.
+#   if no, re-create it.
+
+# FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
+# TODO:  Proper sanity-checking.
+#        How would I stop script processing if the checking finds a critical error?
+fun sanity_check( _: Void ): Void
+    =
+{
+  if    ( winix::file::is_directory( source_directory ) == FALSE )
+        printf "Directory does not exist:  \"%s\"\n"  source_directory;
+        # Make it?
+  fi;
+};
+# sanity_check();
+
+
+fun rebuild( _: Void ): Void
+    =
+{
+  source_filename =  "test.asc";
+  f =  file::open_for_write  source_filename;
+  file::write       ( f, "Some example text.\n" );
+  file::flush         f;
+  file::close_output  f;
+
+  target_filename =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+
+  if   ( exists( target_filename ) == FALSE )
+    printf "Rebuilding \"%s\"\n"  target_filename;
+    # Create "header + source file + footer"
+
+    stream =  open_for_read( "header.html" );
+    content_list =  read_lines( stream );
+
+    stream =  open_for_read( source_filename );
+    content_list =  content_list @ read_lines( stream );
+
+    stream =  open_for_read( "footer.html" );
+    content_list =  content_list @ read_lines( stream );
+
+    f =  file::open_for_write  target_filename;
+    apply fprintf  f  "%s"  content_list;
+    file::flush         f;
+    file::close_output  f;
+
+    read_print( target_filename );
+  fi;
+};
+rebuild();
