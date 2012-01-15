@@ -36,6 +36,11 @@ live=$working/live
   "$repo/CHANGELOG.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
+  "/z/compiled-website/git/rb/main.rb" \
+  "/z/compiled-website/git/rb/tests/tc_main.rb" \
+  "/z/compiled-website/git/rb/tests/tc_common.rb" \
+  "/z/compiled-website/git/rb/lib/lib_common.rb" \
+  "/z/compiled-website/git/rb/lib/lib_main.rb" \
   "$repo/CHANGELOG.markdown" \
   &
 

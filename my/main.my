@@ -153,65 +153,65 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
-fun rebuild_work( list: List( String ) ): List( String )
+fun apply_syntax( list: List( String ) ): List( String )
     =
 {
   # TODO:  Port my more advanced regular expressions in.
   # TODO:  Review the Ruby code and figure out how I ought to do things like strong-emphasis.
   # TODO:  A feature list.
-  list = map ( fn string = regex::replace_all_via_fn  ./-(.*[^-])-/   .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
+  list = map ( fn string = regex::replace_all_via_fn  ./-(.*[^-])-/  .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
   # FIXME:  How do I use slashes?  \ doesn't escape them.
-#   list = map ( fn string = regex::replace_all_via_fn  ./\/(.*)\//     .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
+#   list = map ( fn string = regex::replace_all_via_fn  ./\/(.*)\//    .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
   # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted.
-  list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/     .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  list = map ( fn string = regex::replace_all_via_fn  ./_(.*)_/       .{ "<u>"      + (strcat #stringlist) + "</u>"     ; } string ) list;
-  list = map ( fn string = regex::replace_all         ./^-{3,4}$/        "<hr>\n"                                           string ) list;
+  list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
+  
+  list = map (
+    fn string = regex::replace_all_via_fn  ./
+                                              (^|[:punct:])
+                                              _
+                                              ([:graph:]*)
+                                              _
+                                              ($|[:punct:])
+                                            / .{
+        ( list::nth ( #stringlist, 0 ) )
+      + "<u>"
+      + ( list::nth ( #stringlist, 1 ) )
+      + "</u>"
+      + ( list::nth ( #stringlist, 2 ) )
+      ;
+    }
+    string
+  ) list;
+
+  list = map ( fn string = regex::replace_all         ./^-{3,4}$/       "<hr>\n"                                           string ) list;
+
+  # TODO:  All of the above does line-processing using map, but I want block-processing that handles multiple lines.
 
   list;
 };
 
 
-fun rebuild( _: Void ): Void
+fun rebuild( source_filename: String ): Void
     =
 {
-  source_filename =  "test.asc";
-  f =  file::open_for_write  source_filename;
-  # TODO:  Test cases.
-  # TODO:  Open a document and use that as source.  Process it and write it to a target.  Read-display the target.
-  file::write       ( f, "Some example text.\n" );
-  file::write       ( f, "*strong*\n" );
-  file::write       ( f, "/slash emphasis/\n" );
-  file::write       ( f, "---\n" );
-  file::write       ( f, "-dash emphasis-\n" );
-  file::write       ( f, "_underlined_\n" );
-  file::write       ( f, "----\n" );
+  target_filename =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+
+  stream =  open_for_read( "header.html" );
+  content_list =  read_lines( stream );
+
+  stream =  open_for_read( source_filename );
+  content_list =  content_list @ apply_syntax( read_lines( stream ) );
+
+  stream =  open_for_read( "footer.html" );
+  content_list =  content_list @ read_lines( stream );
+
+  f =  file::open_for_write  target_filename;
+  apply fprintf       f  "%s"  content_list;
   file::flush         f;
   file::close_output  f;
 
-  target_filename =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
-  if    ( exists( target_filename ) )
-        winix::file::remove_file( target_filename );
-  fi;
-
-  if   ( exists( target_filename ) == FALSE )
-    printf "Rebuilding \"%s\"\n"  target_filename;
-
-    stream =  open_for_read( "header.html" );
-    content_list =  read_lines( stream );
-
-    # Perform other work here.
-    stream =  open_for_read( source_filename );
-    content_list =  content_list @ rebuild_work( read_lines( stream ) );
-
-    stream =  open_for_read( "footer.html" );
-    content_list =  content_list @ read_lines( stream );
-
-    f =  file::open_for_write  target_filename;
-    apply fprintf  f  "%s"  content_list;
-    file::flush         f;
-    file::close_output  f;
-
-    read_print( target_filename );
-  fi;
+  read_print( target_filename );
 };
-rebuild();
+
+# TODO:  Pass the full path?
+rebuild( "test.asc" );
