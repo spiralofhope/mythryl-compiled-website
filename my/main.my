@@ -153,32 +153,17 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
-# TODO:  Use regex::regex_case , see http://mythryl.org/my-More_Regular_Expressions.html#section:tut:full-monte:regex
-
-fun emphasis( string: String ): String = 
-{
-  # How do I use slashes?  \ doesn't escape them.
-  regex::replace_all_via_fn  ./x(.*)x/  .{ "<em>" + (strcat #stringlist) + "</em>"; }   string;
-};
-
-fun strong( string: String ): String = 
-{
-  # How do I use asterisks?  \ doesn't escape them.
-  regex::replace_all_via_fn  ./x(.*)x/  .{ "<strong>" + (strcat #stringlist) + "</strong>"; }   string;
-};
-
-fun underline( string: String ): String = 
-{
-  regex::replace_all_via_fn  ./_(.*)_/  .{ "<u>" + (strcat #stringlist) + "</u>"; }   string;
-};
-
 fun rebuild_work( list: List( String ) ): List( String )
     =
 {
-  list =  map  emphasis   list;
-  # "bold" is an outdated term.
-  list =  map  strong     list;
-  list =  map  underline  list;
+  # TODO:  Use regex::regex_case , see http://mythryl.org/my-More_Regular_Expressions.html#section:tut:full-monte:regex
+
+  list = map ( fn string = regex::replace_all_via_fn  ./_(.*)_/  .{ "<u>"      + (strcat #stringlist) + "</u>"     ; } string ) list;     # Underline
+  # FIXME:  How do I use slashes?  \ doesn't escape them.
+  list = map ( fn string = regex::replace_all_via_fn  ./x(.*)x/  .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;     # Emphasis
+  # FIXME:  How do I use asterisks?  \ doesn't escape them.
+  list = map ( fn string = regex::replace_all_via_fn  ./x(.*)x/  .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;     # Strong  (Bold is an outdated term)
+
   list;
 };
 
