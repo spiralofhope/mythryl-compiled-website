@@ -1,3 +1,8 @@
+### 2012-01-16
+
+  - More farting around with regexes.  Ugh.
+
+
 ### 2012-01-14
 
   - Cleaned up the markup language regex stuff.

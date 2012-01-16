@@ -1,6 +1,7 @@
-#!/bin/env sh
+#!/usr/bin/env sh
 
 :<<'heredoc'
+TODO:  Various mythryl-specific modifications, removing the old Ruby-specific stuff.
 
 FIXME: I will eventually change my setup to automatically start the compiled website daemon.
 When that is done, this file will have to kill the old process and start a new one.
@@ -52,8 +53,7 @@ live=$working/live
   #"$repo/rb/lib/lib_main.rb" \
   #"$repo/rb/tests/tc_main.rb" \
 
-
-# TODO:  My autotest script is still to be prepared and made public.
+# https://github.com/spiralofhope/shell-random/blob/master/autotest.sh
 /l/Linux/bin/sh/autotest.sh "$working/git/my/main.my" --nodebug
 
 # Sync the examples from my live website into the git repository.

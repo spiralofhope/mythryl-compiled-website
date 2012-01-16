@@ -1,4 +1,4 @@
-#!/bin/env sh
+#!/usr/bin/env sh
 
 # IMPORTANT TODO:
 # chmod -R o+r spiralofhope.com ; chmod -R g+r spiralofhope.com

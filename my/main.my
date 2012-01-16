@@ -159,20 +159,52 @@ fun apply_syntax( list: List( String ) ): List( String )
   # TODO:  Port my more advanced regular expressions in.
   # TODO:  Review the Ruby code and figure out how I ought to do things like strong-emphasis.
   # TODO:  A feature list.
-  list = map ( fn string = regex::replace_all_via_fn  ./-(.*[^-])-/  .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
-  # FIXME:  How do I use slashes?  \ doesn't escape them.
-#   list = map ( fn string = regex::replace_all_via_fn  ./\/(.*)\//    .{ "<em>"     + (strcat #stringlist) + "</em>"    ; } string ) list;
-  # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted.
-  list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  
+  # TODO:  Why can't I use [:graph:], [:space:], etc?
+  # TODO:  Automated test cases.
+
+  # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
+  # [^\32-\151]  =  [:punct:]  =  punctuation
+  # \s           =  [:space:]  =  whitespace
+
+
+  #   -emphasis-
+  # TODO:  I'd rather implement /emphasis/ with slashes, but Mythryl 6.1.0 appears to have a bug that's preventing this.
   list = map (
-    fn string = regex::replace_all_via_fn  ./
-                                              (^|[:punct:])
-                                              _
-                                              ([:graph:]*)
-                                              _
-                                              ($|[:punct:])
-                                            / .{
+    # These are the characters being matched:     -----.     -----.    -----.
+    #                                                  v          v         v
+    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\-([^\s]+[^\-][^\s]*)\-([^\32-\151]{0,1}\s+\S*)/ .{
+        ( list::nth ( #stringlist, 0 ) )
+      + "<em>"
+      + ( list::nth ( #stringlist, 1 ) )
+      + "</em>"
+      + ( list::nth ( #stringlist, 2 ) )
+      ;
+    }
+    string
+  ) list;
+
+
+  #   *strong*
+  # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted:
+  # (This is old code, just here as an example for the syntax highlighting issue.)
+  # list = map ( fn string = regex::replace_all_via_fn  ./()/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
+  # list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
+  list = map (
+    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
+        ( list::nth ( #stringlist, 0 ) )
+      + "<strong>"
+      + ( list::nth ( #stringlist, 1 ) )
+      + "</strong>"
+      + ( list::nth ( #stringlist, 2 ) )
+      ;
+    }
+    string
+  ) list;
+
+
+  #   _underlined_
+  list = map (
+    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
         ( list::nth ( #stringlist, 0 ) )
       + "<u>"
       + ( list::nth ( #stringlist, 1 ) )
