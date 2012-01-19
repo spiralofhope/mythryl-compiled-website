@@ -25,7 +25,6 @@ fun check_directory( string: String ): Bool
   current_directory =  head( directory_list );
   string == current_directory;
 };
-
 fun test_check_directory( _: Void ): Void
     =
 {
@@ -36,7 +35,6 @@ fun test_check_directory( _: Void ): Void
   else  printf "no\n";
   fi;
 };
-
 # test_check_directory();
 
 
@@ -50,16 +48,35 @@ fun get_current_directory( _: Void ): String
   directory_list =  strsort( directory_list );
   head( directory_list );
 };
-
 fun test_get_current_directory( _: Void ): Void
     =
 {
   result =  get_current_directory();
   printf "%s\n" result;
 };
-
 # test_get_current_directory();
 
+
+# FIXME:  This needs a better name.
+# Removes the path from a string, giving only the filename.
+fun get_filename( string: String ): String
+    =
+{
+  # TODO:  I don't need to check for groups here, is there some other regex I should use?
+  # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
+  strcat( regex::find_first_groups_all  ".*\\/(.*)"  string );
+};
+
+
+# FIXME:  This needs a better name.
+# Removes the extension(s) from a string.
+#   filename.ext     => filename
+#   filename.ext.ext => filename
+fun remove_extension( filename: String ): String
+    =
+{
+  regex::replace_first  ./\..*$/  ""  filename;
+};
 
 
 # --
@@ -226,26 +243,59 @@ fun apply_syntax( list: List( String ) ): List( String )
 };
 
 
-fun rebuild( filename: String ): Void
+
+fun rebuild_template( list: List( String ) ): Void
     =
 {
-  if    ( exists( filename ) == FALSE )
-        print ( "File doesn't exist!: " + filename );
+  template_filename =  ( list::nth ( list, 0 ) );
+  compiling_filename = ( list::nth ( list, 1 ) );
+  if    ( exists( template_filename ) == FALSE )
+        print ( "File doesn't exist!: " + template_filename );
   else
+        # IDEA:  It would be simple to have specific search/replace for a specific file.
+        stream =  open_for_read( template_filename );
+        # TODO, sanity:  Can I read it?
+        # can_read : (Input_Stream , Int) -> Null_Or(Int );
+        list =  read_lines( stream );
+
+        title = get_filename( compiling_filename );
+        title = remove_extension( title );
+        list =  map ( fn string = regex::replace_all   "<!--TITLE-->"  title  string ) list;
+
+        template_filename =  template_filename + "-rebuilt.html";
+        file = file::open_for_write template_filename;
+        apply fprintf file "%s" list;
+        file::flush         file;
+        file::close_output  file;
+  fi;
+};
+# rebuild_template( header );
+# rebuild_template( footer );
+
+
+
+fun rebuild( compiling_filename: String ): Void
+    =
+{
+  if    ( exists( compiling_filename ) == FALSE )
+        print ( "File doesn't exist!: " + compiling_filename );
+  else
+        rebuild_template( [ header, compiling_filename ] );
+        rebuild_template( [ footer, compiling_filename ] );
+
         stream =  open_for_read( header + "-rebuilt.html" );
         content_list =  read_lines( stream );
 
-        stream =  open_for_read( filename );
+        stream =  open_for_read( compiling_filename );
         content_list =  content_list @ apply_syntax( read_lines( stream ) );
 
         stream =  open_for_read( footer + "-rebuilt.html" );
         content_list =  content_list @ read_lines( stream );
 
-
-        target =  regex::replace_first  ./\.asc$/  ".html"  filename;
-        # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-        target =  regex::find_first_groups_all  ".*\\/(.*)"  target;
-        target =  target_directory + strcat( target );
+        target =  remove_extension( compiling_filename );
+        target =  ( target + ".html" );
+        target =  get_filename( target );
+        target =  target_directory + target;
 
         f =  file::open_for_write  target;
         apply fprintf       f  "%s"  content_list;
@@ -258,31 +308,6 @@ fun rebuild( filename: String ): Void
 # rebuild( source_directory + "sandbox.asc" );
 
 
-fun rebuild_template( filename: String ): Void
-    =
-{
-  if    ( exists( filename ) == FALSE )
-        print ( "File doesn't exist!: " + filename );
-  else
-        # IDEA:  It would be simple to have specific search/replace for a specific file.
-        stream =  open_for_read( filename );
-        # TODO, sanity:  Can I read it?
-        # can_read : (Input_Stream , Int) -> Null_Or(Int );
-        list =  read_lines( stream );
-        list =  map ( fn string = regex::replace_all   "<!--THISISATEST-->"  "TEST PASSED!"  string ) list;
-#         apply printf "%s" list;
-
-        filename =  filename + "-rebuilt.html";
-        file = file::open_for_write filename;
-        apply fprintf file "%s" list;
-        file::flush         file;
-        file::close_output  file;
-
-#         read_print( filename );
-  fi;
-};
-# rebuild_template( header );
-# rebuild_template( footer );
 
 
 # Chaining things together..
@@ -290,6 +315,4 @@ tmp =  ( target_directory + "sandbox.html" );
 if  ( exists( tmp ) )
     winix::file::remove_file( tmp );
 fi;
-rebuild_template( header );
-rebuild_template( footer );
 rebuild( source_directory + "sandbox.asc" );
