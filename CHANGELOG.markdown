@@ -1,3 +1,7 @@
+### 2012-01-18
+
+  - Implemented source and target directories.
+
 ### 2012-01-16
 
   - More farting around with regexes.  Ugh.

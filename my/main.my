@@ -2,8 +2,8 @@
 # --  User-serviceable variables
 # --
 
-source_directory =  ".";
-target_directory =  ".";
+source_directory =  "/l/projects/compiled-website/git/asc/";
+target_directory =  "/l/projects/compiled-website/git/html/";
 
 
 
@@ -226,7 +226,8 @@ fun apply_syntax( list: List( String ) ): List( String )
 fun rebuild( source_filename: String ): Void
     =
 {
-  target_filename =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+  # TODO:  Sanity-check if the file actually exists.
+
 
   stream =  open_for_read( "header.html" );
   content_list =  read_lines( stream );
@@ -237,13 +238,18 @@ fun rebuild( source_filename: String ): Void
   stream =  open_for_read( "footer.html" );
   content_list =  content_list @ read_lines( stream );
 
-  f =  file::open_for_write  target_filename;
+
+  target =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+  # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
+  target =  regex::find_first_groups_all  ".*\\/(.*)"  target;
+  target =  target_directory + strcat( target );
+
+  f =  file::open_for_write  target;
   apply fprintf       f  "%s"  content_list;
   file::flush         f;
   file::close_output  f;
 
-  read_print( target_filename );
+  read_print( target );
 };
 
-# TODO:  Pass the full path?
-rebuild( "test.asc" );
+rebuild( source_directory + "test.asc" );
