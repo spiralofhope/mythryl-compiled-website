@@ -29,6 +29,8 @@ Sections are entirely another animal.  They're in whatever order I happened to w
 
   - Implement a configuration file (see notes below).
 
+  - Provide default templating, artwork, css, etc.  De-personalize everything and separate my own customization from the project itself.
+
 
 ### Implement a configuration file
 

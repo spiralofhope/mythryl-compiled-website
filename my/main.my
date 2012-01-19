@@ -288,14 +288,15 @@ fun rebuild_template( list: List( String ) ): Void
         file::close_output  file;
   fi;
 };
-# rebuild_template( header );
-# rebuild_template( footer );
 
 
 
-fun rebuild( compiling_filename: String ): Void
+fun rebuild( list: List( String ) ): Void
     =
 {
+  compiling_filename = ( list::nth ( list, 0 ) );
+  target_filename =    ( list::nth ( list, 1 ) );
+  
   if    ( exists( compiling_filename ) == FALSE )
         print ( "File doesn't exist!: " + compiling_filename );
   else
@@ -311,31 +312,22 @@ fun rebuild( compiling_filename: String ): Void
         stream =  open_for_read( footer + "-rebuilt.html" );
         content_list =  content_list @ read_lines( stream );
 
-        target =  remove_extension( compiling_filename );
-        target =  ( target + ".html" );
-        target =  get_filename( target );
-        target =  target_directory + target;
-
-        f =  file::open_for_write  target;
+        f =  file::open_for_write  target_filename;
         apply fprintf       f  "%s"  content_list;
         file::flush         f;
         file::close_output  f;
-
-#         read_print( target );
   fi;
 };
-# rebuild( source_directory + "sandbox.asc" );
 
 
 
-
-# Chaining things together..
-tmp =  ( target_directory + "sandbox.html" );
-if  ( exists( tmp ) )
-    winix::file::remove_file( tmp );
-fi;
-rebuild( source_directory + "sandbox.asc" );
+rebuild( [
+  source_directory + "sandbox.asc",
+  target_directory + "sandbox.html"
+] );
 
 
-
-rebuild( source_directory + "index.asc" );
+rebuild( [
+  source_directory + "../index.asc",
+  target_directory + "../index.html"
+] );
