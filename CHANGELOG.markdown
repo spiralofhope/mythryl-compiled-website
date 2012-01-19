@@ -1,6 +1,7 @@
 ### 2012-01-19
 
-  - ...
+  - Implemented basic header/footer search and replace.
+
 
 ### 2012-01-18
 
@@ -8,6 +9,7 @@
     - This is so that things like the filename can be included in the page's title.
   - Moved the header and footer into the project structure.
   - Implemented source and target directories.
+
 
 ### 2012-01-16
 
