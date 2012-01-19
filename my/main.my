@@ -4,6 +4,8 @@
 
 source_directory =  "/l/projects/compiled-website/git/asc/";
 target_directory =  "/l/projects/compiled-website/git/html/";
+header =  "/l/projects/compiled-website/git/my/header.html";
+footer =  "/l/projects/compiled-website/git/my/footer.html";
 
 
 
@@ -226,16 +228,16 @@ fun apply_syntax( list: List( String ) ): List( String )
 fun rebuild( source_filename: String ): Void
     =
 {
-  # TODO:  Sanity-check if the file actually exists.
+  # TODO Sanity-check:  Does source_filename actually exist?
 
 
-  stream =  open_for_read( "header.html" );
+  stream =  open_for_read( header );
   content_list =  read_lines( stream );
 
   stream =  open_for_read( source_filename );
   content_list =  content_list @ apply_syntax( read_lines( stream ) );
 
-  stream =  open_for_read( "footer.html" );
+  stream =  open_for_read( footer );
   content_list =  content_list @ read_lines( stream );
 
 

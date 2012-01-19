@@ -1,5 +1,6 @@
 ### 2012-01-18
 
+  - Moved the header and footer into the project structure.
   - Implemented source and target directories.
 
 ### 2012-01-16
