@@ -228,30 +228,31 @@ fun apply_syntax( list: List( String ) ): List( String )
 fun rebuild( filename: String ): Void
     =
 {
-  # TODO Sanity-check:  Does filename actually exist?
+  if    ( exists( filename ) == FALSE )
+        print ( "File doesn't exist!: " + filename );
+  else
+        stream =  open_for_read( header );
+        content_list =  read_lines( stream );
+
+        stream =  open_for_read( filename );
+        content_list =  content_list @ apply_syntax( read_lines( stream ) );
+
+        stream =  open_for_read( footer );
+        content_list =  content_list @ read_lines( stream );
 
 
-  stream =  open_for_read( header );
-  content_list =  read_lines( stream );
+        target =  regex::replace_first  ./\.asc$/  ".html"  filename;
+        # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
+        target =  regex::find_first_groups_all  ".*\\/(.*)"  target;
+        target =  target_directory + strcat( target );
 
-  stream =  open_for_read( filename );
-  content_list =  content_list @ apply_syntax( read_lines( stream ) );
+        f =  file::open_for_write  target;
+        apply fprintf       f  "%s"  content_list;
+        file::flush         f;
+        file::close_output  f;
 
-  stream =  open_for_read( footer );
-  content_list =  content_list @ read_lines( stream );
-
-
-  target =  regex::replace_first  ./\.asc$/  ".html"  filename;
-  # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-  target =  regex::find_first_groups_all  ".*\\/(.*)"  target;
-  target =  target_directory + strcat( target );
-
-  f =  file::open_for_write  target;
-  apply fprintf       f  "%s"  content_list;
-  file::flush         f;
-  file::close_output  f;
-
-#   read_print( target );
+#         read_print( target );
+  fi;
 };
 # rebuild( source_directory + "sandbox.asc" );
 
@@ -259,7 +260,9 @@ fun rebuild( filename: String ): Void
 fun rebuild_template( filename: String ): Void
     =
 {
-  if    ( exists( filename ) )
+  if    ( exists( filename ) == FALSE )
+        print ( "File doesn't exist!: " + filename );
+  else
         stream =  open_for_read( filename );
         # TODO:  Can I read it?
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
@@ -274,8 +277,13 @@ fun rebuild_template( filename: String ): Void
         file::close_output  file;
 
         read_print( filename );
-
   fi;
 };
+# rebuild_template( header );
+# rebuild_template( footer );
+
+
+# Chaining things together..
 rebuild_template( header );
 rebuild_template( footer );
+rebuild( source_directory + "sandbox.asc" );

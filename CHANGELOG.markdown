@@ -1,3 +1,7 @@
+### 2012-01-19
+
+  - ...
+
 ### 2012-01-18
 
   - Working on some basic search/replace to allow variables in the header and footer.
