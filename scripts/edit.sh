@@ -34,9 +34,12 @@ live=$working/live
 \geany --new-instance \
   "$repo/CHANGELOG.markdown" \
   "$repo/TODO.markdown" \
-  "$repo/CHANGELOG.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
+  "$repo/my/header.html" \
+  "$repo/my/footer.html" \
+  ` # TODO:  CSS ` \
+  "$repo/my/sandbox.asc" \
   "/z/compiled-website/git/rb/main.rb" \
   "/z/compiled-website/git/rb/tests/tc_main.rb" \
   "/z/compiled-website/git/rb/tests/tc_common.rb" \
@@ -53,8 +56,11 @@ live=$working/live
   #"$repo/rb/lib/lib_main.rb" \
   #"$repo/rb/tests/tc_main.rb" \
 
+# lxterminal supports ansi cursor position save/restore.
 # https://github.com/spiralofhope/shell-random/blob/master/autotest.sh
-/l/Linux/bin/sh/autotest.sh "$working/git/my/main.my" --nodebug
+lxterminal --command="/l/Linux/bin/sh/autotest.sh \"$working/git/my/main.my\" --nodebug"
+
+# TODO/FIXME:  If I'm using lxterminal above, then the stuff below would need to be patient.
 
 # Sync the examples from my live website into the git repository.
 #\cd $working
@@ -65,4 +71,4 @@ live=$working/live
 # It's not the pid of autotest.sh, it has to be determine from the /tmp pid files.
 #\killall ruby
 
-\rm --force "main.log~"
+\rm --force $working/main.log~

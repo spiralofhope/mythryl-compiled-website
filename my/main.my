@@ -251,7 +251,7 @@ fun rebuild( source_filename: String ): Void
   file::flush         f;
   file::close_output  f;
 
-  read_print( target );
+#   read_print( target );
 };
 
-rebuild( source_directory + "test.asc" );
+rebuild( source_directory + "sandbox.asc" );
