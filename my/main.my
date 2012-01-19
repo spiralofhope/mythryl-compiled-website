@@ -2,10 +2,7 @@
 # --  User-serviceable variables
 # --
 
-# TODO:  These should be in their own separate config file.
-#        next:  Then I could provide a default config file, and move all my personalized stuff aside.
-#        next:  Then I could provide a great default template.
-
+# TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
 target_directory =  "/l/projects/compiled-website/git/html/";
 # -rebuilt.html  will automatically be appended and used, after the search/replace.
