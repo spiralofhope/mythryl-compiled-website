@@ -258,9 +258,15 @@ fun rebuild_template( list: List( String ) ): Void
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
 
-        title = get_filename( compiling_filename );
-        title = remove_extension( title );
+        title =  get_filename( compiling_filename );
+        title =  remove_extension( title );
         list =  map ( fn string = regex::replace_all   "<!--TITLE-->"  title  string ) list;
+
+        # FIXME:  Browser, when clicking "Table of Contents", that text seems to wiggle.
+        #         (Probably a template issue, possibly unfixable)
+        toc =  "<br>TODO";
+        list =  map ( fn string = regex::replace_all   "<!--TOC-->"  toc  string ) list;
+
 
         template_filename =  template_filename + "-rebuilt.html";
         file = file::open_for_write template_filename;
