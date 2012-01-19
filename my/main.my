@@ -262,24 +262,22 @@ fun rebuild_template( list: List( String ) ): Void
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
 
-        # <title>
-        title =  get_filename( compiling_filename );
-        title =  remove_extension( title );
-        list =  map ( fn string = regex::replace_all   "<!--TITLE-->"  title  string ) list;
-
-        list =  map ( fn string = regex::replace_all   "<!--SITE NAME-->"  site_name  string ) list;
-        list =  map ( fn string = regex::replace_all   "<!--SITE TAGLINE-->"  site_tagline  string ) list;
-
+        page_title =  get_filename( compiling_filename );
+        page_title =  remove_extension( page_title );
         # TODO:  Table of Contents
         # FIXME:  Browser, when clicking "Table of Contents", that text seems to wiggle.
         #         (Probably a template issue, possibly unfixable)
         toc =  "<br>TODO";
-        list =  map ( fn string = regex::replace_all   "<!--TOC-->"  toc  string ) list;
-
         # TODO:  RSS
         #        rss-feed-icon-16px-svg.png
         rss =  "";
-        list =  map ( fn string = regex::replace_all   "<!--RSS-->"  rss  string ) list;
+
+        # TODO:  Beautify / simplify.  Use a case-regex?
+        list =  map ( fn string = regex::replace_all   "<!--SITE NAME-->"     site_name     string ) list;
+        list =  map ( fn string = regex::replace_all   "<!--SITE TAGLINE-->"  site_tagline  string ) list;
+        list =  map ( fn string = regex::replace_all   "<!--TITLE-->"         page_title    string ) list;
+        list =  map ( fn string = regex::replace_all   "<!--TOC-->"           toc           string ) list;
+        list =  map ( fn string = regex::replace_all   "<!--RSS-->"           rss           string ) list;
 
         template_filename =  template_filename + "-rebuilt.html";
         file = file::open_for_write template_filename;
