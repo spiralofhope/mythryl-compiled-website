@@ -4,6 +4,7 @@
 
 source_directory =  "/l/projects/compiled-website/git/asc/";
 target_directory =  "/l/projects/compiled-website/git/html/";
+# -rebuilt.html  will automatically be appended and used, after the search/replace.
 header =  "/l/projects/compiled-website/git/my/header.html";
 footer =  "/l/projects/compiled-website/git/my/footer.html";
 
@@ -231,13 +232,13 @@ fun rebuild( filename: String ): Void
   if    ( exists( filename ) == FALSE )
         print ( "File doesn't exist!: " + filename );
   else
-        stream =  open_for_read( header );
+        stream =  open_for_read( header + "-rebuilt.html" );
         content_list =  read_lines( stream );
 
         stream =  open_for_read( filename );
         content_list =  content_list @ apply_syntax( read_lines( stream ) );
 
-        stream =  open_for_read( footer );
+        stream =  open_for_read( footer + "-rebuilt.html" );
         content_list =  content_list @ read_lines( stream );
 
 
@@ -263,8 +264,9 @@ fun rebuild_template( filename: String ): Void
   if    ( exists( filename ) == FALSE )
         print ( "File doesn't exist!: " + filename );
   else
+        # IDEA:  It would be simple to have specific search/replace for a specific file.
         stream =  open_for_read( filename );
-        # TODO:  Can I read it?
+        # TODO, sanity:  Can I read it?
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
         list =  map ( fn string = regex::replace_all   "<!--THISISATEST-->"  "TEST PASSED!"  string ) list;
@@ -276,7 +278,7 @@ fun rebuild_template( filename: String ): Void
         file::flush         file;
         file::close_output  file;
 
-        read_print( filename );
+#         read_print( filename );
   fi;
 };
 # rebuild_template( header );
@@ -284,6 +286,10 @@ fun rebuild_template( filename: String ): Void
 
 
 # Chaining things together..
+tmp =  ( target_directory + "sandbox.html" );
+if  ( exists( tmp ) )
+    winix::file::remove_file( tmp );
+fi;
 rebuild_template( header );
 rebuild_template( footer );
 rebuild( source_directory + "sandbox.asc" );
