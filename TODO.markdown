@@ -31,6 +31,11 @@ Sections are entirely another animal.  They're in whatever order I happened to w
 
   - Provide default templating, artwork, css, etc.  De-personalize everything and separate my own customization from the project itself.
 
+  - Implement an in-content templating system.
+    - Do content templating the same way I'm doing the header/footer templating.
+    - Additionally, do a second and final pass which can go over the header+content+footer and deal with very specialized things like a redirect.
+      - Search for something like [[redirect:pagename]] and, if found, do a search/replace for whatever stuff in <head> and replace with a meta redirect.
+
 
 ### Implement a configuration file
 
