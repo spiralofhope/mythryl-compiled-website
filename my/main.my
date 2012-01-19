@@ -2,11 +2,18 @@
 # --  User-serviceable variables
 # --
 
+# TODO:  These should be in their own separate config file.
+#        next:  Then I could provide a default config file, and move all my personalized stuff aside.
+#        next:  Then I could provide a great default template.
+
 source_directory =  "/l/projects/compiled-website/git/asc/";
 target_directory =  "/l/projects/compiled-website/git/html/";
 # -rebuilt.html  will automatically be appended and used, after the search/replace.
 header =  "/l/projects/compiled-website/git/my/header.html";
 footer =  "/l/projects/compiled-website/git/my/footer.html";
+
+site_name  = "<div class=\"top-t1\">S</div>&nbsp; <div class=\"top-t2\">piral of Hope</div>";
+site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 
 
@@ -262,6 +269,9 @@ fun rebuild_template( list: List( String ) ): Void
         title =  get_filename( compiling_filename );
         title =  remove_extension( title );
         list =  map ( fn string = regex::replace_all   "<!--TITLE-->"  title  string ) list;
+
+        list =  map ( fn string = regex::replace_all   "<!--SITE NAME-->"  site_name  string ) list;
+        list =  map ( fn string = regex::replace_all   "<!--SITE TAGLINE-->"  site_tagline  string ) list;
 
         # TODO:  Table of Contents
         # FIXME:  Browser, when clicking "Table of Contents", that text seems to wiggle.

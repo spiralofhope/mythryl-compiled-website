@@ -1,5 +1,6 @@
 ### 2012-01-19
 
+  - Began the groundwork on providing a default template.
   - Implemented basic header/footer search and replace.
 
 
