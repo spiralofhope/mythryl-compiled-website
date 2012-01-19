@@ -1,5 +1,7 @@
 ### 2012-01-18
 
+  - Working on some basic search/replace to allow variables in the header and footer.
+    - This is so that things like the filename can be included in the page's title.
   - Moved the header and footer into the project structure.
   - Implemented source and target directories.
 

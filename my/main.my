@@ -225,23 +225,23 @@ fun apply_syntax( list: List( String ) ): List( String )
 };
 
 
-fun rebuild( source_filename: String ): Void
+fun rebuild( filename: String ): Void
     =
 {
-  # TODO Sanity-check:  Does source_filename actually exist?
+  # TODO Sanity-check:  Does filename actually exist?
 
 
   stream =  open_for_read( header );
   content_list =  read_lines( stream );
 
-  stream =  open_for_read( source_filename );
+  stream =  open_for_read( filename );
   content_list =  content_list @ apply_syntax( read_lines( stream ) );
 
   stream =  open_for_read( footer );
   content_list =  content_list @ read_lines( stream );
 
 
-  target =  regex::replace_first  ./\.asc$/  ".html"  source_filename;
+  target =  regex::replace_first  ./\.asc$/  ".html"  filename;
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
   target =  regex::find_first_groups_all  ".*\\/(.*)"  target;
   target =  target_directory + strcat( target );
@@ -253,5 +253,29 @@ fun rebuild( source_filename: String ): Void
 
 #   read_print( target );
 };
+# rebuild( source_directory + "sandbox.asc" );
 
-rebuild( source_directory + "sandbox.asc" );
+
+fun rebuild_template( filename: String ): Void
+    =
+{
+  if    ( exists( filename ) )
+        stream =  open_for_read( filename );
+        # TODO:  Can I read it?
+        # can_read : (Input_Stream , Int) -> Null_Or(Int );
+        list =  read_lines( stream );
+        list =  map ( fn string = regex::replace_all   "<!--THISISATEST-->"  "TEST PASSED!"  string ) list;
+#         apply printf "%s" list;
+
+        filename =  filename + "-rebuilt.html";
+        file = file::open_for_write filename;
+        apply fprintf file "%s" list;
+        file::flush         file;
+        file::close_output  file;
+
+        read_print( filename );
+
+  fi;
+};
+rebuild_template( header );
+rebuild_template( footer );
