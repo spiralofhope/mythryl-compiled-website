@@ -39,7 +39,7 @@ live=$working/live
   "$repo/my/header.html" \
   "$repo/my/footer.html" \
   ` # TODO:  CSS ` \
-  "$repo/my/sandbox.asc" \
+  "$repo/asc/sandbox.asc" \
   "/z/compiled-website/git/rb/main.rb" \
   "/z/compiled-website/git/rb/tests/tc_main.rb" \
   "/z/compiled-website/git/rb/tests/tc_common.rb" \

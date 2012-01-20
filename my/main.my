@@ -2,6 +2,9 @@
 # --  User-serviceable variables
 # --
 
+# TODO:  Stop processing the content as a list of strings if I don't need to..
+
+
 # TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
 target_directory =  "/l/projects/compiled-website/git/html/";
@@ -289,6 +292,31 @@ fun rebuild_template( list: List( String ) ): Void
 
 
 
+# TODO:  Think up a better name.
+fun post_processing( content_string: String ): String
+    =
+{
+  fun post_processing_redirect( content_string: String ): String
+      =
+  {
+    match =  "<!--REDIRECT (.*)-->";
+    if   ( ( content_string =~ match ) == FALSE )
+      content_string;
+    else
+      page_name = regex::find_first_group 1  match  content_string;
+      content_string =  regex::replace_all  match  ( "<p>Redirecting to " + page_name + " ...</p>" )  content_string;
+      replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + "\">";
+      content_string =  regex::replace_first  "<head>"  replace  content_string;
+      content_string;
+    fi;
+  };
+
+  content_string = post_processing_redirect( content_string );
+
+  content_string;
+};
+
+
 fun rebuild( list: List( String ) ): Void
     =
 {
@@ -310,8 +338,12 @@ fun rebuild( list: List( String ) ): Void
         stream =  open_for_read( footer + "-rebuilt.html" );
         content_list =  content_list @ read_lines( stream );
 
+        content_string = strcat( content_list );
+        content_string =  post_processing( content_string );
+
         f =  file::open_for_write  target_filename;
-        apply fprintf       f  "%s"  content_list;
+        file::write       ( f, content_string );
+#         apply fprintf       f  "%s"  content_list;
         file::flush         f;
         file::close_output  f;
   fi;
@@ -325,7 +357,7 @@ rebuild( [
 ] );
 
 
-rebuild( [
-  source_directory + "../index.asc",
-  target_directory + "../index.html"
-] );
+# rebuild( [
+#   source_directory + "../index.asc",
+#   target_directory + "../index.html"
+# ] );

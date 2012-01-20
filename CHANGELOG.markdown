@@ -1,3 +1,9 @@
+### 2012-01-20
+
+  - Implemented a second-pass "post-processing" system which allows for complex templating.
+    - Leveraging that, implemented redirect functionality.
+
+
 ### 2012-01-19
 
   - Began the groundwork on providing a default template.
