@@ -255,7 +255,7 @@ fun apply_syntax( string: String ): String
     + "</em>"
     + ( list::nth ( #stringlist, 2 ) )
     ;
- } string;
+  } string;
 
   #   *strong*
   # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted:
@@ -271,7 +271,6 @@ fun apply_syntax( string: String ): String
     ;
   } string;
 
-
   #   _underlined_
   string =  regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
       ( list::nth ( #stringlist, 0 ) )
@@ -282,15 +281,26 @@ fun apply_syntax( string: String ): String
     ;
   } string;
 
-  #   ---  =  Horizontal Rule
-  string =  regex::replace_all  ./\n-{3,}\n/  "<hr>\n"  string;
+  #   ---  =  Horizontal Rule (normal)
+  #           With an empty space above and below.
+  # This isn't working for more than one item in a row.
+  #   If given  \n\n---\n\n---\n\n  then it will match the initial \n\n---\n\n and leave the rest as  ---\n\n
+#   string = "x\n\n---\n\nx\n\n---\n\nx";
+#   string = "x\n\n---\n\n\n\n---\n\nx";
+  string =  regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
+
+  #   ---  =  Horizontal Rule (short)
+  #           (with content above)
+  string =  regex::replace_all_via_fn  ./([^\n])\n-{3,}\n{2}/ .{ strcat( #stringlist ) + "<hr class=\"small\">\n"; } string;
+  #           (with content below)
+  string =  regex::replace_all_via_fn  ./\n{2}-{3,}\n([^\n])/ .{ "\n<hr class=\"small\">" + strcat( #stringlist ); } string;
 
 
   #   \n\n  =  Paragraph
   string =  regex::replace_all_via_fn  ./(\n{2,})/ .{
     n =  strlen( strcat( #stringlist ) );
     n =  int::to_string n;
-    string_multiplier( [ "<br />", n ] );
+    string_multiplier( [ "\n<br />", n ] );
   } string;
 
 
