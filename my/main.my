@@ -2,11 +2,6 @@
 # --  User-serviceable variables
 # --
 
-# TODO:  Stop processing the content as a list of strings if I don't need to..
-
-# string => list
-# fields .{ #c == '\n'; } "Now is the\ntime for all good men\nto party hardy.\n";
-
 
 # TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
@@ -90,6 +85,14 @@ fun remove_extension( filename: String ): String
 {
   regex::replace_first  ./\..*$/  ""  filename;
 };
+
+
+fun string_to_list( string: String ): List( String )
+    =
+{
+  fields .{ #c == '\n'; } string;
+};
+
 
 
 # --
