@@ -4,6 +4,9 @@
 
 # TODO:  Stop processing the content as a list of strings if I don't need to..
 
+# string => list
+# fields .{ #c == '\n'; } "Now is the\ntime for all good men\nto party hardy.\n";
+
 
 # TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
@@ -26,6 +29,9 @@ site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 fun check_directory( string: String ): Bool
     =
 {
+  # See also http://mythryl.org/my-Get_current_directory.html
+  # getcwd ();
+
   directory_list =  dir::entries''( "." );
   # TODO:  Is it necessary to sort dir::entries  ?
   directory_list =  strsort( directory_list );
@@ -104,7 +110,7 @@ fun read_print( filename: String ): Void
   # http://mythryl.org/my-Read_a_text_file.html
   if    ( exists( filename ) )
         stream =  open_for_read( filename );
-        # TODO:  Can I read it?
+        # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
         apply printf "%s" list;
@@ -214,7 +220,7 @@ fun apply_syntax( string: String ): String
   # (This is old code, just here as an example for the syntax highlighting issue.)
   # list = map ( fn string = regex::replace_all_via_fn  ./()/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
   # list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  string = regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
+  string =  regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
       ( list::nth ( #stringlist, 0 ) )
     + "<strong>"
     + ( list::nth ( #stringlist, 1 ) )
@@ -225,7 +231,7 @@ fun apply_syntax( string: String ): String
 
 
   #   _underlined_
-  string = regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
+  string =  regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
       ( list::nth ( #stringlist, 0 ) )
     + "<u>"
     + ( list::nth ( #stringlist, 1 ) )
@@ -234,7 +240,57 @@ fun apply_syntax( string: String ): String
     ;
   } string;
 
-  string = regex::replace_all  ./^-{3,4}$/  "<hr>\n"  string;
+  #   ---  =  Horizontal Rule
+  string =  regex::replace_all  ./^-{3}+$/  "<hr>\n"  string;
+
+
+string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
+  n =  strlen( strcat( #stringlist ) );
+  case n
+     1 => { "<br />"; };
+     2 => { "<br /><br />"; };
+     3 => { "<br /><br /><br />"; };
+     4 => { "<br /><br /><br /><br />"; };
+     _ => { ""; };
+  esac;
+} string;
+
+
+string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
+  n =  strlen( strcat( #stringlist ) );
+  tmp  = "";
+  for (i = 0; i < n; ++i) {
+    tmp  = tmp + "<br />";
+  };
+  tmp;
+} string;
+
+
+#   #   Paragraphs:  Multiple \n translated to <br />
+#   string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
+# tmp  = "";
+# foreach (1..strlen( strcat( #stringlist ) ) ) .{
+#   tmp  = tmp + "<br />";
+# };
+# tmp;
+#   } string;
+
+#   def paragraphs( string )
+#     string = not_in_html( string ) { |string|
+#       # rx = Two or more consecutive \n
+#       rx = %r{ (\n+{2}) }x
+#       string.match( rx )
+#       if $~ != nil then
+#         length = $~[1].length
+#         br = "<br />\n" * ( length - 2 )
+#         string.gsub!( $~[0], "</p>\n#{ br }<p>" )
+#       end
+#       string
+#     }
+#     return '<p>' + string + '</p>'
+#   end
+
+
 
   # TODO:  All of the above does line-processing using map, but I want block-processing that handles multiple lines.
 
@@ -253,7 +309,7 @@ fun rebuild_template( list: List( String ) ): Void
   else
         # IDEA:  It would be simple to have specific search/replace for a specific file.
         stream =  open_for_read( template_filename );
-        # TODO, sanity:  Can I read it?
+        # TODO, sanity:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
 
@@ -345,3 +401,32 @@ rebuild( [
 #   source_directory + "../index.asc",
 #   target_directory + "../index.html"
 # ] );
+
+
+# n =  3;
+# tmp  = "hey?\n";
+# for (i = 0; i < n; ++i) {
+#   tmp  = tmp + "ho!";
+# };
+# print tmp;
+
+fun string_multiplier( list: List( String ) ): String
+    =
+{
+  string = list::nth( list, 0 );
+  n = list::nth( list, 1 );
+  # string -> int
+  n = atoi n;
+#   for ( i = 1; i < n; ++i ) {
+#     string  = string + string;
+#   };
+  foreach (1..n) .{
+    printf "%d\n" #i;
+    string  = string + string;
+  };
+
+  string;
+#   "argh";
+};
+print ( string_multiplier( [ "foo", "3" ] ) );
+
