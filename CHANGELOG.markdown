@@ -1,6 +1,6 @@
 ### 2012-01-21
 
-  - ...
+  - Implemented paragraphs.
 
 
 ### 2012-01-20

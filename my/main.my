@@ -95,6 +95,45 @@ fun string_to_list( string: String ): List( String )
 
 
 
+# TODO:  This is a shitty workaround for now.
+fun string_multiplier( list: List( String ) ): String
+    =
+{
+  string = list::nth( list, 0 );
+  n = list::nth( list, 1 );
+  # string -> int
+  n = atoi n;
+
+# printf "%d" n;
+
+# TODO:  This doesn't work, because of a scope issue inside for/foreach.
+#   for ( i = 1; i < n; ++i ) {
+#     string  = string + string;
+#   };
+
+#   foreach (1..n) .{
+#     printf "%d\n" #i;
+#     string  = string + string;
+#   };
+
+  s =  string;
+  case n
+     1 => { s; };
+     2 => { s+s; };
+     3 => { s+s+s; };
+     4 => { s+s+s+s; };
+     5 => { s+s+s+s+s; };
+     6 => { s+s+s+s+s+s; };
+     7 => { s+s+s+s+s+s+s; };
+     8 => { s+s+s+s+s+s+s+s; };
+     9 => { s+s+s+s+s+s+s+s+s; };
+     _ => { "FIXME " + s + " FIXME"; };
+  esac;
+};
+# print ( string_multiplier( [ "foo", "2" ] ) );
+
+
+
 # --
 # --  Library-candidate functions, project-specific
 # --
@@ -244,58 +283,16 @@ fun apply_syntax( string: String ): String
   } string;
 
   #   ---  =  Horizontal Rule
-  string =  regex::replace_all  ./^-{3}+$/  "<hr>\n"  string;
+  string =  regex::replace_all  ./\n-{3,}\n/  "<hr>\n"  string;
 
 
-string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
-  n =  strlen( strcat( #stringlist ) );
-  case n
-     1 => { "<br />"; };
-     2 => { "<br /><br />"; };
-     3 => { "<br /><br /><br />"; };
-     4 => { "<br /><br /><br /><br />"; };
-     _ => { ""; };
-  esac;
-} string;
+  #   \n\n  =  Paragraph
+  string =  regex::replace_all_via_fn  ./(\n{2,})/ .{
+    n =  strlen( strcat( #stringlist ) );
+    n =  int::to_string n;
+    string_multiplier( [ "<br />", n ] );
+  } string;
 
-
-string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
-  n =  strlen( strcat( #stringlist ) );
-  tmp  = "";
-  for (i = 0; i < n; ++i) {
-    tmp  = tmp + "<br />";
-  };
-  tmp;
-} string;
-
-
-#   #   Paragraphs:  Multiple \n translated to <br />
-#   string =  regex::replace_all_via_fn  ./(\n+{2})/ .{
-# tmp  = "";
-# foreach (1..strlen( strcat( #stringlist ) ) ) .{
-#   tmp  = tmp + "<br />";
-# };
-# tmp;
-#   } string;
-
-#   def paragraphs( string )
-#     string = not_in_html( string ) { |string|
-#       # rx = Two or more consecutive \n
-#       rx = %r{ (\n+{2}) }x
-#       string.match( rx )
-#       if $~ != nil then
-#         length = $~[1].length
-#         br = "<br />\n" * ( length - 2 )
-#         string.gsub!( $~[0], "</p>\n#{ br }<p>" )
-#       end
-#       string
-#     }
-#     return '<p>' + string + '</p>'
-#   end
-
-
-
-  # TODO:  All of the above does line-processing using map, but I want block-processing that handles multiple lines.
 
   string;
 };
@@ -404,32 +401,3 @@ rebuild( [
 #   source_directory + "../index.asc",
 #   target_directory + "../index.html"
 # ] );
-
-
-# n =  3;
-# tmp  = "hey?\n";
-# for (i = 0; i < n; ++i) {
-#   tmp  = tmp + "ho!";
-# };
-# print tmp;
-
-fun string_multiplier( list: List( String ) ): String
-    =
-{
-  string = list::nth( list, 0 );
-  n = list::nth( list, 1 );
-  # string -> int
-  n = atoi n;
-#   for ( i = 1; i < n; ++i ) {
-#     string  = string + string;
-#   };
-  foreach (1..n) .{
-    printf "%d\n" #i;
-    string  = string + string;
-  };
-
-  string;
-#   "argh";
-};
-print ( string_multiplier( [ "foo", "3" ] ) );
-
