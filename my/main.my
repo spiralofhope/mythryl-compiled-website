@@ -180,7 +180,7 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
-fun apply_syntax( list: List( String ) ): List( String )
+fun apply_syntax( string: String ): String
     =
 {
   # TODO:  Port my more advanced regular expressions in.
@@ -196,57 +196,49 @@ fun apply_syntax( list: List( String ) ): List( String )
 
   #   -emphasis-
   # TODO:  I'd rather implement /emphasis/ with slashes, but Mythryl 6.1.0 appears to have a bug that's preventing this.
-  list = map (
-    # These are the characters being matched:     -----.     -----.    -----.
-    #                                                  v          v         v
-    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\-([^\s]+[^\-][^\s]*)\-([^\32-\151]{0,1}\s+\S*)/ .{
-        ( list::nth ( #stringlist, 0 ) )
-      + "<em>"
-      + ( list::nth ( #stringlist, 1 ) )
-      + "</em>"
-      + ( list::nth ( #stringlist, 2 ) )
-      ;
-    }
-    string
-  ) list;
-
+  # These are the characters being matched:   -----.     -----.    -----.
+  #                                                :          :         :
+  #                                      (1|.....) :(2........:.......) :(3.....................)
+  #                                                v          v         v                          
+  string =  regex::replace_all_via_fn  ./(^|.*\s+)\-([^\s]+[^\-][^\s]*)\-([^\32-\151]{0,1}\s+\S*)/ .{
+      ( list::nth ( #stringlist, 0 ) )
+    + "<em>"
+    + ( list::nth ( #stringlist, 1 ) )
+    + "</em>"
+    + ( list::nth ( #stringlist, 2 ) )
+    ;
+ } string;
 
   #   *strong*
   # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted:
   # (This is old code, just here as an example for the syntax highlighting issue.)
   # list = map ( fn string = regex::replace_all_via_fn  ./()/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
   # list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  list = map (
-    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
-        ( list::nth ( #stringlist, 0 ) )
-      + "<strong>"
-      + ( list::nth ( #stringlist, 1 ) )
-      + "</strong>"
-      + ( list::nth ( #stringlist, 2 ) )
-      ;
-    }
-    string
-  ) list;
+  string = regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
+      ( list::nth ( #stringlist, 0 ) )
+    + "<strong>"
+    + ( list::nth ( #stringlist, 1 ) )
+    + "</strong>"
+    + ( list::nth ( #stringlist, 2 ) )
+    ;
+  } string;
 
 
   #   _underlined_
-  list = map (
-    fn string = regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
-        ( list::nth ( #stringlist, 0 ) )
-      + "<u>"
-      + ( list::nth ( #stringlist, 1 ) )
-      + "</u>"
-      + ( list::nth ( #stringlist, 2 ) )
-      ;
-    }
-    string
-  ) list;
+  string = regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
+      ( list::nth ( #stringlist, 0 ) )
+    + "<u>"
+    + ( list::nth ( #stringlist, 1 ) )
+    + "</u>"
+    + ( list::nth ( #stringlist, 2 ) )
+    ;
+  } string;
 
-  list = map ( fn string = regex::replace_all         ./^-{3,4}$/       "<hr>\n"                                           string ) list;
+  string = regex::replace_all  ./^-{3,4}$/  "<hr>\n"  string;
 
   # TODO:  All of the above does line-processing using map, but I want block-processing that handles multiple lines.
 
-  list;
+  string;
 };
 
 
@@ -329,21 +321,13 @@ fun rebuild( list: List( String ) ): Void
         rebuild_template( [ header, compiling_filename ] );
         rebuild_template( [ footer, compiling_filename ] );
 
-        stream =  open_for_read( header + "-rebuilt.html" );
-        content_list =  read_lines( stream );
-
-        stream =  open_for_read( compiling_filename );
-        content_list =  content_list @ apply_syntax( read_lines( stream ) );
-
-        stream =  open_for_read( footer + "-rebuilt.html" );
-        content_list =  content_list @ read_lines( stream );
-
-        content_string = strcat( content_list );
+        content_string =                                 strcat( lines( header + "-rebuilt.html" ) );
+        content_string =  content_string + apply_syntax( strcat( lines( compiling_filename ) ) );
+        content_string =  content_string +               strcat( lines( footer + "-rebuilt.html" ) );
         content_string =  post_processing( content_string );
 
         f =  file::open_for_write  target_filename;
         file::write       ( f, content_string );
-#         apply fprintf       f  "%s"  content_list;
         file::flush         f;
         file::close_output  f;
   fi;

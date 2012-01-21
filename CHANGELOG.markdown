@@ -31,7 +31,7 @@
 ### 2012-01-14
 
   - Escaping an asterisk ( * ) was an issue solved by updating from Mythryl 6.0.0 to Mythryl 6.1.0.
-    - An escaped slash ( / ) is still not working.  Fine, I'll implement emphasis with dashes ( -emphasis- ).
+    - An escaped slash ( / ) is still not working.  Fine, I'll implement <em> emphasis tags using dashes ( -emphasis- => <em>emphasis</em> ).
   - Ran into a wall with regular expressions.  I don't know how to escape an asterisk ( * ) or slash ( / ).  Asking for help.
   - Anonymous functions, neato.
   - Search/replace regex baby steps.
