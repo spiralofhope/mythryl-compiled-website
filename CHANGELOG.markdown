@@ -1,5 +1,6 @@
 ### 2012-01-21
 
+  - Implemented short horizontal rules.
   - Implemented paragraphs.
 
 
