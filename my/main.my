@@ -111,6 +111,29 @@ fun string_multiplier( list: List( String ) ): String
 
 
 
+# TODO:  Throw errors
+# TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
+fun assert_equal( list: List( String ) ): Bool
+    =
+{
+  expected =  list::nth( list, 0 );
+  result   =  list::nth( list, 1 );
+  if
+    ( expected == result )
+    printf "yes\n";
+    TRUE;
+  else
+    print "\n  ** FAIL **\n";
+    print ( list::nth( list, 1 ) );
+    print "\n  =>\n";
+    print ( list::nth( list, 0 ) );
+    print "\n";
+    FALSE;
+  fi;
+};
+
+
+
 # --
 # --  Library-candidate functions, project-specific
 # --
@@ -206,7 +229,7 @@ fun sanity_check( _: Void ): Void
 
 
 
-fun apply_syntax( string: String ): String
+fun syntax( string: String ): String
     =
 {
   # TODO:  Port my more advanced regular expressions in.
@@ -227,11 +250,11 @@ fun apply_syntax( string: String ): String
   #                                      (1|.....) :(2........:.......) :(3.....................)
   #                                                v          v         v                          
   string =  regex::replace_all_via_fn  ./(^|.*\s+)\-([^\s]+[^\-][^\s]*)\-([^\32-\151]{0,1}\s+\S*)/ .{
-      ( list::nth ( #stringlist, 0 ) )
+      ( list::nth( #stringlist, 0 ) )
     + "<em>"
-    + ( list::nth ( #stringlist, 1 ) )
+    + ( list::nth( #stringlist, 1 ) )
     + "</em>"
-    + ( list::nth ( #stringlist, 2 ) )
+    + ( list::nth( #stringlist, 2 ) )
     ;
   } string;
 
@@ -241,21 +264,21 @@ fun apply_syntax( string: String ): String
   # list = map ( fn string = regex::replace_all_via_fn  ./()/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
   # list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
   string =  regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
-      ( list::nth ( #stringlist, 0 ) )
+      ( list::nth( #stringlist, 0 ) )
     + "<strong>"
-    + ( list::nth ( #stringlist, 1 ) )
+    + ( list::nth( #stringlist, 1 ) )
     + "</strong>"
-    + ( list::nth ( #stringlist, 2 ) )
+    + ( list::nth( #stringlist, 2 ) )
     ;
   } string;
 
   #   _underlined_
   string =  regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
-      ( list::nth ( #stringlist, 0 ) )
+      ( list::nth( #stringlist, 0 ) )
     + "<u>"
-    + ( list::nth ( #stringlist, 1 ) )
+    + ( list::nth( #stringlist, 1 ) )
     + "</u>"
-    + ( list::nth ( #stringlist, 2 ) )
+    + ( list::nth( #stringlist, 2 ) )
     ;
   } string;
 
@@ -290,8 +313,8 @@ fun apply_syntax( string: String ): String
 fun rebuild_template( list: List( String ) ): Void
     =
 {
-  template_filename =  ( list::nth ( list, 0 ) );
-  compiling_filename = ( list::nth ( list, 1 ) );
+  template_filename =  ( list::nth( list, 0 ) );
+  compiling_filename = ( list::nth( list, 1 ) );
   if    ( exists( template_filename ) == FALSE )
         print ( "File doesn't exist!: " + template_filename );
   else
@@ -357,8 +380,8 @@ fun post_processing( content_string: String ): String
 fun rebuild( list: List( String ) ): Void
     =
 {
-  compiling_filename = ( list::nth ( list, 0 ) );
-  target_filename =    ( list::nth ( list, 1 ) );
+  compiling_filename = ( list::nth( list, 0 ) );
+  target_filename =    ( list::nth( list, 1 ) );
   
   if    ( exists( compiling_filename ) == FALSE )
         print ( "File doesn't exist!: " + compiling_filename );
@@ -367,7 +390,7 @@ fun rebuild( list: List( String ) ): Void
         rebuild_template( [ footer, compiling_filename ] );
 
         content_string =                                 strcat( lines( header + "-rebuilt.html" ) );
-        content_string =  content_string + apply_syntax( strcat( lines( compiling_filename ) ) );
+        content_string =  content_string + syntax( strcat( lines( compiling_filename ) ) );
         content_string =  content_string +               strcat( lines( footer + "-rebuilt.html" ) );
         content_string =  post_processing( content_string );
 
@@ -390,3 +413,22 @@ rebuild( [
 #   source_directory + "../index.asc",
 #   target_directory + "../index.html"
 # ] );
+
+
+
+
+# --
+# --  Test cases
+# --  (more or less)
+
+
+string = "test";
+expected = "test";
+result = syntax( string );
+assert_equal( [ expected, result ] );
+
+string = "\n*strong*\n";
+expected = "\n<strong>strong</strong>\n";
+result = syntax( string );
+assert_equal( [ expected, result ] );
+
