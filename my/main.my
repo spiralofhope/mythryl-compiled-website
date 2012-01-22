@@ -76,6 +76,7 @@ fun get_filename( string: String ): String
 };
 
 
+
 # FIXME:  This needs a better name.
 # Removes the extension(s) from a string.
 #   filename.ext     => filename
@@ -87,6 +88,7 @@ fun remove_extension( filename: String ): String
 };
 
 
+
 fun string_to_list( string: String ): List( String )
     =
 {
@@ -95,7 +97,6 @@ fun string_to_list( string: String ): List( String )
 
 
 
-# TODO:  This is a shitty workaround for now.
 fun string_multiplier( list: List( String ) ): String
     =
 {
@@ -104,31 +105,7 @@ fun string_multiplier( list: List( String ) ): String
   # string -> int
   n = atoi n;
 
-# printf "%d" n;
-
-# TODO:  This doesn't work, because of a scope issue inside for/foreach.
-#   for ( i = 1; i < n; ++i ) {
-#     string  = string + string;
-#   };
-
-#   foreach (1..n) .{
-#     printf "%d\n" #i;
-#     string  = string + string;
-#   };
-
-  s =  string;
-  case n
-     1 => { s; };
-     2 => { s+s; };
-     3 => { s+s+s; };
-     4 => { s+s+s+s; };
-     5 => { s+s+s+s+s; };
-     6 => { s+s+s+s+s+s; };
-     7 => { s+s+s+s+s+s+s; };
-     8 => { s+s+s+s+s+s+s+s; };
-     9 => { s+s+s+s+s+s+s+s+s; };
-     _ => { "FIXME " + s + " FIXME"; };
-  esac;
+ cat( list::tabulate( n, fn _ = string ) );
 };
 # print ( string_multiplier( [ "foo", "2" ] ) );
 
@@ -226,6 +203,7 @@ fun sanity_check( _: Void ): Void
   fi;
 };
 # sanity_check();
+
 
 
 fun apply_syntax( string: String ): String
@@ -373,6 +351,7 @@ fun post_processing( content_string: String ): String
 
   content_string;
 };
+
 
 
 fun rebuild( list: List( String ) ): Void
