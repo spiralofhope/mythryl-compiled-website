@@ -120,7 +120,7 @@ fun assert_equal( list: List( String ) ): Bool
   result   =  list::nth( list, 1 );
   if
     ( expected == result )
-    printf "yes\n";
+#     printf "yes\n";
     TRUE;
   else
     print "\n  ** FAIL **\n";
@@ -229,7 +229,7 @@ fun sanity_check( _: Void ): Void
 
 
 
-fun syntax( string: String ): String
+fun markup( string: String ): String
     =
 {
   # TODO:  Port my more advanced regular expressions in.
@@ -390,7 +390,7 @@ fun rebuild( list: List( String ) ): Void
         rebuild_template( [ footer, compiling_filename ] );
 
         content_string =                                 strcat( lines( header + "-rebuilt.html" ) );
-        content_string =  content_string + syntax( strcat( lines( compiling_filename ) ) );
+        content_string =  content_string + markup( strcat( lines( compiling_filename ) ) );
         content_string =  content_string +               strcat( lines( footer + "-rebuilt.html" ) );
         content_string =  post_processing( content_string );
 
@@ -424,11 +424,11 @@ rebuild( [
 
 string = "test";
 expected = "test";
-result = syntax( string );
+result = markup( string );
 assert_equal( [ expected, result ] );
 
 string = "\n*strong*\n";
 expected = "\n<strong>strong</strong>\n";
-result = syntax( string );
+result = markup( string );
 assert_equal( [ expected, result ] );
 
