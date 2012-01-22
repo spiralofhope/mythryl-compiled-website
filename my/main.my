@@ -134,6 +134,29 @@ fun assert_equal( list: List( String ) ): Bool
 
 
 
+fun remove_character( list: List( String ) ): String
+    =
+{
+  character =  list::nth( list, 0 );
+  string =  list::nth( list, 1 );
+
+  my tmp =  REF "";
+  n =  string::length( string );
+  for ( i = 0; i < n; ++i ) {
+    pos =  explode string;
+    pos =  list::nth( pos, i );
+    pos =  char::to_string( pos );
+    if ( pos != character )
+      tmp :=  *tmp + pos;
+    fi;
+  };
+  *tmp;
+};
+# string =  "test\ntwo";
+# print ( remove_character( [ "\\n", string ] ) );
+
+
+
 # --
 # --  Library-candidate functions, project-specific
 # --
@@ -236,20 +259,21 @@ fun markup( string: String ): String
   # TODO:  Review the Ruby code and figure out how I ought to do things like strong-emphasis.
   # TODO:  A feature list.
   # TODO:  Why can't I use [:graph:], [:space:], etc?
-  # TODO:  Automated test cases.
 
-  # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
-  # [^\32-\151]  =  [:punct:]  =  punctuation
-  # \s           =  [:space:]  =  whitespace
-
+  graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
+  punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
+  space =  "\\s";             # \s           =  [:space:]  =  whitespace
 
   #   -emphasis-
   # TODO:  I'd rather implement /emphasis/ with slashes, but Mythryl 6.1.0 appears to have a bug that's preventing this.
-  # These are the characters being matched:   -----.     -----.    -----.
-  #                                                :          :         :
-  #                                      (1|.....) :(2........:.......) :(3.....................)
-  #                                                v          v         v                          
-  string =  regex::replace_all_via_fn  ./(^|.*\s+)\-([^\s]+[^\-][^\s]*)\-([^\32-\151]{0,1}\s+\S*)/ .{
+  emphasis_rx =
+      "(^|.*\\s+)"
+    + "\\-"
+    + "([^\\s]+[^\\-][^\\s]*)"
+    + "\\-"
+    + "(" + punct + "{0,1}\\s+\\S*)"
+    ;
+  string =  regex::replace_all_via_fn  emphasis_rx .{
       ( list::nth( #stringlist, 0 ) )
     + "<em>"
     + ( list::nth( #stringlist, 1 ) )
@@ -427,8 +451,12 @@ expected = "test";
 result = markup( string );
 assert_equal( [ expected, result ] );
 
-string = "\n*strong*\n";
-expected = "\n<strong>strong</strong>\n";
+string = "\n-emphasis-\n";
+expected = "\n<em>emphasis</em>\n";
 result = markup( string );
 assert_equal( [ expected, result ] );
 
+# string = "-emphasis-";
+# expected = "<em>emphasis</em>";
+# result = markup( string );
+# assert_equal( [ expected, result ] );
