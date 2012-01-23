@@ -2,6 +2,8 @@
 # --  User-serviceable variables
 # --
 
+# TODO:  Check out the rx clarifications for -emphasis- and also the test cases at the bottom.  Fix up the regexes, steal from the Ruby project.
+
 
 # TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
@@ -252,59 +254,81 @@ fun sanity_check( _: Void ): Void
 
 
 
-fun markup( string: String ): String
+fun punctuation_regex( list: List( String ) ): String
     =
 {
-  # TODO:  Port my more advanced regular expressions in.
-  # TODO:  Review the Ruby code and figure out how I ought to do things like strong-emphasis.
-  # TODO:  A feature list.
-  # TODO:  Why can't I use [:graph:], [:space:], etc?
+  rx_left  =  list::nth( list, 0 );
+  rx_right =  list::nth( list, 1 );
 
+  # TODO:  Why can't I directly use [:graph:], [:space:], etc?
   graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
   punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
   space =  "\\s";             # \s           =  [:space:]  =  whitespace
 
-  #   -emphasis-
-  # TODO:  I'd rather implement /emphasis/ with slashes, but Mythryl 6.1.0 appears to have a bug that's preventing this.
-  emphasis_rx =
-      "(^|.*\\s+)"
-    + "\\-"
-    + "([^\\s]+[^\\-][^\\s]*)"
-    + "\\-"
-    + "(" + punct + "{0,1}\\s+\\S*)"
+  left =
+      "^"
+    + "|" + space
     ;
-  string =  regex::replace_all_via_fn  emphasis_rx .{
+  left =
+      left
+    + "|" + left + punct
+    + "|" + left + "\\("
+    + "|" + left + "--"
+  ;
+
+  right =
+      "$"
+    + "|" + space
+    ;
+  right =
+      right
+    + "|" + punct + right
+    + "|" + "\\)" + right
+    + "|" + "--"  + right
+  ;
+  right =
+      right
+    + "|" + "s" + right
+    + "|" + "es" + right
+    + "|" + "ed" + right
+  ;
+  "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
+};
+
+
+
+# TODO:  This needs a good name.
+fun markup_needs_a_name( list: List( String ) ): String
+    =
+{
+  string        =  list::nth( list, 0 );
+  rx_left       =  list::nth( list, 1 );
+  rx_right      =  list::nth( list, 2 );
+  replace_left  =  list::nth( list, 3 );
+  replace_right =  list::nth( list, 4 );
+  # TODO:    string =  split_string_html( string );
+
+  rx = punctuation_regex( [ rx_left, rx_right ] );
+  string =  regex::replace_all_via_fn  rx .{
       ( list::nth( #stringlist, 0 ) )
     + "<em>"
-    + ( list::nth( #stringlist, 1 ) )
+    + ( list::nth( #stringlist, 2 ) )
     + "</em>"
-    + ( list::nth( #stringlist, 2 ) )
+    + ( list::nth( #stringlist, 4 ) )
     ;
   } string;
+  string;
+};
 
-  #   *strong*
-  # FIXME:  Syntax highlighting in Geany will bug out with an escaped asterisk like this.  Notice how the strings are no longer highlighted:
-  # (This is old code, just here as an example for the syntax highlighting issue.)
-  # list = map ( fn string = regex::replace_all_via_fn  ./()/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  # list = map ( fn string = regex::replace_all_via_fn  ./\*(.*)\*/    .{ "<strong>" + (strcat #stringlist) + "</strong>"; } string ) list;
-  string =  regex::replace_all_via_fn  ./(^|.*\s+)\*([^\s]+[^\*][^\s]*)\*([^\32-\151]{0,1}\s+\S*)/ .{
-      ( list::nth( #stringlist, 0 ) )
-    + "<strong>"
-    + ( list::nth( #stringlist, 1 ) )
-    + "</strong>"
-    + ( list::nth( #stringlist, 2 ) )
-    ;
-  } string;
 
-  #   _underlined_
-  string =  regex::replace_all_via_fn  ./(^|.*\s+)\_([^\s]+[^\_][^\s]*)\_([^\32-\151]{0,1}\s+\S*)/ .{
-      ( list::nth( #stringlist, 0 ) )
-    + "<u>"
-    + ( list::nth( #stringlist, 1 ) )
-    + "</u>"
-    + ( list::nth( #stringlist, 2 ) )
-    ;
-  } string;
+
+fun markup( string: String ): String
+    =
+{
+  string =  markup_needs_a_name( [ string, "-"  , "-"  , "<em>"    , "</em>"     ] );
+  string =  markup_needs_a_name( [ string, "\\*", "\\*", "<strong>", "</strong>" ] );
+  string =  markup_needs_a_name( [ string, "_"  , "_"  , "<u>"     , "</u>"      ] );
+
 
   #   ---  =  Horizontal Rule (normal)
   #           With an empty space above and below.
@@ -453,10 +477,12 @@ assert_equal( [ expected, result ] );
 
 string = "\n-emphasis-\n";
 expected = "\n<em>emphasis</em>\n";
+# FIXME:  Markup is chopping off the final \n.
+expected = "\n<em>emphasis</em>";
 result = markup( string );
 assert_equal( [ expected, result ] );
 
-# string = "-emphasis-";
-# expected = "<em>emphasis</em>";
-# result = markup( string );
-# assert_equal( [ expected, result ] );
+string = "-emphasis-";
+expected = "<em>emphasis</em>";
+result = markup( string );
+assert_equal( [ expected, result ] );
