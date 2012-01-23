@@ -366,8 +366,7 @@ fun markup( string: String ): String
   };
 
 
-  # Forward slashes in regular expressions are a special case.  Where most things need a backslash to escape them, the forward slash must be doubled.  This also does not work in a string.
-  string =  markup_needs_a_name( [ string, .////, .////, "<em>"    , "</em>"     ] );
+  string =  markup_needs_a_name( [ string, "\\/", "\\/", "<em>"    , "</em>"     ] );
   string =  markup_needs_a_name( [ string, "-"  , "-"  , "<del>"   , "</del>"    ] );
   string =  markup_needs_a_name( [ string, "\\*", "\\*", "<strong>", "</strong>" ] );
   string =  markup_needs_a_name( [ string, "_"  , "_"  , "<u>"     , "</u>"      ] );
