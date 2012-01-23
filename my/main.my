@@ -253,106 +253,124 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
-
-fun punctuation_regex( list: List( String ) ): String
-    =
-{
-  rx_left  =  list::nth( list, 0 );
-  rx_right =  list::nth( list, 1 );
-
-  # TODO:  Why can't I directly use [:graph:], [:space:], etc?
-  graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
-  punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
-  space =  "\\s";             # \s           =  [:space:]  =  whitespace
-
-  left =
-      "^"
-    + "|" + space
-    ;
-  left =
-      left
-    + "|" + left + punct
-    + "|" + left + "\\("
-    + "|" + left + "--"
-  ;
-
-  right =
-      "$"
-    + "|" + space
-    ;
-  right =
-      right
-    + "|" + punct + right
-    + "|" + "\\)" + right
-    + "|" + "--"  + right
-  ;
-  right =
-      right
-    + "|" + "s" + right
-    + "|" + "es" + right
-    + "|" + "ed" + right
-  ;
-  "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
-};
-
-
-
-# TODO:  This needs a good name.
-fun markup_needs_a_name( list: List( String ) ): String
-    =
-{
-  string        =  list::nth( list, 0 );
-  rx_left       =  list::nth( list, 1 );
-  rx_right      =  list::nth( list, 2 );
-  replace_left  =  list::nth( list, 3 );
-  replace_right =  list::nth( list, 4 );
-  # TODO:    string =  split_string_html( string );
-
-  rx = punctuation_regex( [ rx_left, rx_right ] );
-  string =  regex::replace_all_via_fn  rx .{
-      ( list::nth( #stringlist, 0 ) )
-    + "<em>"
-    + ( list::nth( #stringlist, 2 ) )
-    + "</em>"
-    + ( list::nth( #stringlist, 4 ) )
-    ;
-  } string;
-  string;
-};
-
-
-
 fun markup( string: String ): String
     =
 {
+  # TODO:  This needs a good name.
+  fun markup_needs_a_name( list: List( String ) ): String
+      =
+  {
+    string        =  list::nth( list, 0 );
+    rx_left       =  list::nth( list, 1 );
+    rx_right      =  list::nth( list, 2 );
+    replace_left  =  list::nth( list, 3 );
+    replace_right =  list::nth( list, 4 );
+
+    fun punctuation_regex( list: List( String ) ): String
+        =
+    {
+      rx_left  =  list::nth( list, 0 );
+      rx_right =  list::nth( list, 1 );
+
+      # TODO:  Why can't I directly use [:graph:], [:space:], etc?
+      graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
+      punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
+      space =  "\\s";             # \s           =  [:space:]  =  whitespace
+
+      left =
+          "^"
+        + "|" + space
+        ;
+      left =
+          left
+        + "|" + left + punct
+        + "|" + left + "\\("
+        + "|" + left + "--"
+      ;
+
+      right =
+          "$"
+        + "|" + space
+        ;
+      right =
+          right
+        + "|" + punct + right
+        + "|" + "\\)" + right
+        + "|" + "--"  + right
+      ;
+      right =
+          right
+        + "|" + "s" + right
+        + "|" + "es" + right
+        + "|" + "ed" + right
+      ;
+      "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
+    };
+
+    # TODO:    string =  split_string_html( string );
+
+    rx = punctuation_regex( [ rx_left, rx_right ] );
+    string =  regex::replace_all_via_fn  rx .{
+        ( list::nth( #stringlist, 0 ) )
+      + replace_left
+      + ( list::nth( #stringlist, 2 ) )
+      + replace_right
+      + ( list::nth( #stringlist, 4 ) )
+      ;
+    } string;
+    string;
+  };
+
+
+
+  fun markup_horizontal_rules( string: String ): String
+      =
+  {
+    # With an empty space above and below.
+    fun markup_horizontal_rules_long( string: String ): String
+        =
+    {
+      # This isn't working for more than one item in a row.
+      #   If given  \n\n---\n\n---\n\n  then it will match the initial \n\n---\n\n and leave the rest as  ---\n\n
+    #   string = "x\n\n---\n\nx\n\n---\n\nx";
+    #   string = "x\n\n---\n\n\n\n---\n\nx";
+      regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
+    };
+
+    fun markup_horizontal_rules_short( string: String ): String
+        =
+    {
+      # (with content above)
+      string =  regex::replace_all_via_fn  ./([^\n])\n-{3,}\n{2}/ .{ strcat( #stringlist ) + "<hr class=\"small\">\n"; } string;
+      # (with content below)
+      string =  regex::replace_all_via_fn  ./\n{2}-{3,}\n([^\n])/ .{ "\n<hr class=\"small\">" + strcat( #stringlist ); } string;
+      string;
+    };
+
+    string =  markup_horizontal_rules_long ( string );
+    string =  markup_horizontal_rules_short( string );
+    string;
+  };
+
+
+
+  fun markup_paragraphs( string: String ): String
+      =
+  {
+    # \n\n  =  Paragraph
+    regex::replace_all_via_fn  ./(\n{2,})/ .{
+      n =  strlen( strcat( #stringlist ) );
+      n =  int::to_string n;
+      string_multiplier( [ "\n<br />", n ] );
+    } string;
+  };
+
+
   string =  markup_needs_a_name( [ string, "-"  , "-"  , "<em>"    , "</em>"     ] );
   string =  markup_needs_a_name( [ string, "\\*", "\\*", "<strong>", "</strong>" ] );
   string =  markup_needs_a_name( [ string, "_"  , "_"  , "<u>"     , "</u>"      ] );
-
-
-  #   ---  =  Horizontal Rule (normal)
-  #           With an empty space above and below.
-  # This isn't working for more than one item in a row.
-  #   If given  \n\n---\n\n---\n\n  then it will match the initial \n\n---\n\n and leave the rest as  ---\n\n
-#   string = "x\n\n---\n\nx\n\n---\n\nx";
-#   string = "x\n\n---\n\n\n\n---\n\nx";
-  string =  regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
-
-  #   ---  =  Horizontal Rule (short)
-  #           (with content above)
-  string =  regex::replace_all_via_fn  ./([^\n])\n-{3,}\n{2}/ .{ strcat( #stringlist ) + "<hr class=\"small\">\n"; } string;
-  #           (with content below)
-  string =  regex::replace_all_via_fn  ./\n{2}-{3,}\n([^\n])/ .{ "\n<hr class=\"small\">" + strcat( #stringlist ); } string;
-
-
-  #   \n\n  =  Paragraph
-  string =  regex::replace_all_via_fn  ./(\n{2,})/ .{
-    n =  strlen( strcat( #stringlist ) );
-    n =  int::to_string n;
-    string_multiplier( [ "\n<br />", n ] );
-  } string;
-
-
+  string =  markup_horizontal_rules( string );
+  string =  markup_paragraphs( string );
   string;
 };
 
