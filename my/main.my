@@ -4,6 +4,10 @@
 
 # TODO:  Check out the rx clarifications for -emphasis- and also the test cases at the bottom.  Fix up the regexes, steal from the Ruby project.
 
+# TODO:  I have a major looming issue with regular expression search/replace
+# match for xx.*xx and replace with xxyyxx
+# I would expect xxzzxxzzxx => xxyyxxyyxx but instead I get xxyyxxzzxx (the second xxzzxx is not matched)
+
 
 # TODO:  Configuration file.  See TODO.markdown
 source_directory =  "/l/projects/compiled-website/git/asc/";
@@ -79,7 +83,7 @@ fun get_filename( string: String ): String
 
 
 
-# FIXME:  This needs a better name.
+# FIXME:  RENAME
 # Removes the extension(s) from a string.
 #   filename.ext     => filename
 #   filename.ext.ext => filename
@@ -256,7 +260,7 @@ fun sanity_check( _: Void ): Void
 fun markup( string: String ): String
     =
 {
-  # TODO:  This needs a good name.
+  # TODO:  RENAME
   fun markup_needs_a_name( list: List( String ) ): String
       =
   {
@@ -300,7 +304,7 @@ fun markup( string: String ): String
       ;
       right =
           right
-        + "|" + "s" + right
+        + "|" + "s"  + right
         + "|" + "es" + right
         + "|" + "ed" + right
       ;
@@ -330,10 +334,6 @@ fun markup( string: String ): String
     fun markup_horizontal_rules_long( string: String ): String
         =
     {
-      # This isn't working for more than one item in a row.
-      #   If given  \n\n---\n\n---\n\n  then it will match the initial \n\n---\n\n and leave the rest as  ---\n\n
-    #   string = "x\n\n---\n\nx\n\n---\n\nx";
-    #   string = "x\n\n---\n\n\n\n---\n\nx";
       regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
     };
 
@@ -366,6 +366,8 @@ fun markup( string: String ): String
   };
 
 
+  # Forward slashes in regular expressions are a special case.  Where most things need a backslash to escape them, the forward slash must be doubled.  This also does not work in a string.
+  string =  markup_needs_a_name( [ string, .////, .////, "<em>"    , "</em>"     ] );
   string =  markup_needs_a_name( [ string, "-"  , "-"  , "<em>"    , "</em>"     ] );
   string =  markup_needs_a_name( [ string, "\\*", "\\*", "<strong>", "</strong>" ] );
   string =  markup_needs_a_name( [ string, "_"  , "_"  , "<u>"     , "</u>"      ] );
@@ -386,7 +388,7 @@ fun rebuild_template( list: List( String ) ): Void
   else
         # IDEA:  It would be simple to have specific search/replace for a specific file.
         stream =  open_for_read( template_filename );
-        # TODO, sanity:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
+        # TODO sanity:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
         # can_read : (Input_Stream , Int) -> Null_Or(Int );
         list =  read_lines( stream );
 
@@ -395,7 +397,7 @@ fun rebuild_template( list: List( String ) ): Void
         # TODO:  Table of Contents
         # FIXME:  Browser, when clicking "Table of Contents", that text seems to wiggle.
         #         (Probably a template issue, possibly unfixable)
-        toc =  "<br>TODO";
+        toc =  "<br>TO DO";
         # TODO:  RSS
         #        rss-feed-icon-16px-svg.png
         rss =  "";
@@ -501,6 +503,11 @@ result = markup( string );
 assert_equal( [ expected, result ] );
 
 string = "-emphasis-";
+expected = "<em>emphasis</em>";
+result = markup( string );
+assert_equal( [ expected, result ] );
+
+string = "/emphasis/";
 expected = "<em>emphasis</em>";
 result = markup( string );
 assert_equal( [ expected, result ] );
