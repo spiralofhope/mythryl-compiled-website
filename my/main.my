@@ -490,21 +490,21 @@ rebuild( [
 # TODO:  Absorb the test cases from the Ruby project.
 
 
-string = "test";
-expected = "test";
-result = markup( string );
+string =  "test";
+expected =  "test";
+result =  markup( string );
 assert_equal( [ expected, result ] );
 
-string = "\n/emphasis/\n";
-expected = "\n<em>emphasis</em>\n";
+string =  "\n/emphasis/\n";
+expected =  "\n<em>emphasis</em>\n";
 # FIXME:  Markup is chopping off the final \n.
-expected = "\n<em>emphasis</em>";
-result = markup( string );
+expected =  "\n<em>emphasis</em>";
+result =  markup( string );
 assert_equal( [ expected, result ] );
 
-string = "/emphasis/";
-expected = "<em>emphasis</em>";
-result = markup( string );
+string =  "/emphasis/";
+expected =  "<em>emphasis</em>";
+result =  markup( string );
 assert_equal( [ expected, result ] );
 
 
@@ -515,11 +515,38 @@ assert_equal( [ expected, result ] );
 fun explode_string_per_line( string: String ): List( String )
     =
 {
+  fun explode_string_per_line_bool( string: String ): Bool
+      =
+  {
+    TRUE;
+  };
+
+
   result = [ "" ];
 
-  # Iterate through a string, line-by-line
+  list =  string_to_list( string );
+  n =  length( list );
 
-# filter
+  odd = REF [];
+  even = REF [];
+  for ( i = 1; i <= n; ++i ) {
+    printf "line %d - '%s'\n" i ( list::nth( list, ( i - 1 ) ) );
+#     b := list::nth( list, ( i - 1 ) );
+  };
+
+# printf "'%s'\n" *b;
+
+#   my tmp = REF "hey?\n";
+#   for (i = 0; i < 3; ++i) {
+#       tmp :=  *tmp + "ho!";
+#   };
+#   print *tmp;
+
+
+
+  # Iterate through the list of strings.
+#     list::partition( fn string = explode_string_per_line_bool( string ) );
+
 
 
   # For each line, refer to a function which gives a Bool result.
@@ -561,7 +588,17 @@ fun assert_equal_lists( list: List( List ( String ) ) ): Bool
   FALSE;
 };
 
-string = "xtestx";
-expected = "xTESTx";
-result = explode_string_per_line( string );
+string =  "xtestx\nytesty\n";
+expected =  [ "xtestx\n", "ytesty\n" ];
+result =  string_to_list( string );
 # assert_equal_lists( [ expected, result ] );
+
+# expected = "xTESTx\nytesty\n";
+# result = apply_thingemybob( result );
+# assert_equal_lists( [ expected, result ] );
+
+
+
+string =  "xtestx\nytesty\n";
+l =  explode_string_per_line( string );
+# print ( cat( l ) );
