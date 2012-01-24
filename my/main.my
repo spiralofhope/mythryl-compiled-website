@@ -487,6 +487,7 @@ rebuild( [
 # --
 # --  Test cases
 # --  (more or less)
+# TODO:  Absorb the test cases from the Ruby project.
 
 
 string = "test";
@@ -505,3 +506,62 @@ string = "/emphasis/";
 expected = "<em>emphasis</em>";
 result = markup( string );
 assert_equal( [ expected, result ] );
+
+
+
+# Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
+# The idea is to break a string down so that a function can be applied to specific parts of it.
+# For example, I want to apply markup, but not to text inside of blocks of html.
+fun explode_string_per_line( string: String ): List( String )
+    =
+{
+  result = [ "" ];
+
+  # Iterate through a string, line-by-line
+
+# filter
+
+
+  # For each line, refer to a function which gives a Bool result.
+  # Based on the Bool, either append to a working string or append to the list and begin an empty working string.
+
+
+
+  # Placeholder
+  [ "no", "yes", "no" ];
+};
+
+
+
+
+
+# TODO:  create  assert_equal_lists()
+fun assert_equal_lists( list: List( List ( String ) ) ): Bool
+    =
+{
+  expected =  list::nth( list, 0 );
+  result   =  list::nth( list, 1 );
+
+# TODO
+# Compare list::length()
+
+#   if
+#     ( expected == result )
+#     TRUE;
+#   else
+#     print "\n  ** FAIL **\n";
+#     print ( list::nth( list, 1 ) );
+#     print "\n  =>\n";
+#     print ( list::nth( list, 0 ) );
+#     print "\n";
+#     FALSE;
+#   fi;
+
+  # Placeholder
+  FALSE;
+};
+
+string = "xtestx";
+expected = "xTESTx";
+result = explode_string_per_line( string );
+# assert_equal_lists( [ expected, result ] );
