@@ -119,27 +119,6 @@ fun assert_equal( list: List( String ) ): Bool = {
 };
 
 
-
-fun remove_character( list: List( String ) ): String = {
-  character =  list::nth( list, 0 );
-  string =  list::nth( list, 1 );
-
-  my tmp =  REF "";
-  n =  string::length( string );
-  for ( i = 0; i < n; ++i ) {
-    pos =  explode string;
-    pos =  list::nth( pos, i );
-    pos =  char::to_string( pos );
-    if ( pos != character )
-      tmp :=  *tmp + pos;
-    fi;
-  };
-  *tmp;
-};
-# string =  "test\ntwo";
-# print ( remove_character( [ "\\n", string ] ) );
-
-
 fun is_even( i: Int ): Bool = {
   if ( ( i % 2 ) == 0 )
     TRUE;
@@ -182,9 +161,9 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
     *result; 
 }; 
-list =  [ "This ", "is ", "a ", "test.\n" ]; 
-result =  replace_nth_string( 1, "was ", list );
-apply  printf "%s" result; 
+# list =  [ "This ", "is ", "a ", "test.\n" ]; 
+# result =  replace_nth_string( 1, "was ", list );
+# apply  printf "%s" result; 
 # => 
 # This was a test. 
 
