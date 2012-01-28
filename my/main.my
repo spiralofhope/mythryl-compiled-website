@@ -25,9 +25,7 @@ site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 # TODO:  Figure out libraries / using multiple files for a project.  See `random-mythryl/multi-file-test/`
 
-fun check_directory( string: String ): Bool
-    =
-{
+fun check_directory( string: String ): Bool = {
   # See also http://mythryl.org/my-Get_current_directory.html
   # getcwd ();
 
@@ -37,9 +35,7 @@ fun check_directory( string: String ): Bool
   current_directory =  head( directory_list );
   string == current_directory;
 };
-fun test_check_directory( _: Void ): Void
-    =
-{
+fun test_check_directory( _: Void ): Void = {
   dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
   result =  check_directory( dir );
   if    result
@@ -52,17 +48,13 @@ fun test_check_directory( _: Void ): Void
 
 
 # TODO:  Only display the current directory's name.  (separate function?)
-fun get_current_directory( _: Void ): String
-    =
-{
+fun get_current_directory( _: Void ): String = {
   directory_list =  dir::entries''( "." );
   # TODO:  Is it necessary to sort dir::entries  ?
   directory_list =  strsort( directory_list );
   head( directory_list );
 };
-fun test_get_current_directory( _: Void ): Void
-    =
-{
+fun test_get_current_directory( _: Void ): Void = {
   result =  get_current_directory();
   printf "%s\n" result;
 };
@@ -71,9 +63,7 @@ fun test_get_current_directory( _: Void ): Void
 
 # FIXME:  This needs a better name.
 # Removes the path from a string, giving only the filename.
-fun get_filename( string: String ): String
-    =
-{
+fun get_filename( string: String ): String = {
   # TODO:  I don't need to check for groups here, is there some other regex I should use?
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
   strcat( regex::find_first_groups_all  ".*\\/(.*)"  string );
@@ -85,25 +75,19 @@ fun get_filename( string: String ): String
 # Removes the extension(s) from a string.
 #   filename.ext     => filename
 #   filename.ext.ext => filename
-fun remove_extension( filename: String ): String
-    =
-{
+fun remove_extension( filename: String ): String = {
   regex::replace_first  ./\..*$/  ""  filename;
 };
 
 
 
-fun string_to_list( string: String ): List( String )
-    =
-{
+fun string_to_list( string: String ): List( String ) = {
   fields .{ #c == '\n'; } string;
 };
 
 
 
-fun string_multiplier( list: List( String ) ): String
-    =
-{
+fun string_multiplier( list: List( String ) ): String = {
   string =  list::nth( list, 0 );
   n =  list::nth( list, 1 );
   # string -> int
@@ -117,9 +101,7 @@ fun string_multiplier( list: List( String ) ): String
 
 # TODO:  Throw errors
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
-fun assert_equal( list: List( String ) ): Bool
-    =
-{
+fun assert_equal( list: List( String ) ): Bool = {
   expected =  list::nth( list, 0 );
   result   =  list::nth( list, 1 );
   if
@@ -138,9 +120,7 @@ fun assert_equal( list: List( String ) ): Bool
 
 
 
-fun remove_character( list: List( String ) ): String
-    =
-{
+fun remove_character( list: List( String ) ): String = {
   character =  list::nth( list, 0 );
   string =  list::nth( list, 1 );
 
@@ -160,9 +140,7 @@ fun remove_character( list: List( String ) ): String
 # print ( remove_character( [ "\\n", string ] ) );
 
 
-fun is_even( i: Int ): Bool
-    =
-{
+fun is_even( i: Int ): Bool = {
   if ( ( i % 2 ) == 0 )
     TRUE;
   else
@@ -175,9 +153,7 @@ fun is_even( i: Int ): Bool
 # fi;
 
 
-fun is_odd( i: Int ): Bool
-    =
-{
+fun is_odd( i: Int ): Bool = {
   if ( ( i % 2 ) == 0 )
     FALSE;
   else
@@ -191,6 +167,37 @@ fun is_odd( i: Int ): Bool
 
 
 
+
+# Given a list of strings
+# Change a specified element
+fun modify_list_element( list: List( String ) ): List( String ) = {
+
+  modify_element_number =  atoi ( head( list ) );
+  list                  =         tail( list );
+  new_element_text      =         head( list );
+  list                  =         tail( list );
+
+  i =       REF -1;
+  result =  REF [];
+
+  foreach list .{
+    i :=  *i + 1;
+    if    ( *i == modify_element_number )
+          result := *result @ [ new_element_text ];
+    else
+          result := *result @ [ #e ];
+    fi;
+  };
+
+  *result;
+};
+# list =  [ "This ", "is ", "a ", "test." ];
+# parameters =  "1" ! "was " ! list;
+# result =  modify_list_element( parameters );
+# apply  printf "%s" result;
+
+
+
 # --
 # --  Library-candidate functions, project-specific
 # --
@@ -201,9 +208,7 @@ fun is_odd( i: Int ): Bool
 # ---  Actual programming
 # ---
 
-fun read_print( filename: String ): Void
-    =
-{
+fun read_print( filename: String ): Void = {
   # Read from a source file.
   # http://mythryl.org/my-File.html
   # http://mythryl.org/my-Read_a_text_file.html
@@ -215,9 +220,7 @@ fun read_print( filename: String ): Void
         apply printf "%s" list;
   fi;
 };
-fun test_read_print( _: Void ): Void
-    =
-{
+fun test_read_print( _: Void ): Void = {
   read_print( "compiled-website.txt" );
 };
 # test_read_print();
@@ -231,9 +234,7 @@ fun test_read_print( _: Void ): Void
 #   Basically I'd have to pass one List of Strings - the filename, and the content.
 #   (This is probably not true, but I don't know any better)
 #   But why do something as complex as that?  Just use the original simpler code.
-fun write_file( _: Void ): Void
-    =
-{
+fun write_file( _: Void ): Void = {
   filename =  "test-write.txt";
 
   file = file::open_for_write filename;
@@ -258,9 +259,7 @@ fun write_file( _: Void ): Void
         printf "%s was not created!\n" filename;
   fi;
 };
-fun test_write_file( _: Void ): Void
-    =
-{
+fun test_write_file( _: Void ): Void = {
   write_file();
 };
 # test_write_file();
@@ -274,9 +273,7 @@ fun test_write_file( _: Void ): Void
 # FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
 # TODO:  Proper sanity-checking.
 #        How would I stop script processing if the checking finds a critical error?
-fun sanity_check( _: Void ): Void
-    =
-{
+fun sanity_check( _: Void ): Void = {
   if    ( winix::file::is_directory( source_directory ) == FALSE )
         printf "Directory does not exist:  \"%s\"\n"  source_directory;
         # Make it?
@@ -285,22 +282,16 @@ fun sanity_check( _: Void ): Void
 # sanity_check();
 
 
-fun markup( string: String ): String
-    =
-{
+fun markup( string: String ): String = {
   # TODO:  RENAME
-  fun markup_needs_a_name( list: List( String ) ): String
-      =
-  {
+  fun markup_needs_a_name( list: List( String ) ): String = {
     string        =  list::nth( list, 0 );
     rx_left       =  list::nth( list, 1 );
     rx_right      =  list::nth( list, 2 );
     replace_left  =  list::nth( list, 3 );
     replace_right =  list::nth( list, 4 );
 
-    fun punctuation_regex( list: List( String ) ): String
-        =
-    {
+    fun punctuation_regex( list: List( String ) ): String = {
       rx_left  =  list::nth( list, 0 );
       rx_right =  list::nth( list, 1 );
 
@@ -355,19 +346,13 @@ fun markup( string: String ): String
 
 
 
-  fun markup_horizontal_rules( string: String ): String
-      =
-  {
+  fun markup_horizontal_rules( string: String ): String = {
     # With an empty space above and below.
-    fun markup_horizontal_rules_long( string: String ): String
-        =
-    {
+    fun markup_horizontal_rules_long( string: String ): String = {
       regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
     };
 
-    fun markup_horizontal_rules_short( string: String ): String
-        =
-    {
+    fun markup_horizontal_rules_short( string: String ): String = {
       # (with content above)
       string =  regex::replace_all_via_fn  ./([^\n])\n-{3,}\n{2}/ .{ strcat( #stringlist ) + "<hr class=\"small\">\n"; } string;
       # (with content below)
@@ -382,9 +367,7 @@ fun markup( string: String ): String
 
 
 
-  fun markup_paragraphs( string: String ): String
-      =
-  {
+  fun markup_paragraphs( string: String ): String = {
     # \n\n  =  Paragraph
     regex::replace_all_via_fn  ./(\n{2,})/ .{
       n =  strlen( strcat( #stringlist ) );
@@ -405,9 +388,7 @@ fun markup( string: String ): String
 
 
 
-fun rebuild_template( list: List( String ) ): Void
-    =
-{
+fun rebuild_template( list: List( String ) ): Void = {
   template_filename =  ( list::nth( list, 0 ) );
   compiling_filename = ( list::nth( list, 1 ) );
   if    ( exists( template_filename ) == FALSE )
@@ -447,12 +428,8 @@ fun rebuild_template( list: List( String ) ): Void
 
 
 # TODO:  Think up a better name.
-fun post_processing( content_string: String ): String
-    =
-{
-  fun post_processing_redirect( content_string: String ): String
-      =
-  {
+fun post_processing( content_string: String ): String = {
+  fun post_processing_redirect( content_string: String ): String = {
     match =  "<!--REDIRECT (.*)-->";
     if   ( ( content_string =~ match ) == FALSE )
       content_string;
@@ -472,9 +449,7 @@ fun post_processing( content_string: String ): String
 
 
 
-fun rebuild( list: List( String ) ): Void
-    =
-{
+fun rebuild( list: List( String ) ): Void = {
   compiling_filename = ( list::nth( list, 0 ) );
   target_filename =    ( list::nth( list, 1 ) );
   
@@ -535,34 +510,6 @@ expected =  "<em>emphasis</em>";
 result =  markup( string );
 assert_equal( [ expected, result ] );
 
-# Given a list of strings
-# Change a specified element
-fun modify_list_element( list: List( String ) ): List( String )
-    =
-{
-  modify_element_number =  atoi ( head( list ) );
-  list                  =         tail( list );
-  new_element_text      =         head( list );
-  list                  =         tail( list );
-
-  i =       REF -1;
-  result =  REF [];
-  foreach list .{
-    i :=  *i + 1;
-    if    ( *i == modify_element_number )
-          result := *result @ [ new_element_text ];
-    else
-          result := *result @ [ #e ];
-    fi;
-  };
-  *result;
-};
-list =  [ "This ", "is ", "a ", "test." ];
-parameters =  "1" ! "was " ! list;
-result =  modify_list_element( parameters );
-apply printf "%s" result;
-# =>
-# This was a test.
 
 
 # ~~~~~~~~~~~~~~
@@ -572,12 +519,8 @@ apply printf "%s" result;
 # Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
 # The idea is to break a string down so that a function can be applied to specific parts of it.
 # For example, I want to apply markup, but not to text inside of blocks of html.
-fun block_matcher( string: String ): List( String )
-    =
-{
-  fun block_matcher_bool( string: String ): Bool
-      =
-  {
+fun block_matcher( string: String ): List( String ) = {
+  fun block_matcher_bool( string: String ): Bool = {
 #     if ( regex )
 #       TRUE;
 #     else;
@@ -608,26 +551,18 @@ fun block_matcher( string: String ): List( String )
     fi;
 
   };
-
-# printf "%s\n" ( strcat( *odd ) );
-# printf "%s\n" ( strcat( *even ) );
-
-
-
-
-
   # Placeholder
   [ "no", "yes", "no" ];
 };
-
+# list = [ "one", "two" ];
+# modify_list_element( "1", "new", list );
+# apply  printf "%s" result;
 
 
 
 
 # TODO:  create  assert_equal_lists()
-fun assert_equal_lists( list: List( List ( String ) ) ): Bool
-    =
-{
+fun assert_equal_lists( list: List( List ( String ) ) ): Bool = {
   expected =  list::nth( list, 0 );
   result   =  list::nth( list, 1 );
 
