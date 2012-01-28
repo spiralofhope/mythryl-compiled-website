@@ -87,36 +87,32 @@ fun string_to_list( string: String ): List( String ) = {
 
 
 
-fun string_multiplier( list: List( String ) ): String = {
-  string =  list::nth( list, 0 );
-  n =  list::nth( list, 1 );
-  # string -> int
-  n =  atoi n;
-
- cat( list::tabulate( n, fn _ = string ) );
+fun string_multiplier( string: String,  n: Int ): String = {
+  cat( list::tabulate( n, fn _ = string ) );
 };
-# print ( string_multiplier( [ "foo", "2" ] ) );
+# print ( string_multiplier( "foo", 2 ) );
 
 
 
 # TODO:  Throw errors
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
-fun assert_equal( list: List( String ) ): Bool = {
-  expected =  list::nth( list, 0 );
-  result   =  list::nth( list, 1 );
-  if
-    ( expected == result )
-#     printf "yes\n";
+fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
+  if ( expected == result )
     TRUE;
   else
     print "\n  ** FAIL **\n";
-    print ( list::nth( list, 1 ) );
+    print expected;
     print "\n  =>\n";
-    print ( list::nth( list, 0 ) );
+    print result;
     print "\n";
     FALSE;
   fi;
 };
+string   =  "xtestx\nytesty\n";
+expected =  string;
+result   =  string;
+assert_strings_are_equal( expected, result );
+
 
 
 fun is_even( i: Int ): Bool = {
@@ -146,7 +142,7 @@ fun is_odd( i: Int ): Bool = {
 
 
 
-fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = { 
+fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = {
     #
     i =       REF -1; 
     result =  REF []; 
@@ -154,8 +150,9 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
     foreach list .{ 
       i :=  *i + 1; 
       if   ( *i == n )
-           result := *result @ [ replacement ]; 
-      else result := *result @ [ #e ]; 
+        result := *result @ [ replacement ]; 
+      else
+        result := *result @ [ #e ]; 
       fi; 
     }; 
 
@@ -255,17 +252,8 @@ fun sanity_check( _: Void ): Void = {
 
 fun markup( string: String ): String = {
   # TODO:  RENAME
-  fun markup_needs_a_name( list: List( String ) ): String = {
-    string        =  list::nth( list, 0 );
-    rx_left       =  list::nth( list, 1 );
-    rx_right      =  list::nth( list, 2 );
-    replace_left  =  list::nth( list, 3 );
-    replace_right =  list::nth( list, 4 );
-
-    fun punctuation_regex( list: List( String ) ): String = {
-      rx_left  =  list::nth( list, 0 );
-      rx_right =  list::nth( list, 1 );
-
+  fun markup_needs_a_name( string: String,  rx_left: String,  rx_right: String,  replace_left: String,  replace_right: String ): String = {
+    fun punctuation_regex( rx_left: String,  rx_right: String ): String = {
       # TODO:  Why can't I directly use [:graph:], [:space:], etc?
       graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
       punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
@@ -303,7 +291,7 @@ fun markup( string: String ): String = {
 
     # TODO:    string =  split_string_html( string );
 
-    rx = punctuation_regex( [ rx_left, rx_right ] );
+    rx = punctuation_regex( rx_left, rx_right );
     string =  regex::replace_all_via_fn  rx .{
         ( list::nth( #stringlist, 0 ) )
       + replace_left
@@ -342,16 +330,15 @@ fun markup( string: String ): String = {
     # \n\n  =  Paragraph
     regex::replace_all_via_fn  ./(\n{2,})/ .{
       n =  strlen( strcat( #stringlist ) );
-      n =  int::to_string n;
-      string_multiplier( [ "\n<br />", n ] );
+      string_multiplier( "\n<br />", n );
     } string;
   };
 
 
-  string =  markup_needs_a_name( [ string, "\\/", "\\/", "<em>"    , "</em>"     ] );
-  string =  markup_needs_a_name( [ string, "-"  , "-"  , "<del>"   , "</del>"    ] );
-  string =  markup_needs_a_name( [ string, "\\*", "\\*", "<strong>", "</strong>" ] );
-  string =  markup_needs_a_name( [ string, "_"  , "_"  , "<u>"     , "</u>"      ] );
+  string =  markup_needs_a_name( string, "\\/", "\\/", "<em>"    , "</em>"     );
+  string =  markup_needs_a_name( string, "-"  , "-"  , "<del>"   , "</del>"    );
+  string =  markup_needs_a_name( string, "\\*", "\\*", "<strong>", "</strong>" );
+  string =  markup_needs_a_name( string, "_"  , "_"  , "<u>"     , "</u>"      );
   string =  markup_horizontal_rules( string );
   string =  markup_paragraphs( string );
   string;
@@ -359,9 +346,7 @@ fun markup( string: String ): String = {
 
 
 
-fun rebuild_template( list: List( String ) ): Void = {
-  template_filename =  ( list::nth( list, 0 ) );
-  compiling_filename = ( list::nth( list, 1 ) );
+fun rebuild_template( template_filename: String,  compiling_filename: String ): Void = {
   if    ( exists( template_filename ) == FALSE )
         print ( "File doesn't exist!: " + template_filename );
   else
@@ -420,15 +405,12 @@ fun post_processing( content_string: String ): String = {
 
 
 
-fun rebuild( list: List( String ) ): Void = {
-  compiling_filename = ( list::nth( list, 0 ) );
-  target_filename =    ( list::nth( list, 1 ) );
-  
+fun rebuild( compiling_filename: String,  target_filename: String ): Void = {
   if    ( exists( compiling_filename ) == FALSE )
         print ( "File doesn't exist!: " + compiling_filename );
   else
-        rebuild_template( [ header, compiling_filename ] );
-        rebuild_template( [ footer, compiling_filename ] );
+        rebuild_template( header, compiling_filename );
+        rebuild_template( footer, compiling_filename );
 
         content_string =                                 strcat( lines( header + "-rebuilt.html" ) );
         content_string =  content_string + markup( strcat( lines( compiling_filename ) ) );
@@ -444,16 +426,16 @@ fun rebuild( list: List( String ) ): Void = {
 
 
 
-rebuild( [
+rebuild( 
   source_directory + "sandbox.asc",
   target_directory + "sandbox.html"
-] );
+);
 
 
-# rebuild( [
+# rebuild(
 #   source_directory + "../index.asc",
 #   target_directory + "../index.html"
-# ] );
+# );
 
 
 
@@ -467,19 +449,19 @@ rebuild( [
 string =  "test";
 expected =  "test";
 result =  markup( string );
-assert_equal( [ expected, result ] );
+assert_strings_are_equal( expected, result );
 
 string =  "\n/emphasis/\n";
 expected =  "\n<em>emphasis</em>\n";
 # FIXME:  Markup is chopping off the final \n.
 expected =  "\n<em>emphasis</em>";
 result =  markup( string );
-assert_equal( [ expected, result ] );
+assert_strings_are_equal( expected, result );
 
 string =  "/emphasis/";
 expected =  "<em>emphasis</em>";
 result =  markup( string );
-assert_equal( [ expected, result ] );
+assert_strings_are_equal( expected, result );
 
 
 
@@ -528,14 +510,20 @@ fun block_matcher( string: String ): List( String ) = {
 
 
 
-
-# TODO:  create  assert_equal_lists()
-fun assert_equal_lists( list: List( List ( String ) ) ): Bool = {
-  expected =  list::nth( list, 0 );
-  result   =  list::nth( list, 1 );
-
 # TODO
-# Compare list::length()
+fun assert_lists_of_strings_are_equal( expected: List( String ),  result: List( String ) ): Bool = {
+  return =  TRUE;
+  if ( list::length( expected ) != list::length( result ) )
+    result =  FALSE;
+  else
+    print "k";
+    if ( return != FALSE )
+      # Iterate through an array, matching strings.
+      print "k";
+    fi;
+  fi;
+
+return;
 
 #   if
 #     ( expected == result )
@@ -556,12 +544,11 @@ fun assert_equal_lists( list: List( List ( String ) ) ): Bool = {
 string =  "xtestx\nytesty\n";
 expected =  [ "xtestx\n", "ytesty\n" ];
 result =  string_to_list( string );
-# assert_equal_lists( [ expected, result ] );
+assert_lists_of_strings_are_equal( expected, result );
 
 # expected = "xTESTx\nytesty\n";
 # result = apply_thingemybob( result );
-# assert_equal_lists( [ expected, result ] );
-
+# assert_lists_of_strings_are_equal( expected, result );
 
 
 string =  "xtestx\nytesty\n";
