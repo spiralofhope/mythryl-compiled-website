@@ -167,34 +167,26 @@ fun is_odd( i: Int ): Bool = {
 
 
 
+fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = { 
+    #
+    i =       REF -1; 
+    result =  REF []; 
 
-# Given a list of strings
-# Change a specified element
-fun modify_list_element( list: List( String ) ): List( String ) = {
+    foreach list .{ 
+      i :=  *i + 1; 
+      if   ( *i == n )
+           result := *result @ [ replacement ]; 
+      else result := *result @ [ #e ]; 
+      fi; 
+    }; 
 
-  modify_element_number =  atoi ( head( list ) );
-  list                  =         tail( list );
-  new_element_text      =         head( list );
-  list                  =         tail( list );
-
-  i =       REF -1;
-  result =  REF [];
-
-  foreach list .{
-    i :=  *i + 1;
-    if    ( *i == modify_element_number )
-          result := *result @ [ new_element_text ];
-    else
-          result := *result @ [ #e ];
-    fi;
-  };
-
-  *result;
-};
-# list =  [ "This ", "is ", "a ", "test." ];
-# parameters =  "1" ! "was " ! list;
-# result =  modify_list_element( parameters );
-# apply  printf "%s" result;
+    *result; 
+}; 
+list =  [ "This ", "is ", "a ", "test.\n" ]; 
+result =  replace_nth_string( 1, "was ", list );
+apply  printf "%s" result; 
+# => 
+# This was a test. 
 
 
 
@@ -554,9 +546,6 @@ fun block_matcher( string: String ): List( String ) = {
   # Placeholder
   [ "no", "yes", "no" ];
 };
-# list = [ "one", "two" ];
-# modify_list_element( "1", "new", list );
-# apply  printf "%s" result;
 
 
 
