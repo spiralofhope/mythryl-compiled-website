@@ -147,8 +147,8 @@ fun is_odd( i: Int ): Bool = {
 
 
 
+# TODO:  Replace this with something easier to understand, using the standard take_n, drop_n and whatnot.
 fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = {
-    #
     i =       REF -1;
     result =  REF [];
 
@@ -163,15 +163,13 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
     *result;
 };
-# list =  [ "This ", "is ", "a ", "test.\n" ]; 
-# result =  replace_nth_string( 1, "was ", list );
-# apply  printf "%s" result; 
-# => 
-# This was a test. 
+list =  [ "This ", "is ", "a ", "test.\n" ]; 
+result =  replace_nth_string( 1, "was ", list );
+apply  printf "%s" result; 
 
 
 
-# TODO:  Numbers, stats, whatever.
+# TODO:  Numbers, stats, etc.
 fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ): Bool = {
   result =  REF TRUE;
   i      =  REF -1;
@@ -548,14 +546,6 @@ fun block_matcher( string: String ): List( String ) = {
   # Placeholder
   [ "no", "yes", "no" ];
 };
-
-
-
-# expected = "xTESTx\nytesty\n";
-# result = apply_thingemybob( result );
-# assert_lists_of_strings_are_equal( expected, result );
-
-
-string =  "xtestx\nytesty\n";
-l =  block_matcher( string );
+# string =  "xtestx\nytesty\n";
+# l =  block_matcher( string );
 # print ( cat( l ) );
