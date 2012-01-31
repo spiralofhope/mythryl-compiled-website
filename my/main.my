@@ -163,9 +163,9 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
     *result;
 };
-list =  [ "This ", "is ", "a ", "test.\n" ]; 
-result =  replace_nth_string( 1, "was ", list );
-apply  printf "%s" result; 
+# list =  [ "This ", "is ", "a ", "test.\n" ]; 
+# result =  replace_nth_string( 1, "was ", list );
+# apply  printf "%s" result; 
 
 
 
@@ -504,48 +504,129 @@ assert_strings_are_equal( expected, result );
 
 
 
-# ~~~~~~~~~~~~~~
-# TODO TODO TODO
-# ~~~~~~~~~~~~~~
-
 # Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
 # The idea is to break a string down so that a function can be applied to specific parts of it.
 # For example, I want to apply markup, but not to text inside of blocks of html.
-fun block_matcher( string: String ): List( String ) = {
-  fun block_matcher_bool( string: String ): Bool = {
-#     if ( regex )
-#       TRUE;
-#     else;
-#       FALSE;
-#     fi;
-    
-    TRUE;
+fun block_matcher( string: String, rx: String ): List( String ) = {
+  list =  string_to_list( string );
+
+  fun block_matcher_bool( string: String, rx: String ): Bool = {
+    # TODO:  Regex
+    if ( string == "xtestx" )
+      TRUE;
+    else
+      FALSE;
+    fi;
   };
 
+  result   =  REF [];
+  buffer   =  REF   "";
+  # We begin at an even position, element 0 in the `result` list.
+  position =  REF "even";
 
-  newly_matched =  REF FALSE;
-  return  =  REF [ "" ];
-  working =  REF   "";
-  i =  REF -1;
-  list =  string_to_list( string );
   # Iterate through the list of strings.
   foreach list .{
-    tmp =  #e;
-    i :=  *i + 1;
-
     # For each line, refer to a function which gives a Bool result.
-    if ( block_matcher_bool( #e ) == TRUE )
-      # Based on the Bool, either append to a working string or append to the list and begin an empty working string.
-      if ( *newly_matched == TRUE )
-        # append working onto the last element of return
-        print "";
+    bool =  block_matcher_bool( #e, rx );
+    # Based on the Bool, either append to a working string or append to the list and begin an empty working string.
+
+    if ( bool == TRUE )
+      if ( *position == "even" )
+        # We have a match, but we're in the even position.  Matches are supposed to be placed in the odd position.
+
+        # Dump the buffer into the last element of the result.
+        result := *result @ [ *buffer ];
+        buffer := "";
+
+        # Switch to the odd position.
+        position := "odd";
+      fi;
+    else  # ( bool == FALSE )
+      if ( *position == "odd" )
+        # We don't have a match, but we're still in the odd position.  Non-matches are supposed to be placed in the even position.
+
+        # Dump the buffer into the last element of the result.
+        result := *result @ [ *buffer ];
+        buffer := "";
+
+        # Switch to the odd position.
+        position := "even";
       fi;
     fi;
+    # Append to the buffer.
+    buffer := *buffer + #e;
 
+#     print "--v\n";
+#     printf "#e       '%s'\n" #e;
+#     printf "*buffer  '%s'\n" *buffer;
+#     print "*result\n";
+#     apply  printf "'%s'\n" *result;
+#     print "--^\n";
   };
-  # Placeholder
-  [ "no", "yes", "no" ];
+
+  *result @ [ *buffer ];
 };
-# string =  "xtestx\nytesty\n";
-# l =  block_matcher( string );
-# print ( cat( l ) );
+# Not a match
+string =  "nomatch";
+expected =  [ "nomatch" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Only a match
+string =  "xtestx";
+expected =  [ "", "xtestx" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Match, not a match
+string =  "xtestx\nytesty\n";
+expected =  [ "", "xtestx", "ytesty" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Not a match, match
+string =  "ytesty\nxtestx\n";
+expected =  [ "ytesty", "xtestx" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Two consecutive matches only
+string =  "xtestx\nxtestx\n";
+expected =  [ "", "xtestxxtestx" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Two consecutive matches, not a match
+string =  "xtestx\nxtestx\nytesty\n";
+expected =  [ "", "xtestxxtestx", "ytesty" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Not a match, two consecutive matches, not a match
+string =  "foo\nxtestx\nxtestx\nytesty\n";
+expected =  [ "foo", "xtestxxtestx", "ytesty" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Not a match, two consecutive matches
+string =  "foo\nxtestx\nxtestx\n";
+expected =  [ "foo", "xtestxxtestx" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+
+# FIXME:  assert_lists_of_strings_are_equal() is bugged!  Sigh.
+# Oh hell, let's get silly.
+string =  "foo\nxtestx\nxtestx\nbar\nbaz\nargh\nxtestx\nbla\nxtestx\n\n";
+expected =  [ "foo", "xtestxxtestx", "etc" ];
+rx =  "x.*";
+result =  block_matcher( string, rx );
+assert_lists_of_strings_are_equal( expected, result );
+apply  printf "%s\n" result;

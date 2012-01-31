@@ -1,3 +1,7 @@
+### 2012-01-31
+
+  - Implemented block_matcher() which is the groundwork for upcoming functionality like not applying markup inside of already-marked-up or html blocks.
+
 ### 2012-01-21
 
   - Implemented short horizontal rules.
