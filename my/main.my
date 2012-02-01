@@ -207,7 +207,7 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
 
 
 fun string_to_list( string: String ): List( String ) = {
-  # TODO?:  Consider the existing string_to_list
+  # TODO?:  Consider the existing string_to_list, maybe it can do what I want.
   #         http://mythryl.org/my-String_To_List.html
   #         String_To_List { first, between, last, string };
   result =  REF [ ];
@@ -663,3 +663,8 @@ assert_lists_of_strings_are_equal( expected, result );
 # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
 # result =  block_matcher( string );
 # assert_lists_of_strings_are_equal( expected, result );
+
+
+# string = "\n\n";
+# list =  fields .{ #c == '\n'; } string;
+# apply printf "'%s'\n" list;
