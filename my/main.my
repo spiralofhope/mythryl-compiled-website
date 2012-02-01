@@ -205,12 +205,29 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
 # assert_lists_of_strings_are_equal( expected, result );
 
 
+# string_to_list() ideas
+# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
+#         http://mythryl.org/my-String_To_List.html
+#         String_To_List { first, between, last, string };
+
+# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
+# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
+#   match_character = "\n";
+#   result =  REF [];
+#   list =  explode( "abc\ndef\n" );
+# Ugh, I'd have to turn the list of chars into a list of strings.
+#   list =  reverse( list );
+#   foreach list .{
+#     # Build `result` based on if the character matches.
+#     if ( #e == match_character )
+#     else
+#     fi;
+#     printf "%c\n" #e;
+#   };
+# apply  printf "'%s'\n" *result;
 
 fun string_to_list( string: String ): List( String ) = {
-  # TODO?:  Consider the existing string_to_list, maybe it can do what I want.
-  #         http://mythryl.org/my-String_To_List.html
-  #         String_To_List { first, between, last, string };
-  result =  REF [ ];
+  result =  REF [];
 
   if ( ( string =~ "\n" ) == FALSE )
     result :=  [ string ];
@@ -663,8 +680,3 @@ assert_lists_of_strings_are_equal( expected, result );
 # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
 # result =  block_matcher( string );
 # assert_lists_of_strings_are_equal( expected, result );
-
-
-# string = "\n\n";
-# list =  fields .{ #c == '\n'; } string;
-# apply printf "'%s'\n" list;
