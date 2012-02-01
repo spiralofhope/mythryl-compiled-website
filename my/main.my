@@ -39,9 +39,9 @@ fun test_check_directory( _: Void ): Void = {
   dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
   result =  check_directory( dir );
   if result
-    printf "yes\n";
+    print "yes\n";
   else
-    printf "no\n";
+    print "no\n";
   fi;
 };
 # test_check_directory();
@@ -160,11 +160,18 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
 
 # TODO:  Numbers, stats, etc.
+# TODO:  Lists of Ints, etc?  This can't be universal if printf needs %s to display contents.  How do I deal with this?
 fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ): Bool = {
   result =  REF TRUE;
   i      =  REF -1;
   if ( list::length( list_one ) != list::length( list_two ) )
     result :=  FALSE;
+    print "  # FAIL - Lists are different lengths.\n";
+    # TODO:  Display these side-by-side.
+    print "    list_one:\n";
+    apply printf "'%s'\n" list_one;
+    print "    list_two:\n";
+    apply printf "'%s'\n" list_two;
   else
     # TRUE
     foreach list_one .{
@@ -175,7 +182,7 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
       if ( list::nth( list_one, *i ) != list::nth( list_two, *i ) )
         result :=  FALSE;
         # TODO:  A much more comprehensive display.
-        print "  # FAIL\n";
+        print "  # FAIL - Mismatched element.\n";
         print ( "  expected:  '" + list::nth( list_one, *i ) + "'" );
         print "\n  =>\n";
         print ( "  result  :  '" + list::nth( list_two, *i ) + "'" );
@@ -191,6 +198,10 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
 
 # expected =  [ "xtestx", "ytesty" ];
 # result   =  [ "VERY", "DIFFERENT" ];
+# assert_lists_of_strings_are_equal( expected, result );
+
+# expected =  [ "xtestx", "ytesty" ];
+# result   =  [ "xtestx", "ytesty", "number" ];
 # assert_lists_of_strings_are_equal( expected, result );
 
 
@@ -589,14 +600,14 @@ assert_lists_of_strings_are_equal( expected, result );
 
 # Not a match, match
 string =  "ytesty\nxtestx\n";
-expected =  [ "ytesty", "xtestx" ];
+expected =  [ "ytesty", "xtestx", "" ];
 rx =  "x.*";
 result =  block_matcher( string, rx );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Two consecutive matches only
 string =  "xtestx\nxtestx\n";
-expected =  [ "", "xtestxxtestx" ];
+expected =  [ "", "xtestxxtestx", "" ];
 rx =  "x.*";
 result =  block_matcher( string, rx );
 assert_lists_of_strings_are_equal( expected, result );
@@ -617,7 +628,7 @@ assert_lists_of_strings_are_equal( expected, result );
 
 # Not a match, two consecutive matches
 string =  "foo\nxtestx\nxtestx\n";
-expected =  [ "foo", "xtestxxtestx" ];
+expected =  [ "foo", "xtestxxtestx", "" ];
 rx =  "x.*";
 result =  block_matcher( string, rx );
 assert_lists_of_strings_are_equal( expected, result );
@@ -625,8 +636,8 @@ assert_lists_of_strings_are_equal( expected, result );
 # FIXME:  assert_lists_of_strings_are_equal() is bugged!  Sigh.
 # Oh hell, let's get silly.
 string =  "foo\nxtestx\nxtestx\nbar\nbaz\nargh\nxtestx\nbla\nxtestx\n\n";
-expected =  [ "foo", "xtestxxtestx", "etc" ];
+expected =  [ "foo", "xtestxxtestx", "barbazargh", "xtestx", "bla", "xtestx", "" ];
 rx =  "x.*";
 result =  block_matcher( string, rx );
-assert_lists_of_strings_are_equal( expected, result );
-apply  printf "%s\n" result;
+# assert_lists_of_strings_are_equal( expected, result );
+# apply  printf "%s\n" result;
