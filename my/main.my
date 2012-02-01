@@ -103,7 +103,7 @@ fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
     FALSE;
   fi;
 };
-string   =  "xtestx\nytesty\n";
+string   =  "- bullet\nytesty\n";
 expected =  string;
 result   =  string;
 assert_strings_are_equal( expected, result );
@@ -168,9 +168,9 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
     result :=  FALSE;
     print "  # FAIL - Lists are different lengths.\n";
     # TODO:  Display these side-by-side.
-    print "    list_one:\n";
+    print "    list_one (expected):\n";
     apply printf "'%s'\n" list_one;
-    print "    list_two:\n";
+    print "    list_two (result):\n";
     apply printf "'%s'\n" list_two;
   else
     # TRUE
@@ -196,23 +196,49 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
 # result   =  expected;
 # assert_lists_of_strings_are_equal( expected, result );
 
-# expected =  [ "xtestx", "ytesty" ];
+# expected =  [ "- bullet", "ytesty" ];
 # result   =  [ "VERY", "DIFFERENT" ];
 # assert_lists_of_strings_are_equal( expected, result );
 
-# expected =  [ "xtestx", "ytesty" ];
-# result   =  [ "xtestx", "ytesty", "number" ];
+# expected =  [ "- bullet", "ytesty" ];
+# result   =  [ "- bullet", "ytesty", "number" ];
 # assert_lists_of_strings_are_equal( expected, result );
 
 
 
 fun string_to_list( string: String ): List( String ) = {
-  fields .{ #c == '\n'; } string;
+  # TODO?:  Consider the existing string_to_list
+  #         http://mythryl.org/my-String_To_List.html
+  #         String_To_List { first, between, last, string };
+  result =  REF [ ];
+
+  if ( ( string =~ "\n" ) == FALSE )
+    result :=  [ string ];
+  else
+    list =  tokens .{ #c == '\n'; } string;
+    foreach list .{
+      result :=  *result @ [ #e + "\n" ];
+    };
+  fi;
+
+  *result;
 };
-# string =  "xtestx\nytesty\n";
-# expected =  [ "xtestx\n", "ytesty\n" ];
-# result =  string_to_list( string );
-# assert_lists_of_strings_are_equal( expected, result );
+# Simple
+string =  "foo";
+expected =  [ "foo" ];
+result =  string_to_list( string );
+assert_lists_of_strings_are_equal( expected, result );
+
+# Simple
+string =  "foo\n";
+expected =  [ "foo\n" ];
+result =  string_to_list( string );
+assert_lists_of_strings_are_equal( expected, result );
+
+string =  "HERE\nytesty\n";
+expected =  [ "HERE\n", "ytesty\n" ];
+result =  string_to_list( string );
+assert_lists_of_strings_are_equal( expected, result );
 
 
 
@@ -518,12 +544,12 @@ assert_strings_are_equal( expected, result );
 # Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
 # The idea is to break a string down so that a function can be applied to specific parts of it.
 # For example, I want to apply markup, but not to text inside of blocks of html.
-fun block_matcher( string: String, rx: String ): List( String ) = {
+fun block_matcher( string: String ): List( String ) = {
   list =  string_to_list( string );
 
-  fun block_matcher_bool( string: String, rx: String ): Bool = {
-    # TODO:  Regex
-    if ( string == "xtestx" )
+  fun block_matcher_bool( string: String ): Bool = {
+    # TODO:  If the regex is a match.
+    if ( string =~ ./^\ *\-/ )
       TRUE;
     else
       FALSE;
@@ -531,14 +557,14 @@ fun block_matcher( string: String, rx: String ): List( String ) = {
   };
 
   result   =  REF [];
-  buffer   =  REF   "";
+  buffer   =  REF "";
   # We begin at an even position, element 0 in the `result` list.
   position =  REF "even";
 
   # Iterate through the list of strings.
   foreach list .{
     # For each line, refer to a function which gives a Bool result.
-    bool =  block_matcher_bool( #e, rx );
+    bool =  block_matcher_bool( #e );
     # Based on the Bool, either append to a working string or append to the list and begin an empty working string.
 
     if ( bool == TRUE )
@@ -577,67 +603,63 @@ fun block_matcher( string: String, rx: String ): List( String ) = {
 
   *result @ [ *buffer ];
 };
+
 # Not a match
 string =  "nomatch";
 expected =  [ "nomatch" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Only a match
-string =  "xtestx";
-expected =  [ "", "xtestx" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "- bullet";
+expected =  [ "", "- bullet" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Match, not a match
-string =  "xtestx\nytesty\n";
-expected =  [ "", "xtestx", "ytesty" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "- bullet\nytesty\n";
+expected =  [ "", "- bullet\n", "ytesty\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Not a match, match
-string =  "ytesty\nxtestx\n";
-expected =  [ "ytesty", "xtestx", "" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "ytesty\n- bullet\n";
+expected =  [ "ytesty\n", "- bullet\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Two consecutive matches only
-string =  "xtestx\nxtestx\n";
-expected =  [ "", "xtestxxtestx", "" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "- bullet\n- bullet\n";
+expected =  [ "", "- bullet\n- bullet\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Two consecutive matches, not a match
-string =  "xtestx\nxtestx\nytesty\n";
-expected =  [ "", "xtestxxtestx", "ytesty" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "- bullet\n- bullet\nytesty\n";
+expected =  [ "", "- bullet\n- bullet\n", "ytesty\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Not a match, two consecutive matches, not a match
-string =  "foo\nxtestx\nxtestx\nytesty\n";
-expected =  [ "foo", "xtestxxtestx", "ytesty" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "foo\n- bullet\n- bullet\nytesty\n";
+expected =  [ "foo\n", "- bullet\n- bullet\n", "ytesty\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
 # Not a match, two consecutive matches
-string =  "foo\nxtestx\nxtestx\n";
-expected =  [ "foo", "xtestxxtestx", "" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "foo\n- bullet\n- bullet\n";
+expected =  [ "foo\n", "- bullet\n- bullet\n" ];
+result =  block_matcher( string );
 assert_lists_of_strings_are_equal( expected, result );
 
-# FIXME:  assert_lists_of_strings_are_equal() is bugged!  Sigh.
 # Oh hell, let's get silly.
-string =  "foo\nxtestx\nxtestx\nbar\nbaz\nargh\nxtestx\nbla\nxtestx\n\n";
-expected =  [ "foo", "xtestxxtestx", "barbazargh", "xtestx", "bla", "xtestx", "" ];
-rx =  "x.*";
-result =  block_matcher( string, rx );
+string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n";
+expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n" ];
+result =  block_matcher( string );
+assert_lists_of_strings_are_equal( expected, result );
+
+# FIXME:  string_to_list() chops out any duplicate \n like here             ---v
+# string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n\n";
+# expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
+# result =  block_matcher( string );
 # assert_lists_of_strings_are_equal( expected, result );
-# apply  printf "%s\n" result;
