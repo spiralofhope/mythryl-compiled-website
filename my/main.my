@@ -110,6 +110,36 @@ assert_strings_are_equal( expected, result );
 
 
 
+fun assert_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
+  if ( expected == result )
+    TRUE;
+  else
+    print "\n  ** FAIL **\n";
+    print "expected ";
+    if ( expected ) print "TRUE"; else print "FALSE"; fi;
+    print ", result ";
+    if ( result ) print "TRUE\n"; else print "FALSE\n"; fi;
+    FALSE;
+  fi;
+};
+fun test_assert_bools_are_equal( _: Void ):  Bool = {
+  expected =  TRUE;
+  result   =  TRUE;
+  assert_bools_are_equal( expected, result );
+
+  # Should fail TRUE => FALSE
+  expected =  TRUE;
+  result   =  FALSE;
+  assert_bools_are_equal( expected, result );
+
+  # Should fail FALSE => TRUE
+  expected =  FALSE;
+  result   =  TRUE;
+  assert_bools_are_equal( expected, result );
+};
+# test_assert_bools_are_equal();
+
+
 fun is_even( i: Int ): Bool = {
   if ( ( i % 2 ) == 0 )
     TRUE;
