@@ -33,6 +33,7 @@ site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 #        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
 
 
+# TODO:  Make a general "assert_equal() which can handle all types.
 fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
   if ( expected == result )
     TRUE;
@@ -176,6 +177,7 @@ fun test_get_current_directory( _: Void ): Void = {
 # test_get_current_directory();
 
 
+
 # FIXME:  This needs a better name.
 # Removes the path from a string, giving only the filename.
 fun get_filename( string: String ): String = {
@@ -183,6 +185,15 @@ fun get_filename( string: String ): String = {
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
   strcat( regex::find_first_groups_all  ".*\\/(.*)"  string );
 };
+fun test_get_filename( _: Void ): Bool = {
+  string =  "/foo/bar/baz/filename.ext";
+  expected =             "filename.ext";
+  result = get_filename( string );
+  assert_strings_are_equal( expected, result );
+
+  # TODO:  Additional testing.
+};
+# test_get_filename();
 
 
 
@@ -193,13 +204,35 @@ fun get_filename( string: String ): String = {
 fun remove_extension( filename: String ): String = {
   regex::replace_first  ./\..*$/  ""  filename;
 };
+fun test_remove_extension( _: Void ): Bool = {
+  string   = "filename.ext";
+  expected = "filename";
+  result = remove_extension( string );
+  assert_strings_are_equal( expected, result );
+
+  # TODO:  Additional testing.
+};
+# test_remove_extension();
 
 
 
 fun string_multiplier( string: String,  n: Int ): String = {
   cat( list::tabulate( n, fn _ = string ) );
 };
-# print ( string_multiplier( "foo", 2 ) );
+fun test_string_multiplier( _: Void ): Bool = {
+  string   = "foo";
+  n        = 2;
+  expected = "foofoo";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = 2;
+  expected = "FAIL TEST";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+};
+# test_string_multiplier();
 
 
 
@@ -210,10 +243,24 @@ fun is_even( i: Int ): Bool = {
     FALSE;
   fi;
 };
-# i =  2;
-# if ( is_even( i ) )
-#   printf "%d is even\n" i;
-# fi;
+fun test_is_even( _: Void ): Bool = {
+  n =  2;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  n =  1;
+  expected =  FALSE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  1;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_even();
 
 
 fun is_odd( i: Int ): Bool = {
@@ -223,10 +270,25 @@ fun is_odd( i: Int ): Bool = {
     TRUE;
   fi;
 };
-# i =  1;
-# if ( is_odd( i ) )
-#   printf "%d is odd\n" i;
-# fi;
+fun test_is_odd( _: Void ): Bool = {
+  n =  1;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  FALSE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_odd();
 
 
 
@@ -246,6 +308,7 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
     *result;
 };
+# TODO:  fun test_replace_nth_string() = {}
 # list =  [ "This ", "is ", "a ", "test.\n" ]; 
 # result =  replace_nth_string( 1, "was ", list );
 # apply  printf "%s" result; 
@@ -287,23 +350,26 @@ fun string_to_list( string: String ): List( String ) = {
 
   *result;
 };
-# Simple
-string =  "foo";
-expected =  [ "foo" ];
-result =  string_to_list( string );
-assert_lists_of_strings_are_equal( expected, result );
+# FIXME:               ( _: Void ):  List( String ) ={
+fun test_string_to_list( _: Void ) = {
+  # Simple
+  string =  "foo";
+  expected =  [ "foo" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Simple
-string =  "foo\n";
-expected =  [ "foo\n" ];
-result =  string_to_list( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Simple
+  string =  "foo\n";
+  expected =  [ "foo\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-string =  "HERE\nytesty\n";
-expected =  [ "HERE\n", "ytesty\n" ];
-result =  string_to_list( string );
-assert_lists_of_strings_are_equal( expected, result );
-
+  string =  "HERE\nytesty\n";
+  expected =  [ "HERE\n", "ytesty\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_string_to_list();
 
 
 # --
