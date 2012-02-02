@@ -18,6 +18,8 @@ site_name  = "<div class=\"top-t1\">S</div>&nbsp; <div class=\"top-t2\">piral of
 site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 
+# TODO:  Library functionality.  It's been implemented in an easy way in Mythryl, but as of this writing is only available in git.
+
 
 # --
 # -- Library-candidate functions, testing-related
@@ -25,6 +27,12 @@ site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 # TODO:  Throw errors
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
+# TODO:  Numbers, stats, etc.
+# TODO:  Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
+# TODO:  Make an assert_not() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_foo test function.
+#        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
+
+
 fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
   if ( expected == result )
     TRUE;
@@ -46,8 +54,6 @@ fun test_assert_strings_are_equal( _: Void ):  Bool = {
 # test_assert_strings_are_equal();
 
 
-# TODO:  Numbers, stats, etc.
-# TODO:  Lists of Ints, etc?  This can't be universal if printf needs %s to display contents.  How do I deal with this?
 fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ): Bool = {
   result =  REF TRUE;
   i      =  REF -1;
@@ -132,8 +138,6 @@ fun test_assert_bools_are_equal( _: Void ):  Bool = {
 # --
 # --  Library-candidate functions, general
 # --
-
-# TODO:  Figure out libraries / using multiple files for a project.  See `random-mythryl/multi-file-test/`
 
 fun check_directory( string: String ): Bool = {
   # See also http://mythryl.org/my-Get_current_directory.html
