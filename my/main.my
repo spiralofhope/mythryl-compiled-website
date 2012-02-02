@@ -37,11 +37,13 @@ fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
     FALSE;
   fi;
 };
-string   =  "- bullet\nytesty\n";
-expected =  string;
-result   =  string;
-assert_strings_are_equal( expected, result );
-
+fun test_assert_strings_are_equal( _: Void ):  Bool = {
+  string   =  "- bullet\nytesty\n";
+  expected =  string;
+  result   =  string;
+  assert_strings_are_equal( expected, result );
+};
+# test_assert_strings_are_equal();
 
 
 # TODO:  Numbers, stats, etc.
@@ -77,17 +79,22 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
   fi;
   *result;
 };
-# expected =  [ "one", "two" ];
-# result   =  expected;
-# assert_lists_of_strings_are_equal( expected, result );
+fun test_assert_lists_of_strings_are_equal( _: Void ): Bool = {
+  expected =  [ "one", "two" ];
+  result   =  expected;
+  assert_lists_of_strings_are_equal( expected, result );
 
-# expected =  [ "- bullet", "ytesty" ];
-# result   =  [ "VERY", "DIFFERENT" ];
-# assert_lists_of_strings_are_equal( expected, result );
+  # Meant to fail, number of elements
+  expected =  [ "- bullet", "ytesty" ];
+  result   =  [ "- bullet", "ytesty", "number" ];
+  assert_lists_of_strings_are_equal( expected, result );
 
-# expected =  [ "- bullet", "ytesty" ];
-# result   =  [ "- bullet", "ytesty", "number" ];
-# assert_lists_of_strings_are_equal( expected, result );
+  # Meant to fail, content
+  expected =  [ "- bullet", "ytesty" ];
+  result   =  [ "VERY", "DIFFERENT" ];
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_assert_lists_of_strings_are_equal();
 
 
 
