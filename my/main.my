@@ -3,8 +3,8 @@
 # --
 
 # TODO:  I have a major looming issue with regular expression search/replace
-# match for xx.*xx and replace with xxyyxx
-# I would expect xxzzxxzzxx => xxyyxxyyxx but instead I get xxyyxxzzxx (the second xxzzxx is not matched)
+#        match for xx.*xx and replace with xxyyxx
+#        I would expect xxzzxxzzxx => xxyyxxyyxx but instead I get xxyyxxzzxx (the second xxzzxx is not matched)
 
 
 # TODO:  Configuration file.  See TODO.markdown
@@ -18,17 +18,17 @@ site_name  = "<div class=\"top-t1\">S</div>&nbsp; <div class=\"top-t2\">piral of
 site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 
-# TODO:  Library functionality.  It's been implemented in an easy way in Mythryl, but as of this writing is only available in git.
+# TODO:  Library functionality.  It's been implemented in an easy way in Mythryl, but as of this writing that easy way is only available in the git version of Mythryl.
 
 
 # --
 # -- Library-candidate functions, testing-related
 # --
 
-# TODO:  Throw errors
+# TODO:  should testing be able to throw errors?
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
 # TODO:  Numbers, stats, etc.
-# TODO:  Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
+# TODO:  comparing Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
 # TODO:  Make an assert_not() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_foo test function.
 #        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
 
@@ -61,7 +61,8 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
   if ( list::length( list_one ) != list::length( list_two ) )
     result :=  FALSE;
     print "  # FAIL - Lists are different lengths.\n";
-    # TODO:  Display these side-by-side.
+
+
     print "    list_one (expected):\n";
     apply printf "'%s'\n" list_one;
     print "    list_two (result):\n";
@@ -69,7 +70,7 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
   else
     # TRUE
     foreach list_one .{
-      throwaway = #e;
+      throwaway =  #e;
       # I could stop at the first failure with:
       # if ( *result == TRUE )
       i :=  *i + 1;
@@ -370,6 +371,49 @@ fun test_string_to_list( _: Void ) = {
   assert_lists_of_strings_are_equal( expected, result );
 };
 # test_string_to_list();
+
+
+
+# Append blank elements to the shorter list to make it the same length.
+# TODO:  Can I make this type-agnostic.
+fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):  List( List( String ) ) = {
+  list_one =  REF list_one;
+  list_two =  REF list_two;
+  # Given two lists.
+  # Determine which is longer.
+  # Determine how much longer it is.
+  l1 =  list::length( *list_one );
+  l2 =  list::length( *list_two );
+  if   ( l1 >  l2 )
+    ++l2;
+    foreach ( l2..l1 ) .{
+      throwaway =  #i;
+      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
+      list_two :=  *list_two @ [ "" ];
+    };
+  elif ( l1 <  l2 )
+    ++l1;
+    foreach ( l1..l2 ) .{
+      throwaway =  #i;
+      list_one :=  *list_one @ [ "" ];
+    };
+  fi;
+
+  [ *list_one, *list_two ];
+};
+fun test_pad_string_list( _: Void ):   Bool = {
+  list_one =  [ "one" ];
+  list_two =  [ "one", "two" ];
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+  expected =  [ "one", "" ];
+  result =  list_one;
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_pad_string_list();
+
 
 
 # --
