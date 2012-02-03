@@ -182,9 +182,9 @@ fun test_get_current_directory( _: Void ):  Void = {
 # FIXME:  This needs a better name.
 # Removes the path from a string, giving only the filename.
 fun get_filename( string: String ):  String = {
-  # TODO:  I don't need to check for groups here, is there some other regex I should use?
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-  strcat( regex::find_first_groups_all  ".*\\/(.*)"  string );
+  # TODO:  Sanity-checking:  Catch NOT_FOUND, throw it away and just return the string.
+  regex::replace_all  "(.*)\\/"  ""  string;
 };
 fun test_get_filename( _: Void ):  Bool = {
   string =  "/foo/bar/baz/filename.ext";
@@ -194,7 +194,7 @@ fun test_get_filename( _: Void ):  Bool = {
 
   # TODO:  Additional testing.
 };
-# test_get_filename();
+test_get_filename();
 
 
 
