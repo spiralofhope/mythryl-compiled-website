@@ -85,6 +85,72 @@ fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):  Lis
 
 
 
+# TODO:  Homework for the reader.
+#        1) Implement a function which reports the position of the longest string.
+#        2) What if multiple strings are the same length?
+#        2a) Implement another function to report how many n-length strings there are.
+#        2b) Implement another function to report the positions of all n-length strings.
+fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
+  n =  REF 0;
+  foreach list .{
+    len =  string::length( #e );
+    if ( len > *n ) n :=  len; fi;
+  };
+  *n;
+};
+
+
+
+fun combine_two_strings_into_one_string_of_two_columns() = {
+};
+fun test_combine_two_strings_into_one_string_of_two_columns() = {
+};
+test_combine_two_strings_into_one_string_of_two_columns();
+
+
+
+fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String ),  prepended_text,  appended_text ):   String = {
+# length of the string
+  "";
+};
+fun test_convert_a_list_of_strings_into_one_string_of_one_column() = {
+  list = [ "one", "two", "three" ];
+  prepended_text =  "'";
+  appended_text  =  "'";
+#   result =  REF "";
+#   foreach list .{
+#     result :=  *result + it;
+#     throwaway = #e;
+#   };
+
+#   string_multiplier()
+
+  convert_a_list_of_strings_into_one_string_of_one_column( list, prepended_text, appended_text );
+};
+test_convert_a_list_of_strings_into_one_string_of_one_column();
+
+
+
+# TODO - ~~~ IN PROGRESS
+fun combine_two_lists_of_strings_into_one_string_with_columns( list_one: List( String ),  list_two: List( String ) ):   String = {
+  length_one =  longest_string_in_a_list_of_strings( list_one );
+#   list_one
+#   list_two
+  "hey";
+};
+fun test_print_two_lists_of_strings_as_columns( _: Void ):   Void = {
+  list_one =  [ "one", "two", "three" ];
+  list_two =  [ "four", "five", "six" ];
+  # 'one'     'four'
+  # 'two'     'five'
+  # 'three'   'six'
+  expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
+  result =  combine_two_lists_of_strings_into_one_string_with_columns( list_one, list_two );
+};
+test_print_two_lists_of_strings_as_columns();
+
+
+
 fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):  Bool = {
   result =  REF TRUE;
   i      =  REF -1;
@@ -95,6 +161,9 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
     pad_string_list =  pad_string_list( list_one, list_two );
     list_one =  list::nth( pad_string_list, 0 );
     list_two =  list::nth( pad_string_list, 1 );
+
+    length_one =  longest_string_in_a_list_of_strings( list_one );
+    length_two =  longest_string_in_a_list_of_strings( list_two );
 
     foreach list_one .{
       i :=  *i + 1;
@@ -107,6 +176,7 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
 #       printf "%s \t %s" ( list::nth( list_one, *i ), list::nth( list_two, *i ) );
     };
 
+# ~~~
 #     print "    list_one (expected):\n";
 #     apply printf "'%s'\n" list_one;
 #     print "    list_two (result):\n";
@@ -206,7 +276,8 @@ fun test_assert_lists_of_strings_are_equal( _: Void ):  Bool = {
 #   result   =  [ "VERY", "DIFFERENT" ];
 #   assert_lists_of_strings_are_equal( expected, result );
 };
-test_assert_lists_of_strings_are_equal();
+# ~~~
+# test_assert_lists_of_strings_are_equal();
 
 
 
@@ -463,6 +534,16 @@ fun test_pad_string_list( _: Void ):   Bool = {
 
 
 
+fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
+  list =  [ "one", "two", "three" ];
+  expected =  5;   # "three" is five characters long.
+  result =  longest_string_in_a_list_of_strings( list );
+  assert_ints_are_equal( expected, result );
+};
+# test_longest_string_in_a_list_of_strings();
+
+
+
 fun read_print( filename: String ):   Void = {
   # Read from a source file.
   # http://mythryl.org/my-File.html
@@ -518,29 +599,6 @@ fun test_write_file( _: Void ):   Void = {
   write_file();
 };
 # test_write_file();
-
-
-
-# TODO:  Homework for the reader.
-#        1) Implement a function which reports the position of the longest string.
-#        2) What if multiple strings are the same length?
-#        2a) Implement another function to report how many n-length strings there are.
-#        2b) Implement another function to report the positions of all n-length strings.
-fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
-  n =  REF 0;
-  foreach list .{
-    len =  strlen( #e );
-    if ( len > *n ) n :=  len; fi;
-  };
-  *n;
-};
-fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
-  list =  [ "one", "two", "three" ];
-  expected =  5;   # "three" is five characters long.
-  result =  longest_string_in_a_list_of_strings( list );
-  assert_ints_are_equal( expected, result );
-};
-# test_longest_string_in_a_list_of_strings();
 
 
 
@@ -625,7 +683,7 @@ fun markup( string: String ):   String = {
   fun markup_paragraphs( string: String ):   String = {
     # \n\n  =  Paragraph
     regex::replace_all_via_fn  ./(\n{2,})/ .{
-      n =  strlen( strcat( #stringlist ) );
+      n =  string::length( strcat( #stringlist ) );
       string_multiplier( "\n<br />", n );
     } string;
   };
