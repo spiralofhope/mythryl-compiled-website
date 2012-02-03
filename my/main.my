@@ -55,6 +55,36 @@ fun test_assert_strings_are_equal( _: Void ):  Bool = {
 # test_assert_strings_are_equal();
 
 
+# Append blank elements to the shorter list to make it the same length.
+# TODO:  Can I make this type-agnostic.
+fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):  List( List( String ) ) = {
+  list_one =  REF list_one;
+  list_two =  REF list_two;
+  # Given two lists.
+  # Determine which is longer.
+  # Determine how much longer it is.
+  l1 =  list::length( *list_one );
+  l2 =  list::length( *list_two );
+  if   ( l1 >  l2 )
+    ++l2;
+    foreach ( l2..l1 ) .{
+      throwaway =  #i;
+      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
+      list_two :=  *list_two @ [ "" ];
+    };
+  elif ( l1 <  l2 )
+    ++l1;
+    foreach ( l1..l2 ) .{
+      throwaway =  #i;
+      list_one :=  *list_one @ [ "" ];
+    };
+  fi;
+
+  [ *list_one, *list_two ];
+};
+
+
+
 fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):  Bool = {
   result =  REF TRUE;
   i      =  REF -1;
@@ -62,6 +92,9 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
     result :=  FALSE;
     print "  # FAIL - Lists are different lengths.\n";
 
+    pad_string_list =  pad_string_list( list_one, list_two );
+    list_one =  list::nth( pad_string_list, 0 );
+    list_two =  list::nth( pad_string_list, 1 );
 
     print "    list_one (expected):\n";
     apply printf "'%s'\n" list_one;
@@ -87,22 +120,6 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
   fi;
   *result;
 };
-fun test_assert_lists_of_strings_are_equal( _: Void ):  Bool = {
-  expected =  [ "one", "two" ];
-  result   =  expected;
-  assert_lists_of_strings_are_equal( expected, result );
-
-  # Meant to fail, number of elements
-  expected =  [ "- bullet", "ytesty" ];
-  result   =  [ "- bullet", "ytesty", "number" ];
-  assert_lists_of_strings_are_equal( expected, result );
-
-  # Meant to fail, content
-  expected =  [ "- bullet", "ytesty" ];
-  result   =  [ "VERY", "DIFFERENT" ];
-  assert_lists_of_strings_are_equal( expected, result );
-};
-# test_assert_lists_of_strings_are_equal();
 
 
 
@@ -134,6 +151,26 @@ fun test_assert_bools_are_equal( _: Void ):  Bool = {
   assert_bools_are_equal( expected, result );
 };
 # test_assert_bools_are_equal();
+
+
+
+
+fun test_assert_lists_of_strings_are_equal( _: Void ):  Bool = {
+  expected =  [ "one", "two" ];
+  result   =  expected;
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Meant to fail, number of elements
+  expected =  [ "- bullet", "ytesty" ];
+  result   =  [ "- bullet", "ytesty", "number" ];
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Meant to fail, content
+  expected =  [ "- bullet", "ytesty" ];
+  result   =  [ "VERY", "DIFFERENT" ];
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_assert_lists_of_strings_are_equal();
 
 
 
@@ -374,33 +411,7 @@ fun test_string_to_list( _: Void ) = {
 
 
 
-# Append blank elements to the shorter list to make it the same length.
-# TODO:  Can I make this type-agnostic.
-fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):  List( List( String ) ) = {
-  list_one =  REF list_one;
-  list_two =  REF list_two;
-  # Given two lists.
-  # Determine which is longer.
-  # Determine how much longer it is.
-  l1 =  list::length( *list_one );
-  l2 =  list::length( *list_two );
-  if   ( l1 >  l2 )
-    ++l2;
-    foreach ( l2..l1 ) .{
-      throwaway =  #i;
-      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
-      list_two :=  *list_two @ [ "" ];
-    };
-  elif ( l1 <  l2 )
-    ++l1;
-    foreach ( l1..l2 ) .{
-      throwaway =  #i;
-      list_one :=  *list_one @ [ "" ];
-    };
-  fi;
-
-  [ *list_one, *list_two ];
-};
+# This is down here because  assert_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
 fun test_pad_string_list( _: Void ):   Bool = {
   list_one =  [ "one" ];
   list_two =  [ "one", "two" ];
@@ -415,16 +426,6 @@ fun test_pad_string_list( _: Void ):   Bool = {
 # test_pad_string_list();
 
 
-
-# --
-# --  Library-candidate functions, project-specific
-# --
-
-
-
-# ---
-# ---  Actual programming
-# ---
 
 fun read_print( filename: String ):   Void = {
   # Read from a source file.
@@ -484,21 +485,9 @@ fun test_write_file( _: Void ):   Void = {
 
 
 
-# In source directory
-#   check if the equivalent file exists in the target directory.
-#   if no, re-create it.
-
-# FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
-# TODO:  Proper sanity-checking.
-#        How would I stop script processing if the checking finds a critical error?
-fun sanity_check( _: Void ):   Void = {
-  if ( winix::file::is_directory( source_directory ) == FALSE )
-    printf "Directory does not exist:  \"%s\"\n"  source_directory;
-    # Make it?
-  fi;
-};
-# sanity_check();
-
+# --
+# --  Library-candidate functions, project-specific
+# --
 
 fun markup( string: String ):   String = {
   # TODO:  RENAME
@@ -574,8 +563,6 @@ fun markup( string: String ):   String = {
     string;
   };
 
-
-
   fun markup_paragraphs( string: String ):   String = {
     # \n\n  =  Paragraph
     regex::replace_all_via_fn  ./(\n{2,})/ .{
@@ -583,7 +570,6 @@ fun markup( string: String ):   String = {
       string_multiplier( "\n<br />", n );
     } string;
   };
-
 
   string =  markup_needs_a_name( string, "\\/", "\\/", "<em>"    , "</em>"     );
   string =  markup_needs_a_name( string, "-"  , "-"  , "<del>"   , "</del>"    );
@@ -617,11 +603,11 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     rss =  "";
 
     # TODO:  Beautify / simplify.  Use a case-regex?
-    list =  map ( fn string = regex::replace_all   "<!--SITE NAME-->"     site_name     string ) list;
-    list =  map ( fn string = regex::replace_all   "<!--SITE TAGLINE-->"  site_tagline  string ) list;
-    list =  map ( fn string = regex::replace_all   "<!--TITLE-->"         page_title    string ) list;
-    list =  map ( fn string = regex::replace_all   "<!--TOC-->"           toc           string ) list;
-    list =  map ( fn string = regex::replace_all   "<!--RSS-->"           rss           string ) list;
+    list =  map ( fn string =  regex::replace_all   "<!--SITE NAME-->"     site_name     string ) list;
+    list =  map ( fn string =  regex::replace_all   "<!--SITE TAGLINE-->"  site_tagline  string ) list;
+    list =  map ( fn string =  regex::replace_all   "<!--TITLE-->"         page_title    string ) list;
+    list =  map ( fn string =  regex::replace_all   "<!--TOC-->"           toc           string ) list;
+    list =  map ( fn string =  regex::replace_all   "<!--RSS-->"           rss           string ) list;
 
     template_filename =  template_filename + "-rebuilt.html";
     file = file::open_for_write template_filename;
@@ -648,7 +634,7 @@ fun post_processing( content_string: String ):   String = {
     fi;
   };
 
-  content_string = post_processing_redirect( content_string );
+  content_string =  post_processing_redirect( content_string );
 
   content_string;
 };
@@ -676,22 +662,8 @@ fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
 
 
 
-rebuild( 
-  source_directory + "sandbox.asc",
-  target_directory + "sandbox.html"
-);
-
-
-# rebuild(
-#   source_directory + "../index.asc",
-#   target_directory + "../index.html"
-# );
-
-
-
-
 # --
-# --  Test cases
+# --  Project test cases
 # --  (more or less)
 # TODO:  Absorb the test cases from the Ruby project.
 
@@ -746,26 +718,26 @@ fun block_matcher( string: String ):   List( String ) = {
         # We have a match, but we're in the even position.  Matches are supposed to be placed in the odd position.
 
         # Dump the buffer into the last element of the result.
-        result := *result @ [ *buffer ];
-        buffer := "";
+        result :=  *result @ [ *buffer ];
+        buffer :=  "";
 
         # Switch to the odd position.
-        position := "odd";
+        position :=  "odd";
       fi;
     else  # ( bool == FALSE )
       if ( *position == "odd" )
         # We don't have a match, but we're still in the odd position.  Non-matches are supposed to be placed in the even position.
 
         # Dump the buffer into the last element of the result.
-        result := *result @ [ *buffer ];
-        buffer := "";
+        result :=  *result @ [ *buffer ];
+        buffer :=  "";
 
         # Switch to the odd position.
-        position := "even";
+        position :=  "even";
       fi;
     fi;
     # Append to the buffer.
-    buffer := *buffer + #e;
+    buffer :=  *buffer + #e;
 
 #     print "--v\n";
 #     printf "#e       '%s'\n" #e;
@@ -837,3 +809,36 @@ assert_lists_of_strings_are_equal( expected, result );
 # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
 # result =  block_matcher( string );
 # assert_lists_of_strings_are_equal( expected, result );
+
+
+
+# ---
+# ---  Actual programming
+# ---
+
+# In source directory
+#   check if the equivalent file exists in the target directory.
+#   if no, re-create it.
+
+# FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
+# TODO:  Proper sanity-checking.
+#        How would I stop script processing if the checking finds a critical error?
+fun sanity_check( _: Void ):   Void = {
+  if ( winix::file::is_directory( source_directory ) == FALSE )
+    printf "Directory does not exist:  \"%s\"\n"  source_directory;
+    # Make it?
+  fi;
+};
+# sanity_check();
+
+
+rebuild( 
+  source_directory + "sandbox.asc",
+  target_directory + "sandbox.html"
+);
+
+
+# rebuild(
+#   source_directory + "../index.asc",
+#   target_directory + "../index.html"
+# );
