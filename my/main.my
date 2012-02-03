@@ -96,17 +96,6 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
     list_one =  list::nth( pad_string_list, 0 );
     list_two =  list::nth( pad_string_list, 1 );
 
-
-
-fun widest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
-  0;
-};
-fun test_widest_string_in_a_list_of_strings( _: Void ):   Void = {
-};
-test_widest_string_in_a_list_of_strings();
-
-
-
     foreach list_one .{
       i :=  *i + 1;
       throwaway = #e;
@@ -142,6 +131,29 @@ test_widest_string_in_a_list_of_strings();
   fi;
   *result;
 };
+
+
+
+fun assert_ints_are_equal( one: Int,  two: Int ):   Bool = {
+  if ( one != two )
+    printf "  # FAIL:  expected %d result %d\n"  one two;
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+fun test_assert_ints_are_equal( _: Void ):   Bool ={
+  expected =  1;
+  result   =  1;
+  assert_ints_are_equal( expected, result );
+
+  # TODO:   not_equal()  thingy.
+  # Meant to fail
+  expected =  1;
+  result   =  2;
+  assert_ints_are_equal( expected, result );
+};
+# test_assert_ints_are_equal();
 
 
 
@@ -506,6 +518,25 @@ fun test_write_file( _: Void ):   Void = {
   write_file();
 };
 # test_write_file();
+
+
+fun widest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
+  n =  REF 0;
+  foreach list .{
+    len =  strlen( #e );
+    if ( len > *n ) n :=  len; fi;
+  };
+  *n;
+};
+fun test_widest_string_in_a_list_of_strings( _: Void ):   Void = {
+  list =  [ "one", "two", "three" ];
+  expected =  5;
+  result =  widest_string_in_a_list_of_strings( list );
+
+  printf "%d" expected;
+  printf "%d" result;
+};
+test_widest_string_in_a_list_of_strings();
 
 
 
