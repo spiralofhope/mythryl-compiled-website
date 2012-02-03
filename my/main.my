@@ -96,10 +96,32 @@ fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List
     list_one =  list::nth( pad_string_list, 0 );
     list_two =  list::nth( pad_string_list, 1 );
 
-    print "    list_one (expected):\n";
-    apply printf "'%s'\n" list_one;
-    print "    list_two (result):\n";
-    apply printf "'%s'\n" list_two;
+
+
+fun widest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
+  0;
+};
+fun test_widest_string_in_a_list_of_strings( _: Void ):   Void = {
+};
+test_widest_string_in_a_list_of_strings();
+
+
+
+    foreach list_one .{
+      i :=  *i + 1;
+      throwaway = #e;
+      one =  "'" + list::nth( list_one, *i ) + "'";
+      two =  "'" + list::nth( list_two, *i ) + "'";
+      # TODO:  This needs to be expanded so that it'll create a column which is just wide enough, based on the widest cell.
+      printf "%-40s \t  %s\n" one two;
+#       print (  ) + "\n" );
+#       printf "%s \t %s" ( list::nth( list_one, *i ), list::nth( list_two, *i ) );
+    };
+
+#     print "    list_one (expected):\n";
+#     apply printf "'%s'\n" list_one;
+#     print "    list_two (result):\n";
+#     apply printf "'%s'\n" list_two;
   else
     # TRUE
     foreach list_one .{
@@ -160,17 +182,19 @@ fun test_assert_lists_of_strings_are_equal( _: Void ):  Bool = {
   result   =  expected;
   assert_lists_of_strings_are_equal( expected, result );
 
+  # TODO:  Replace with  not_equal() when implemented.
   # Meant to fail, number of elements
   expected =  [ "- bullet", "ytesty" ];
   result   =  [ "- bullet", "ytesty", "number" ];
   assert_lists_of_strings_are_equal( expected, result );
 
-  # Meant to fail, content
-  expected =  [ "- bullet", "ytesty" ];
-  result   =  [ "VERY", "DIFFERENT" ];
-  assert_lists_of_strings_are_equal( expected, result );
+#   # TODO:  Replace with  not_equal() when implemented.
+#   # Meant to fail, content
+#   expected =  [ "- bullet", "ytesty" ];
+#   result   =  [ "VERY", "DIFFERENT" ];
+#   assert_lists_of_strings_are_equal( expected, result );
 };
-# test_assert_lists_of_strings_are_equal();
+test_assert_lists_of_strings_are_equal();
 
 
 
