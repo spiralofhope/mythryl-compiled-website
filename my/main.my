@@ -2,6 +2,9 @@
 # --  User-serviceable variables
 # --
 
+# TODO ~~~ Shuffle all the library-related stuff around again.  Move everything test case-related into a separate section.  I need to deal with strange dependencies in a tidy way.
+
+
 # TODO:  I have a major looming issue with regular expression search/replace
 #        match for xx.*xx and replace with xxyyxx
 #        I would expect xxzzxxzzxx => xxyyxxyyxx but instead I get xxyyxxzzxx (the second xxzzxx is not matched)
@@ -24,6 +27,44 @@ site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 # --
 # -- Library-candidate functions, testing-related
 # --
+
+
+# string_to_list() ideas
+# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
+#         http://mythryl.org/my-String_To_List.html
+#         String_To_List { first, between, last, string };
+
+# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
+# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
+#   match_character = "\n";
+#   result =  REF [];
+#   list =  explode( "abc\ndef\n" );
+# Ugh, I'd have to turn the list of chars into a list of strings.
+#   list =  reverse( list );
+#   foreach list .{
+#     # Build `result` based on if the character matches.
+#     if ( #e == match_character )
+#     else
+#     fi;
+#     printf "%c\n" #e;
+#   };
+# apply  printf "'%s'\n" *result;
+
+fun string_to_list( string: String ):   List( String ) = {
+  result =  REF [];
+
+  if ( ( string =~ "\n" ) == FALSE )
+    result :=  [ string ];
+  else
+    list =  tokens .{ #c == '\n'; } string;
+    foreach list .{
+      result :=  *result @ [ #e + "\n" ];
+    };
+  fi;
+
+  *result;
+};
+
 
 # TODO:  should testing be able to throw errors?
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
@@ -101,14 +142,6 @@ fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
 
 
 
-fun combine_two_strings_into_one_string_of_two_columns() = {
-};
-fun test_combine_two_strings_into_one_string_of_two_columns() = {
-};
-test_combine_two_strings_into_one_string_of_two_columns();
-
-
-
 fun string_multiplier( string: String,  n: Int ):  String = {
   if   ( n <  0 )
     # TODO:  Throw an error.
@@ -175,9 +208,9 @@ fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String 
       ;
   };
 
-
   *result;
 };
+# TODO - proper assertions.
 fun test_convert_a_list_of_strings_into_one_string_of_one_column() = {
   list = [ "one", "two", "three" ];
   prepended_text =  "'";
@@ -186,7 +219,54 @@ fun test_convert_a_list_of_strings_into_one_string_of_one_column() = {
   result =  convert_a_list_of_strings_into_one_string_of_one_column( list, prepended_text, appended_text );
   print result;
 };
-test_convert_a_list_of_strings_into_one_string_of_one_column();
+# test_convert_a_list_of_strings_into_one_string_of_one_column();
+
+
+
+fun combine_two_strings_into_one_string_of_two_columns( string_one: String,  string_two: String, separator: String ):   String = {
+  # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
+  list_one =  string_to_list( string_one );
+  list_two =  string_to_list( string_two );
+
+  # Ensure the two lists are the same length.
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+  result =  REF "";
+  i      =  REF -1;
+  foreach list_one .{
+    i :=  *i + 1;
+    one  =  REF "";
+    one :=  string::chomp( #e );
+    if ( *one == "" )
+      n =  longest_string_in_a_list_of_strings( list_one );
+      n =  n - 1;
+      one :=  string_multiplier( " ", n );
+    fi;
+    two =  list::nth( list_two, *i );
+    result :=
+        *result
+      + *one
+      + separator
+      + two
+      ;
+  };
+
+  *result + "\n";
+};
+fun test_combine_two_strings_into_one_string_of_two_columns() = {
+  string_one =  "one\ntwo\n";
+  string_two =  "three\n";
+  result =  combine_two_strings_into_one_string_of_two_columns( string_one, string_two, "   " );
+  print result;
+
+  string_one =  "one\ntwo";
+  string_two =  "three\nfour\nfive";
+  result =  combine_two_strings_into_one_string_of_two_columns( string_one, string_two, "   " );
+  print result;
+};
+test_combine_two_strings_into_one_string_of_two_columns();
 
 
 
@@ -499,42 +579,8 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
 
 
-# string_to_list() ideas
-# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
-#         http://mythryl.org/my-String_To_List.html
-#         String_To_List { first, between, last, string };
 
-# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
-# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
-#   match_character = "\n";
-#   result =  REF [];
-#   list =  explode( "abc\ndef\n" );
-# Ugh, I'd have to turn the list of chars into a list of strings.
-#   list =  reverse( list );
-#   foreach list .{
-#     # Build `result` based on if the character matches.
-#     if ( #e == match_character )
-#     else
-#     fi;
-#     printf "%c\n" #e;
-#   };
-# apply  printf "'%s'\n" *result;
-
-fun string_to_list( string: String ):   List( String ) = {
-  result =  REF [];
-
-  if ( ( string =~ "\n" ) == FALSE )
-    result :=  [ string ];
-  else
-    list =  tokens .{ #c == '\n'; } string;
-    foreach list .{
-      result :=  *result @ [ #e + "\n" ];
-    };
-  fi;
-
-  *result;
-};
-# FIXME:               ( _: Void ):   List( String ) ={
+# FIXME:               ( _: Void ):   List( String ) = {
 fun test_string_to_list( _: Void ) = {
   # Simple
   string =  "foo";
