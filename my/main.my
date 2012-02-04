@@ -74,20 +74,28 @@ fun string_to_list( string: String ):   List( String ) = {
 #        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
 
 
+fun reveal_unprintable_characters( string: String ):   String = {
+  string =  regex::replace_all  "\\ "  "·"    string;
+  string =  regex::replace_all  "\\n"  "↵\n"  string;
+  string;
+};
+
 # TODO:  Make a general "assert_equal() which can handle all types.
 fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
   if ( expected == result )
     TRUE;
   else
+    expected =  reveal_unprintable_characters( expected );
+    result   =  reveal_unprintable_characters( result   );
     print "\n  ** FAIL **\n";
-    print expected;
+    printf "%s" expected;
     print "\n  =>\n";
-    print result;
+    printf "%s" result;
     print "\n";
     FALSE;
   fi;
 };
-fun test_assert_strings_are_equal( _: Void ):  Bool = {
+fun test_assert_strings_are_equal( _: Void ):   Bool = {
   string   =  "- bullet\nytesty\n";
   expected =  string;
   result   =  string;
@@ -183,7 +191,7 @@ fun test_string_multiplier( _: Void ):  Bool = {
 
 
 
-fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String ),  prepended_text,  appended_text ):   String = {
+fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,  appended_text ):   String = {
   column_width =  longest_string_in_a_list_of_strings( list );
   column_width =  column_width + string::length( prepended_text );
   column_width =  column_width + string::length( appended_text  );
@@ -203,7 +211,6 @@ fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String 
       + #e
       + appended_text
       + spaces
-# + "-"
       + "\n"
       ;
   };
@@ -211,19 +218,19 @@ fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String 
   *result;
 };
 # TODO - proper assertions.
-fun test_convert_a_list_of_strings_into_one_string_of_one_column() = {
+fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
   list = [ "one", "two", "three" ];
   prepended_text =  "'";
   appended_text  =  "'";
 
-  result =  convert_a_list_of_strings_into_one_string_of_one_column( list, prepended_text, appended_text );
+  result =  list_of_strings_to_columnized_string( list, prepended_text, appended_text );
   print result;
 };
-# test_convert_a_list_of_strings_into_one_string_of_one_column();
+# test_list_of_strings_to_columnized_string();
 
 
 
-fun combine_two_strings_into_one_string_of_two_columns( string_one: String,  string_two: String, separator: String ):   String = {
+fun two_strings_to_columnized_string( string_one: String,  string_two: String, separator: String ):   String = {
   # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
   list_one =  string_to_list( string_one );
   list_two =  string_to_list( string_two );
@@ -233,6 +240,7 @@ fun combine_two_strings_into_one_string_of_two_columns( string_one: String,  str
   list_one =  list::nth( pad_string_list, 0 );
   list_two =  list::nth( pad_string_list, 1 );
 
+
   result =  REF "";
   i      =  REF -1;
   foreach list_one .{
@@ -241,6 +249,7 @@ fun combine_two_strings_into_one_string_of_two_columns( string_one: String,  str
     one :=  string::chomp( #e );
     if ( *one == "" )
       n =  longest_string_in_a_list_of_strings( list_one );
+      # I'm not sure why I need to do this, but whatever.
       n =  n - 1;
       one :=  string_multiplier( " ", n );
     fi;
@@ -253,40 +262,40 @@ fun combine_two_strings_into_one_string_of_two_columns( string_one: String,  str
       ;
   };
 
-  *result + "\n";
+  *result;
 };
-fun test_combine_two_strings_into_one_string_of_two_columns() = {
+fun test_two_strings_to_columnized_string( _: Void ):   Void = {
   string_one =  "one\ntwo\n";
   string_two =  "three\n";
-  result =  combine_two_strings_into_one_string_of_two_columns( string_one, string_two, "   " );
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
   print result;
 
   string_one =  "one\ntwo";
   string_two =  "three\nfour\nfive";
-  result =  combine_two_strings_into_one_string_of_two_columns( string_one, string_two, "   " );
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
   print result;
 };
-test_combine_two_strings_into_one_string_of_two_columns();
+# test_two_strings_to_columnized_string();
 
 
 
-# TODO - ~~~ IN PROGRESS
-fun combine_two_lists_of_strings_into_one_string_with_columns( list_one: List( String ),  list_two: List( String ) ):   String = {
-  length_one =  longest_string_in_a_list_of_strings( list_one );
-#   list_one
-#   list_two
-  "hey";
+fun two_lists_of_strings_to_columnized_string( list_one: List( String ),  list_two: List( String ) ):   String = {
+  string_one =  list_of_strings_to_columnized_string( list_one, "'", "'" );
+  string_two =  list_of_strings_to_columnized_string( list_two, "'", "'" );
+  separator =  "   ";
+  two_strings_to_columnized_string( string_one, string_two, separator );
 };
-fun test_print_two_lists_of_strings_as_columns( _: Void ):   Void = {
+fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
   list_one =  [ "one", "two", "three" ];
   list_two =  [ "four", "five", "six" ];
   # 'one'     'four'
   # 'two'     'five'
   # 'three'   'six'
   expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
-  result =  combine_two_lists_of_strings_into_one_string_with_columns( list_one, list_two );
+  result =  two_lists_of_strings_to_columnized_string( list_one, list_two );
+  assert_strings_are_equal( expected, result );
 };
-test_print_two_lists_of_strings_as_columns();
+test_two_lists_of_strings_to_columnized_string();
 
 
 
