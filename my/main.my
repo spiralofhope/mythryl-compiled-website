@@ -109,23 +109,82 @@ test_combine_two_strings_into_one_string_of_two_columns();
 
 
 
+fun string_multiplier( string: String,  n: Int ):  String = {
+  if   ( n <  0 )
+    # TODO:  Throw an error.
+    printf "You want to multiply a string by a negative number? :  %d\n"  n;
+    "";
+  elif ( n == 0 )
+    "";
+  else
+    cat( list::tabulate( n, fn _ = string ) );
+  fi;
+};
+fun test_string_multiplier( _: Void ):  Bool = {
+  string   = "foo";
+  n        = 2;
+  expected = "foofoo";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = 0;
+  expected = "";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = -1;
+  expected = "";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  # TODO:  not_equal()
+  string   = "foo";
+  n        = 2;
+  expected = "FAIL TEST";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+};
+# test_string_multiplier();
+
+
+
 fun convert_a_list_of_strings_into_one_string_of_one_column( list: List( String ),  prepended_text,  appended_text ):   String = {
-# length of the string
-  "";
+  column_width =  longest_string_in_a_list_of_strings( list );
+  column_width =  column_width + string::length( prepended_text );
+  column_width =  column_width + string::length( appended_text  );
+
+  result =  REF "";
+  foreach list .{
+    n =
+        column_width
+      - string::length( #e )
+      - string::length( prepended_text )
+      - string::length( appended_text )
+      ;
+    spaces =  string_multiplier( " ", n );
+    result :=
+        *result
+      + prepended_text
+      + #e
+      + appended_text
+      + spaces
+# + "-"
+      + "\n"
+      ;
+  };
+
+
+  *result;
 };
 fun test_convert_a_list_of_strings_into_one_string_of_one_column() = {
   list = [ "one", "two", "three" ];
   prepended_text =  "'";
   appended_text  =  "'";
-#   result =  REF "";
-#   foreach list .{
-#     result :=  *result + it;
-#     throwaway = #e;
-#   };
 
-#   string_multiplier()
-
-  convert_a_list_of_strings_into_one_string_of_one_column( list, prepended_text, appended_text );
+  result =  convert_a_list_of_strings_into_one_string_of_one_column( list, prepended_text, appended_text );
+  print result;
 };
 test_convert_a_list_of_strings_into_one_string_of_one_column();
 
@@ -358,26 +417,6 @@ fun test_remove_extension( _: Void ):  Bool = {
   # TODO:  Additional testing.
 };
 # test_remove_extension();
-
-
-
-fun string_multiplier( string: String,  n: Int ):  String = {
-  cat( list::tabulate( n, fn _ = string ) );
-};
-fun test_string_multiplier( _: Void ):  Bool = {
-  string   = "foo";
-  n        = 2;
-  expected = "foofoo";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-
-  string   = "foo";
-  n        = 2;
-  expected = "FAIL TEST";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-};
-# test_string_multiplier();
 
 
 
