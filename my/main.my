@@ -2,7 +2,7 @@
 # --  User-serviceable variables
 # --
 
-# TODO ~~~ Shuffle all the library-related stuff around again.  Move everything test case-related into a separate section.  I need to deal with strange dependencies in a tidy way.
+# TODO ~~~ Shuffle all the library-related stuff around again.  Move everything test case-related into a separate section.  I need to deal with strange dependencies (functions depending on functions) in a tidy way.
 
 
 # TODO:  I have a major looming issue with regular expression search/replace
@@ -418,7 +418,7 @@ fun test_assert_lists_of_strings_are_equal( _: Void ):  Bool = {
 # --  Library-candidate functions, general
 # --
 
-fun check_directory( string: String ):  Bool = {
+fun check_directory( string: String ):   Bool = {
   # See also http://mythryl.org/my-Get_current_directory.html
   # getcwd ();
 
@@ -428,27 +428,25 @@ fun check_directory( string: String ):  Bool = {
   current_directory =  head( directory_list );
   string == current_directory;
 };
-fun test_check_directory( _: Void ):  Void = {
-  dir =  "/mnt/ssd/mythryl/git/compiled-website/.";
-  result =  check_directory( dir );
-  if result
-    print "yes\n";
-  else
-    print "no\n";
-  fi;
+fun test_check_directory( _: Void ):   Bool = {
+  string =  "/mnt/ssd/mythryl/git/compiled-website/.";
+  result =  check_directory( string );
+  expected = TRUE;
+  assert_bools_are_equal( expected, result );
 };
 # test_check_directory();
 
 
 
 # TODO:  Only display the current directory's name.  (separate function?)
-fun get_current_directory( _: Void ):  String = {
+fun get_current_directory( _: Void ):   String = {
   directory_list =  dir::entries''( "." );
   # TODO:  Is it necessary to sort dir::entries  ?
   directory_list =  strsort( directory_list );
   head( directory_list );
 };
-fun test_get_current_directory( _: Void ):  Void = {
+# TODO:  A proper assertion.
+fun test_get_current_directory( _: Void ):   Void = {
   result =  get_current_directory();
   printf "%s\n" result;
 };
@@ -458,20 +456,19 @@ fun test_get_current_directory( _: Void ):  Void = {
 
 # FIXME:  This needs a better name.
 # Removes the path from a string, giving only the filename.
-fun get_filename( string: String ):  String = {
+fun get_filename( string: String ):   String = {
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
   # TODO:  Sanity-checking:  Catch NOT_FOUND, throw it away and just return the string.
   regex::replace_all  "(.*)\\/"  ""  string;
 };
-fun test_get_filename( _: Void ):  Bool = {
+fun test_get_filename( _: Void ):   Bool = {
   string =  "/foo/bar/baz/filename.ext";
   expected =             "filename.ext";
   result = get_filename( string );
   assert_strings_are_equal( expected, result );
-
   # TODO:  Additional testing.
 };
-test_get_filename();
+# test_get_filename();
 
 
 
@@ -479,10 +476,10 @@ test_get_filename();
 # Removes the extension(s) from a string.
 #   filename.ext     => filename
 #   filename.ext.ext => filename
-fun remove_extension( filename: String ):  String = {
+fun remove_extension( filename: String ):   String = {
   regex::replace_first  ./\..*$/  ""  filename;
 };
-fun test_remove_extension( _: Void ):  Bool = {
+fun test_remove_extension( _: Void ):   Bool = {
   string   = "filename.ext";
   expected = "filename";
   result = remove_extension( string );
@@ -494,14 +491,14 @@ fun test_remove_extension( _: Void ):  Bool = {
 
 
 
-fun is_even( i: Int ):  Bool = {
+fun is_even( i: Int ):   Bool = {
   if ( ( i % 2 ) == 0 )
     TRUE;
   else
     FALSE;
   fi;
 };
-fun test_is_even( _: Void ):  Bool = {
+fun test_is_even( _: Void ):   Bool = {
   n =  2;
   expected =  TRUE;
   result =  is_even( n );
@@ -521,14 +518,14 @@ fun test_is_even( _: Void ):  Bool = {
 # test_is_even();
 
 
-fun is_odd( i: Int ):  Bool = {
+fun is_odd( i: Int ):   Bool = {
   if ( ( i % 2 ) == 0 )
     FALSE;
   else
     TRUE;
   fi;
 };
-fun test_is_odd( _: Void ):  Bool = {
+fun test_is_odd( _: Void ):   Bool = {
   n =  1;
   expected =  TRUE;
   result =  is_odd( n );
@@ -635,6 +632,7 @@ fun read_print( filename: String ):   Void = {
     apply printf "%s" list;
   fi;
 };
+# TODO:  A proper assertion.
 fun test_read_print( _: Void ):   Void = {
   read_print( "compiled-website.txt" );
 };
@@ -674,6 +672,7 @@ fun write_file( _: Void ):   Void = {
     printf "%s was not created!\n" filename;
   fi;
 };
+# TODO:  A proper assertion.
 fun test_write_file( _: Void ):   Void = {
   write_file();
 };
@@ -774,7 +773,27 @@ fun markup( string: String ):   String = {
   string =  markup_horizontal_rules( string );
   string =  markup_paragraphs( string );
   string;
+};   # markup( string: String ):   String
+# TODO:  Absorb the test cases from the Ruby project.
+fun test_markup( _: Void ):   Bool = {
+  string =  "test";
+  expected =  "test";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string =  "\n/emphasis/\n";
+  expected =  "\n<em>emphasis</em>\n";
+  # FIXME:  Markup is chopping off the final \n.
+  expected =  "\n<em>emphasis</em>";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string =  "/emphasis/";
+  expected =  "<em>emphasis</em>";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
 };
+# test_markup();
 
 
 
@@ -811,7 +830,11 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     file::flush         file;
     file::close_output  file;
   fi;
-};
+};   # rebuild_template( template_filename: String,  compiling_filename: String ):   Void
+# TODO:  A proper full test case.
+# fun test_rebuild_template( _: Void ):   Bool = {
+# };
+# test_rebuild_template();
 
 
 
@@ -834,6 +857,10 @@ fun post_processing( content_string: String ):   String = {
 
   content_string;
 };
+# TODO:  A proper full test case.
+# fun test_post_processing( _: Void ):   Bool = {
+# };
+# test_post_processing();
 
 
 
@@ -855,31 +882,7 @@ fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
     file::close_output  f;
   fi;
 };
-
-
-
-# --
-# --  Project test cases
-# --  (more or less)
-# TODO:  Absorb the test cases from the Ruby project.
-
-
-string =  "test";
-expected =  "test";
-result =  markup( string );
-assert_strings_are_equal( expected, result );
-
-string =  "\n/emphasis/\n";
-expected =  "\n<em>emphasis</em>\n";
-# FIXME:  Markup is chopping off the final \n.
-expected =  "\n<em>emphasis</em>";
-result =  markup( string );
-assert_strings_are_equal( expected, result );
-
-string =  "/emphasis/";
-expected =  "<em>emphasis</em>";
-result =  markup( string );
-assert_strings_are_equal( expected, result );
+# TODO:  fun test_rebuild  ?
 
 
 
@@ -945,66 +948,111 @@ fun block_matcher( string: String ):   List( String ) = {
 
   *result @ [ *buffer ];
 };
+fun test_block_matcher( _: Void ):   Bool = {
+  # Not a match
+  string =  "nomatch";
+  expected =  [ "nomatch" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Not a match
-string =  "nomatch";
-expected =  [ "nomatch" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Only a match
+  string =  "- bullet";
+  expected =  [ "", "- bullet" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Only a match
-string =  "- bullet";
-expected =  [ "", "- bullet" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Match, not a match
+  string =  "- bullet\nytesty\n";
+  expected =  [ "", "- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Match, not a match
-string =  "- bullet\nytesty\n";
-expected =  [ "", "- bullet\n", "ytesty\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Not a match, match
+  string =  "ytesty\n- bullet\n";
+  expected =  [ "ytesty\n", "- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Not a match, match
-string =  "ytesty\n- bullet\n";
-expected =  [ "ytesty\n", "- bullet\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Two consecutive matches only
+  string =  "- bullet\n- bullet\n";
+  expected =  [ "", "- bullet\n- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Two consecutive matches only
-string =  "- bullet\n- bullet\n";
-expected =  [ "", "- bullet\n- bullet\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Two consecutive matches, not a match
+  string =  "- bullet\n- bullet\nytesty\n";
+  expected =  [ "", "- bullet\n- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Two consecutive matches, not a match
-string =  "- bullet\n- bullet\nytesty\n";
-expected =  [ "", "- bullet\n- bullet\n", "ytesty\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Not a match, two consecutive matches, not a match
+  string =  "foo\n- bullet\n- bullet\nytesty\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Not a match, two consecutive matches, not a match
-string =  "foo\n- bullet\n- bullet\nytesty\n";
-expected =  [ "foo\n", "- bullet\n- bullet\n", "ytesty\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Not a match, two consecutive matches
+  string =  "foo\n- bullet\n- bullet\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Not a match, two consecutive matches
-string =  "foo\n- bullet\n- bullet\n";
-expected =  [ "foo\n", "- bullet\n- bullet\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # Oh hell, let's get silly.
+  string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
 
-# Oh hell, let's get silly.
-string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n";
-expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n" ];
-result =  block_matcher( string );
-assert_lists_of_strings_are_equal( expected, result );
+  # FIXME:  string_to_list() chops out any duplicate \n like here             ---v
+  # string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n\n";
+  # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
+  # result =  block_matcher( string );
+  # assert_lists_of_strings_are_equal( expected, result );
+};
+# test_block_matcher();
 
-# FIXME:  string_to_list() chops out any duplicate \n like here             ---v
-# string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n\n";
-# expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
-# result =  block_matcher( string );
-# assert_lists_of_strings_are_equal( expected, result );
+
+
+fun test_all_tests( _: Void ):   Bool = {
+  test_assert_strings_are_equal();
+  # TODO:  test_not_equal
+#   test_string_multiplier();
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+  # TODO:  Proper assertions.
+#   test_two_strings_to_columnized_string();
+  # TODO:  Proper assertions.
+#   test_two_lists_of_strings_to_columnized_string();
+  # TODO:  test_not_equal
+#   test_assert_ints_are_equal();
+  # TODO:  test_not_equal
+#   test_assert_bools_are_equal();
+  # TODO:  test_not_equal
+#   test_assert_lists_of_strings_are_equal();
+  test_check_directory();
+  # TODO:  A proper assertion.
+#   test_get_current_directory();
+  # TODO:  A proper assertion.
+#   test_get_current_directory();
+  test_get_filename();
+  test_remove_extension();
+  # TODO:  test_not_equal
+#   test_is_even();
+  # TODO:  test_not_equal
+#   test_is_odd();
+  test_string_to_list();
+  test_pad_string_list();
+  test_longest_string_in_a_list_of_strings();
+  # TODO:  A proper assertion.
+#   test_read_print();
+  # TODO:  A proper assertion.
+#   test_write_file();
+  test_markup();
+  test_block_matcher();
+};
+# test_all_tests();
 
 
 

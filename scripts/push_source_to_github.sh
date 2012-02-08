@@ -21,7 +21,7 @@ working=$( \dirname $__FILE__ )/..
 # The editor that is summoned can be customized with:
 #   git config --global core.editor <editor>
 # See also $EDITOR
-\git commit
+\git commit --all
 
 # git commit -m ''
 
