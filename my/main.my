@@ -720,7 +720,8 @@ fun markup( string: String ):   String = {
         + "|" + "es" + right
         + "|" + "ed" + right
       ;
-      "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
+      "(" + left + ")(" + rx_left + ")([^" + rx_left + "].*[^" + rx_right + "])(" + rx_right + ")(" + right + ")";
+#       "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
     };
 
     # TODO:    string =  split_string_html( string );
@@ -745,11 +746,36 @@ fun markup( string: String ):   String = {
       regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
     };
 
+    # TODO:  Pull this out of the main markup function, and make separate test cases for this.
     fun markup_horizontal_rules_short( string: String ):   String = {
-      # (with content above)
-      string =  regex::replace_all_via_fn  ./([^\n])\n-{3,}\n{2}/ .{ strcat( #stringlist ) + "<hr class=\"small\">\n"; } string;
-      # (with content below)
-      string =  regex::replace_all_via_fn  ./\n{2}-{3,}\n([^\n])/ .{ "\n<hr class=\"small\">" + strcat( #stringlist ); } string;
+      hr = "<hr class=\"short\">\n";
+
+      # (with content only above)
+      string =  regex::replace_all_via_fn
+        ./([^\n])\n-{3,}\n{2}/ .{
+            ""
+          + strcat( #stringlist )
+          + hr
+          ;
+        } string;
+
+      # (with content only below)
+      string =  regex::replace_all_via_fn
+        ./\n{2}-{3,}\n([^\n])/ .{
+          "\n"
+          + hr
+          + strcat( #stringlist )
+          ;
+        } string;
+
+      # (with content above and below)
+      string =  regex::replace_all_via_fn
+        ./\n-{3,}\n([^\n])/    .{
+            "\n"
+          + hr
+          + strcat( #stringlist )
+          ;
+        } string;
       string;
     };
 
@@ -790,6 +816,11 @@ fun test_markup( _: Void ):   Bool = {
 
   string =  "/emphasis/";
   expected =  "<em>emphasis</em>";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string = "foo\n---\nbar\n";
+  expected = "foo\n<hr class=\"short\">\nbar\n";
   result =  markup( string );
   assert_strings_are_equal( expected, result );
 };
