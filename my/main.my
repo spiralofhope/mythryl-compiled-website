@@ -680,6 +680,9 @@ fun read_print( filename: String ):   Void = {
   fi;
 };
 # TODO:  A proper assertion.
+# But to do that I'd have to touch the disk, which is stupid for tests to do.
+# I ought to make this just reading a file into a string, and printing can be something like:
+#   print ( read_file( filename ) );
 fun test_read_print( _: Void ):   Void = {
   read_print( "compiled-website.txt" );
 };
