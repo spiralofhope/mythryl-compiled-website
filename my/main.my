@@ -91,19 +91,22 @@ fun reveal_unprintable_characters( string: String ):   String = {
 };
 
 # TODO:  Make a general "assert_equal() which can handle all types.
-fun assert_strings( type: Bool,  expected: String,  result: String ):   Bool = {
-  if   ( type == TRUE  and expected == result )
+fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
+  if   ( type == TRUE  and one == two )
     TRUE;
-  elif ( type == FALSE and expected != result )
+  elif ( type == FALSE and one != two )
     TRUE;
   else
-    expected =  reveal_unprintable_characters( expected );
-    result   =  reveal_unprintable_characters( result   );
-    print "\n  ** FAIL **\n";
-    printf "%s" expected;
-    print "\n  =>\n";
-    printf "%s" result;
-    print "\n";
+    one =  reveal_unprintable_characters( one );
+    two =  reveal_unprintable_characters( two );
+    print "\n  * assert_strings: ";
+    if     ( type == TRUE )
+      print "Asserted TRUE, got FALSE.\n";
+      printf "%s\n => %s\n" one two;
+    else # ( type != TRUE )
+      print "Asserted FALSE, got TRUE.\n";
+      printf "%s\n" one;
+    fi;
     FALSE;
   fi;
 };
@@ -321,7 +324,6 @@ fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
 
 
 
-# ~~TODO
 fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
 
   result =  REF TRUE;
@@ -332,19 +334,9 @@ fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: L
     foreach list_one .{
       throwaway =  #e;
       i :=  *i + 1;
-      if ( type == TRUE  and  list::nth( list_one, *i ) != list::nth( list_two, *i ) )
-        return__assert_lists_of_strings_check_content :=  FALSE;
-        one =  list::nth( list_one, *i );
-        two =  list::nth( list_two, *i );
-        one =  reveal_unprintable_characters( one );
-        two =  reveal_unprintable_characters( two );
-        # TODO:  A much more comprehensive display.
-        print "  # FAIL - Mismatched element.\n";
-        printf "  expected:  '%s'" one;
-        print "\n  =>\n";
-        printf "  result:    '%s'" two;
-        print "\n";
-      fi;
+      one =  list::nth( list_one, *i );
+      two =  list::nth( list_two, *i );
+      assert_strings( type, one, two );
     };
     if     ( type == TRUE   and  *return__assert_lists_of_strings_check_content == TRUE  )
       TRUE;
@@ -455,26 +447,14 @@ fun test_assert_lists_of_strings( _: Void ):  Bool = {
   result   =  expected;
   assert_lists_of_strings_are_equal( expected, result );
 
-  # Meant to fail, number of elements
-  expected =  [ "- bullet", "ytesty" ];
-  result   =  [ "- bullet", "ytesty", "number" ];
-  assert_lists_of_strings_are_inequal( expected, result );
-
-  # Meant to fail, content
-  expected =  [ "one", "two" ];
-  result   =  [ "three", "four" ];
-  assert_lists_of_strings_are_inequal( expected, result );
-
-
-# ~~~ TODO
-  # This should fail!
-  expected =  [ "one", "two" ];
-  result   =  expected;
-  assert_lists_of_strings_are_inequal( expected, result );
-
-  # This should fail!
+  # Different lengths
   expected =  [ "one", "two" ];
   result   =  [ "one" ];
+  assert_lists_of_strings_are_inequal( expected, result );
+
+  # Different content
+  expected =  [ "one", "two" ];
+  result   =  [ "three", "four" ];
   assert_lists_of_strings_are_inequal( expected, result );
 };
 # test_assert_lists_of_strings();
