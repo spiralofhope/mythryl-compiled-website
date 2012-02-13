@@ -21,9 +21,6 @@ site_name  = "<div class=\"top-t1\">S</div>&nbsp; <div class=\"top-t2\">piral of
 site_tagline =  "<div class=\"top-t3\">Better software is possible.</div>";
 
 
-# TODO:  Library functionality.  It's been implemented in an easy way in Mythryl, but as of this writing that easy way is only available in the git version of Mythryl.
-
-
 # --
 # -- Library-candidate functions, testing-related
 # --
