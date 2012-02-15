@@ -846,13 +846,18 @@ fun test_write_file( _: Void ):   Void = {
 # --
 
 fun markup( string: String ):   String = {
+  # FIXME - fuck, all punctuation is broken.
+  # FIXME:  _underlined_.   all on one line, will fail.  .$  isn't being caught on the right?
+
   # TODO:  RENAME
   fun markup_needs_a_name( string: String,  rx_left: String,  rx_right: String,  replace_left: String,  replace_right: String ):   String = {
     fun punctuation_regex( rx_left: String,  rx_right: String ):   String = {
       # TODO:  Why can't I directly use [:graph:], [:space:], etc?
-      graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
-      punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
+#       graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
+#       punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
+      punct = "/[^!-~]/";
       space =  "\\s";             # \s           =  [:space:]  =  whitespace
+
 
       left =
           "^"
@@ -882,7 +887,6 @@ fun markup( string: String ):   String = {
         + "|" + "ed" + right
       ;
       "(" + left + ")(" + rx_left + ")([^" + rx_left + "].*[^" + rx_right + "])(" + rx_right + ")(" + right + ")";
-#       "(" + left + ")(" + rx_left + ")(.*)(" + rx_right + ")(" + right + ")";
     };
 
     # TODO:    string =  split_string_html( string );
@@ -992,6 +996,12 @@ fun test_markup( _: Void ):   Bool = {
   result =  markup( string );
   assert_strings_are_equal( expected, result );
 
+  # FIXME:  The trailing \n is chomped.
+  string =  "/foo/.\n";
+  expected =  "<em>foo</em>.\n";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
   string = "foo\n---\nbar\n";
   expected = "foo\n<hr class=\"short\">\nbar\n";
   result =  markup( string );
@@ -1014,8 +1024,6 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     page_title =  get_filename( compiling_filename );
     page_title =  remove_extension( page_title );
     # TODO:  Table of Contents
-    # FIXME:  Browser, when clicking "Table of Contents", that text seems to wiggle.
-    #         (Probably a template issue, possibly unfixable)
     toc =  "<br>TO DO";
     # TODO:  RSS
     #        rss-feed-icon-16px-svg.png
