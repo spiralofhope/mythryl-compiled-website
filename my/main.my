@@ -7,32 +7,36 @@ site_tagline      = REF "";
 
 # TODO:  It would be nice if I could somehow make this code reusable.  It would pick up the variable names from the configuration file itself.  This isn't reasonable to implement right now.  It may not even be possible.
 fun read_configuration( filename: String ):   String = {
-exception NOT_FOUND;
-  
-  fun work_dammit( line: String ):   Void = {
-      # TODO:  Completely ignore commented lines.
-#       if ( regex::find_first "^ +#" == FALSE )
-        source_directory :=  regex::find_first_group  1  "^source_directory += +(.*)"  line;
-        target_directory :=  regex::find_first_group  1  "^target_directory += +(.*)"  line;
-        header           :=  regex::find_first_group  1            "^header += +(.*)"  line;
-        footer           :=  regex::find_first_group  1            "^footer += +(.*)"  line;
-        site_name        :=  regex::find_first_group  1         "^site_name += +(.*)"  line;
-        site_tagline     :=  regex::find_first_group  1      "^site_tagline += +(.*)"  line;
-#       fi;
-    ();
-  };
-
-
   # Read a file by line.
   if ( exists( filename ) == FALSE )
     printf "%s doesn't exist" filename;
   else
+    fun findit( rx: String,  line: String ):   String = {
+      return =  regex::find_first_group  1  rx  line
+        except
+        _ =  "";
+      return =  regex::replace_all  "\""  ""  return
+        except
+        _ = "";
+      return =  regex::replace_first  ";$"  ""  return
+        except
+        _ = "";
+      return;
+    };
 
     stream =  open_for_read( filename );
     # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
     # can_read : (Input_Stream , Int) -> Null_Or(Int );
     foreach ( read_lines( stream ) ) .{
-      work_dammit( #line );
+      # Skip commented lines.
+      if ( #line =~ "^ +#" == FALSE )
+        if ( *source_directory == "" )  source_directory :=  findit( "^source_directory += +(.*)$", #line );  fi;
+        if ( *target_directory == "" )  target_directory :=  findit( "^target_directory += +(.*)$", #line );  fi;
+        if (           *header == "" )  header           :=  findit(           "^header += +(.*)$", #line );  fi;
+        if (           *footer == "" )  footer           :=  findit(           "^footer += +(.*)$", #line );  fi;
+        if (        *site_name == "" )  site_name        :=  findit(        "^site_name += +(.*)$", #line );  fi;
+        if (     *site_tagline == "" )  site_tagline     :=  findit(     "^site_tagline += +(.*)$", #line );  fi;
+      fi;
     };
   fi;
   # Find variable names.
@@ -175,8 +179,20 @@ fun assert_not( bool: Bool ):   Bool = {
 
 fun reveal_unprintable_characters( string: String ):   String = {
   # TODO:  Tabs?
-  string =  regex::replace_all  "\\ "  "·"    string;
-  string =  regex::replace_all  "\\n"  "↵\n"  string;
+  string =  {
+    regex::replace_all  "\\ "  "·"    string
+      except
+      _ =  string
+    ;
+  };
+
+  string =  {
+    regex::replace_all  "\\n"  "↵\n"  string
+      except
+      _ =  string
+    ;
+  };
+
   string;
 };
 
@@ -595,8 +611,9 @@ fun test_get_current_directory( _: Void ):   Void = {
 # Removes the path from a string, giving only the filename.
 fun get_filename( string: String ):   String = {
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-  # TODO:  Sanity-checking:  Catch NOT_FOUND, throw it away and just return the string.
-  regex::replace_all  "(.*)\\/"  ""  string;
+  regex::replace_all  "(.*)\\/"  ""  string
+    except
+    _ =  string;
 };
 fun test_get_filename( _: Void ):   Bool = {
   string =  "/foo/bar/baz/filename.ext";
@@ -1037,7 +1054,7 @@ fun post_processing( content_string: String ):   String = {
 
 fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
   if ( exists( compiling_filename ) == FALSE )
-    print ( "File doesn't exist!: " + compiling_filename );
+    printf "File doesn't exist!: '%s'" compiling_filename;
   else
     rebuild_template( *header, compiling_filename );
     rebuild_template( *footer, compiling_filename );
