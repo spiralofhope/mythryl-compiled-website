@@ -5,22 +5,40 @@ footer            = REF "";
 site_name         = REF "";
 site_tagline      = REF "";
 
+# TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
+
+
+fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):   String = {
+  regex::replace_all  rx  replace  string
+    except
+    _ =  string;
+};
+
+
+fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):   String = {
+  regex::replace_first  rx  replace  string
+    except
+    _ =  string;
+};
+
+
+fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   String = {
+  regex::find_first_group  n  rx  string
+    except
+    _ =  "";
+};
+
+
 # TODO:  It would be nice if I could somehow make this code reusable.  It would pick up the variable names from the configuration file itself.  This isn't reasonable to implement right now.  It may not even be possible.
 fun read_configuration( filename: String ):   String = {
   # Read a file by line.
   if ( exists( filename ) == FALSE )
     printf "%s doesn't exist" filename;
   else
-    fun findit( rx: String,  line: String ):   String = {
-      return =  regex::find_first_group  1  rx  line
-        except
-        _ =  "";
-      return =  regex::replace_all  "\""  ""  return
-        except
-        _ = "";
-      return =  regex::replace_first  ";$"  ""  return
-        except
-        _ = "";
+    fun read_configuration_find( rx: String,  line: String ):   String = {
+      return =  silent_regex_find_first_group( 1, rx, line );
+      return =  silent_regex_replace_all( "\"", "", return );
+      return =  silent_regex_replace_first( ";$", "", return );
       return;
     };
 
@@ -30,12 +48,12 @@ fun read_configuration( filename: String ):   String = {
     foreach ( read_lines( stream ) ) .{
       # Skip commented lines.
       if ( #line =~ "^ +#" == FALSE )
-        if ( *source_directory == "" )  source_directory :=  findit( "^source_directory += +(.*)$", #line );  fi;
-        if ( *target_directory == "" )  target_directory :=  findit( "^target_directory += +(.*)$", #line );  fi;
-        if (           *header == "" )  header           :=  findit(           "^header += +(.*)$", #line );  fi;
-        if (           *footer == "" )  footer           :=  findit(           "^footer += +(.*)$", #line );  fi;
-        if (        *site_name == "" )  site_name        :=  findit(        "^site_name += +(.*)$", #line );  fi;
-        if (     *site_tagline == "" )  site_tagline     :=  findit(     "^site_tagline += +(.*)$", #line );  fi;
+        if ( *source_directory == "" )  source_directory :=  read_configuration_find( "^source_directory += +(.*)$", #line );  fi;
+        if ( *target_directory == "" )  target_directory :=  read_configuration_find( "^target_directory += +(.*)$", #line );  fi;
+        if (           *header == "" )  header           :=  read_configuration_find(           "^header += +(.*)$", #line );  fi;
+        if (           *footer == "" )  footer           :=  read_configuration_find(           "^footer += +(.*)$", #line );  fi;
+        if (        *site_name == "" )  site_name        :=  read_configuration_find(        "^site_name += +(.*)$", #line );  fi;
+        if (     *site_tagline == "" )  site_tagline     :=  read_configuration_find(     "^site_tagline += +(.*)$", #line );  fi;
       fi;
     };
   fi;
@@ -179,20 +197,8 @@ fun assert_not( bool: Bool ):   Bool = {
 
 fun reveal_unprintable_characters( string: String ):   String = {
   # TODO:  Tabs?
-  string =  {
-    regex::replace_all  "\\ "  "·"    string
-      except
-      _ =  string
-    ;
-  };
-
-  string =  {
-    regex::replace_all  "\\n"  "↵\n"  string
-      except
-      _ =  string
-    ;
-  };
-
+  string = silent_regex_replace_all( "\\ ", "·", string );
+  string = silent_regex_replace_all( "\\n", "↵\n", string );
   string;
 };
 
@@ -611,9 +617,7 @@ fun test_get_current_directory( _: Void ):   Void = {
 # Removes the path from a string, giving only the filename.
 fun get_filename( string: String ):   String = {
   # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-  regex::replace_all  "(.*)\\/"  ""  string
-    except
-    _ =  string;
+  silent_regex_replace_all( "(.*)\\/", "", string );
 };
 fun test_get_filename( _: Void ):   Bool = {
   string =  "/foo/bar/baz/filename.ext";
@@ -631,7 +635,7 @@ fun test_get_filename( _: Void ):   Bool = {
 #   filename.ext     => filename
 #   filename.ext.ext => filename
 fun remove_extension( filename: String ):   String = {
-  regex::replace_first  ./\..*$/  ""  filename;
+  silent_regex_replace_first( ./\..*$/, "", filename );
 };
 fun test_remove_extension( _: Void ):   Bool = {
   string   = "filename.ext";
@@ -884,6 +888,7 @@ fun markup( string: String ):   String = {
     # TODO:    string =  split_string_html( string );
 
     rx = punctuation_regex( rx_left, rx_right );
+    # TODO:  Implement silent_replace_all_via_fn() ?
     string =  regex::replace_all_via_fn  rx .{
         ( list::nth( #stringlist, 0 ) )
       + replace_left
@@ -891,7 +896,9 @@ fun markup( string: String ):   String = {
       + replace_right
       + ( list::nth( #stringlist, 4 ) )
       ;
-    } string;
+    } string
+      except
+      _ =  string;
     string;
   };
 
@@ -900,7 +907,7 @@ fun markup( string: String ):   String = {
   fun markup_horizontal_rules( string: String ):   String = {
     # With an empty space above and below.
     fun markup_horizontal_rules_long( string: String ):   String = {
-      regex::replace_all  ./\n{2}\-{3,}\n{2}/  "\n<hr class=\"long\">\n" string;
+      silent_regex_replace_all( ./\n{2}\-{3,}\n{2}/, "\n<hr class=\"long\">\n", string );
     };
 
     # TODO:  Pull this out of the main markup function, and make separate test cases for this.
@@ -914,7 +921,10 @@ fun markup( string: String ):   String = {
           + strcat( #stringlist )
           + hr
           ;
-        } string;
+        } string
+          except
+          _ =  string;
+
 
       # (with content only below)
       string =  regex::replace_all_via_fn
@@ -923,17 +933,21 @@ fun markup( string: String ):   String = {
           + hr
           + strcat( #stringlist )
           ;
-        } string;
+        } string
+          except
+          _ =  string;
+
 
       # (with content above and below)
       string =  regex::replace_all_via_fn
         ./\n-{3,}\n([^\n])/    .{
             "\n"
           + hr
-          + strcat( #stringlist )
-          ;
+          + strcat( #stringlist );
         } string;
-      string;
+      string
+        except
+        _ =  string;
     };
 
     string =  markup_horizontal_rules_long ( string );
@@ -946,7 +960,9 @@ fun markup( string: String ):   String = {
     regex::replace_all_via_fn  ./(\n{2,})/ .{
       n =  string::length( strcat( #stringlist ) );
       string_multiplier( "\n<br />", n );
-    } string;
+    } string
+      except
+      _ =  string;
   };
 
   string =  markup_needs_a_name( string, "\\/", "\\/", "<em>"    , "</em>"     );
@@ -989,11 +1005,11 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
   if ( exists( template_filename ) == FALSE )
     print ( "File doesn't exist!: " + template_filename );
   else
-    # IDEA:  It would be simple to have specific search/replace for a specific file.
-    stream =  open_for_read( template_filename );
     # TODO sanity:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
     # can_read : (Input_Stream , Int) -> Null_Or(Int );
-    list =  read_lines( stream );
+    stream =  open_for_read( template_filename );
+    contents =  read_lines( stream );
+    contents =  join "\n" contents;
 
     page_title =  get_filename( compiling_filename );
     page_title =  remove_extension( page_title );
@@ -1005,16 +1021,16 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     #        rss-feed-icon-16px-svg.png
     rss =  "";
 
-    # TODO:  Beautify / simplify.  Use a case-regex?
-    list =  map ( fn string =  regex::replace_all   "<!--SITE NAME-->"     *site_name     string ) list;
-    list =  map ( fn string =  regex::replace_all   "<!--SITE TAGLINE-->"  *site_tagline  string ) list;
-    list =  map ( fn string =  regex::replace_all   "<!--TITLE-->"         page_title    string ) list;
-    list =  map ( fn string =  regex::replace_all   "<!--TOC-->"           toc           string ) list;
-    list =  map ( fn string =  regex::replace_all   "<!--RSS-->"           rss           string ) list;
+    contents =  silent_regex_replace_all( "<!--SITE NAME-->"         , *site_name         , contents );
+    contents =  silent_regex_replace_all( "<!--SITE TAGLINE-->"      , *site_tagline      , contents );
+    contents =  silent_regex_replace_all( "<!--TITLE-->"             ,  page_title        , contents );
+    contents =  silent_regex_replace_all( "<!--TOC-->"               ,  toc               , contents );
+    contents =  silent_regex_replace_all( "<!--RSS-->"               ,  rss               , contents );
+    contents =  silent_regex_replace_all( ./\#\{compiling_filename\}/,  compiling_filename, contents );
 
     template_filename =  template_filename + "-rebuilt.html";
     file = file::open_for_write template_filename;
-    apply fprintf file "%s" list;
+    file::write( file, contents );
     file::flush         file;
     file::close_output  file;
   fi;
