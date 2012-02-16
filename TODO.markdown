@@ -4,6 +4,8 @@ Stuff nearer the top is higher priority.
 
 Sections are entirely another animal.  They're in whatever order I happened to write them in, but are referred-to in the following list.
 
+  - Adjust the code to work with Mythryl being launched from where it's at, not from ../../
+
   - Create a syntax cheat sheet, and use that as a todo list.
       - e.g. https://github.com/spiralofhope/mythryl-compiled-website/blob/master/examples/demo.html
 
@@ -14,8 +16,6 @@ Sections are entirely another animal.  They're in whatever order I happened to w
   - Review and update all items in `scripts/`
 
   - Create a project logo.  Just 'cause.
-
-  - A templating engine.
 
   - Determine how I can build everything as individual components which could be run separately (commandline or .. gui?) and are brought together through this project.
 
@@ -38,3 +38,7 @@ Sections are entirely another animal.  They're in whatever order I happened to w
   - FIXME:  I have a major looming issue with regular expression search/replace
             match for xx.*xx and replace with xxyyxx
             I would expect xxzzxxzzxx => xxyyxxyyxx but instead I get xxyyxxzzxx (the second xxzzxx is not matched)
+
+  - In its current state, the engine makes assumptions about where it is run from.  It shouldn't.
+    - For example, read_configuration() at the bottom of the script.
+
