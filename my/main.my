@@ -30,8 +30,10 @@ fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   Str
   regex::find_first_group  n  rx  string
     except
     _ = {
-      if ( *verbose ) printf "\nsilent_regex_find_first_group(), found nothing:  '%d' | '%s'\n" n rx; fi;
-#       if ( *verbose ) printf "--v\n'%s'\n--^\n" string; fi;
+      if ( *verbose )
+        printf "\nsilent_regex_find_first_group():  Warning, found nothing:  '%d' | '%s'\n" n rx;
+        printf "--v\n'%s'\n--^\n" string;
+      fi;
       "";
     };
 };
