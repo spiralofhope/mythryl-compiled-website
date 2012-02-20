@@ -8,6 +8,7 @@ header            = REF "";
 footer            = REF "";
 site_name         = REF "";
 site_tagline      = REF "";
+counter_code      = REF "";
 
 
 
@@ -59,8 +60,16 @@ fun read_configuration( filename: String ):   Void = {
     footer           :=  silent_regex_find_first_group( 1,           "\nfooter += +(.*)", contents );
     site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
     site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
+
+# ~WORKING
+#     counter_code     :=  silent_regex_find_first_group( 1,     "\ncounter_code += +\\{\\{\\{(.*)", contents );
+
   fi;
+
+# printf "'%s'" *counter_code;
+
 };
+
 
 ### Implement a configuration file
 
@@ -1298,3 +1307,48 @@ rebuild(
 #   *source_directory + "../index.asc",
 #   *target_directory + "../index.html"
 # );
+
+
+
+fun to_mangled( string: String,  search: String ):   List( String ) = {
+  # Examining `string`, determine a unique marker.
+  # Search-replace `search` with that marker.
+  [ "marker", "mangled_string" ];
+};
+string = "testing\none\n";
+list =  to_mangled( string, "\n" );
+marker         =  head( list );
+mangled_string =  strcat( tail( list ) );
+
+printf "%s\n" marker;
+print "---\n";
+printf "%s\n" mangled_string;
+
+# rng = random::make_random_number_generator( 1, 1 );
+# a =  random::nonnegative_int rng;
+# printf "%d\n" a;
+# # rng = random::make_random_number_generator( 1, 1 );
+# a =  random::nonnegative_int rng;
+# printf "%d\n" a;
+
+a =  rand::range( 1, 10 );
+printf "%d\n" a;
+
+
+
+# fun find_mangled( string: String ):   String = {
+#   list = to_mangled( String );
+# TODO: marker = list[0]
+# TODO: string = list[1]
+
+
+  # Search for the stuff between {{{ and }}} .
+  # Restore \n in that variable.
+  # Restore \n in the string.
+
+
+  # site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
+  "";
+# };
+# string = "testing";
+# a =  find_mangled( string );
