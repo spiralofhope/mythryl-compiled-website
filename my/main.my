@@ -61,69 +61,13 @@ fun read_configuration( filename: String ):   Void = {
     site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
     site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
 
-# ~WORKING
-#     counter_code     :=  silent_regex_find_first_group( 1,     "\ncounter_code += +\\{\\{\\{(.*)", contents );
-
+    # Because I don't know how to do a multi-line search, I'll cheat.
+    contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
+    # Searching between {{{ and }}}
+    counter_code     :=  silent_regex_find_first_group( 1,     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
+    counter_code     :=  silent_regex_replace_all( "\t", "\n", *counter_code );
   fi;
-
-# printf "'%s'" *counter_code;
-
 };
-
-
-### Implement a configuration file
-
-#   - Move user-serviceable variables out of the code, and implement a separate config.ini-type file.
-#     - Then I can provide a default config file, and move all my personalized stuff aside.
-#     - Afterwards I could provide a great default template which refers to those defaults.
-
-# The big problem to solve is for complex user variables like statistics/counter code.  Imagine a very complex string.
-
-#   - HEREDOCs don't exist in the traditional sense.
-#   - Escaping quotes is horrifying
-#   - Being forced to add \n manually sucks.
-
-# So.  Fix this by implementing a HEREDOC concept while pushing user variables into a config file.  I'd just have to know how to parse that config file intelligently.
-
-# ```
-# variable
-# {{
-# content
-# }}
-
-# variable
-# {{
-# content
-# }}
-# ```
-
-# So this means I can do something like..
-
-# ```
-# site_name
-# {{{
-# Example Website
-# }}}
-
-# counter_code
-# {{{
-# <!-- Start of StatCounter Code for Default Guide -->
-# <script type="text/javascript">
-# var sc_project=xxxxxxx; 
-# var sc_invisible=0; 
-# var sc_security="xxxxxxxx"; 
-# </script>
-# <script type="text/javascript"
-# src="http://www.statcounter.com/counter/counter.js"></script>
-# <noscript><div class="statcounter"><a title="tumblr
-# statistics" href="http://statcounter.com/tumblr/"
-# target="_blank"><img class="statcounter"
-# src="http://c.statcounter.com/xxxxxxx/x/xxxxxxxx/x/"
-# alt="tumblr statistics"></a></div></noscript>
-# <!-- End of StatCounter Code for Default Guide -->
-# }}}
-# ```
-
 
 
 
@@ -1010,7 +954,7 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     # can_read : (Input_Stream , Int) -> Null_Or(Int );
     stream =  open_for_read( template_filename );
     contents =  read_lines( stream );
-    contents =  join "\n" contents;
+    contents =  join "" contents;
 
     page_title =  get_filename( compiling_filename );
     page_title =  remove_extension( page_title );
@@ -1026,6 +970,7 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
     contents =  silent_regex_replace_all( "<!--TOC-->"               ,  toc               , contents );
     contents =  silent_regex_replace_all( "<!--RSS-->"               ,  rss               , contents );
     contents =  silent_regex_replace_all( ./\#\{compiling_filename\}/,  compiling_filename, contents );
+    contents =  silent_regex_replace_all( ./\#\{counter_code\}/      , *counter_code      , contents );
 
     template_filename =  template_filename + "-rebuilt.html";
     file = file::open_for_write template_filename;
@@ -1307,48 +1252,3 @@ rebuild(
 #   *source_directory + "../index.asc",
 #   *target_directory + "../index.html"
 # );
-
-
-
-fun to_mangled( string: String,  search: String ):   List( String ) = {
-  # Examining `string`, determine a unique marker.
-  # Search-replace `search` with that marker.
-  [ "marker", "mangled_string" ];
-};
-string = "testing\none\n";
-list =  to_mangled( string, "\n" );
-marker         =  head( list );
-mangled_string =  strcat( tail( list ) );
-
-printf "%s\n" marker;
-print "---\n";
-printf "%s\n" mangled_string;
-
-# rng = random::make_random_number_generator( 1, 1 );
-# a =  random::nonnegative_int rng;
-# printf "%d\n" a;
-# # rng = random::make_random_number_generator( 1, 1 );
-# a =  random::nonnegative_int rng;
-# printf "%d\n" a;
-
-a =  rand::range( 1, 10 );
-printf "%d\n" a;
-
-
-
-# fun find_mangled( string: String ):   String = {
-#   list = to_mangled( String );
-# TODO: marker = list[0]
-# TODO: string = list[1]
-
-
-  # Search for the stuff between {{{ and }}} .
-  # Restore \n in that variable.
-  # Restore \n in the string.
-
-
-  # site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
-  "";
-# };
-# string = "testing";
-# a =  find_mangled( string );

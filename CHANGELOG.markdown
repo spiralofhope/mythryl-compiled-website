@@ -1,3 +1,8 @@
+### 2012-02-19
+
+  - Implemented multi-line variables in the user configuration file.
+    - This is good for things like stat counter code.
+
 ### 2012-02-15
 
   - Implemented a user configuration file.
