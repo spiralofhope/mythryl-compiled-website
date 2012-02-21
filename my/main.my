@@ -1,3 +1,8 @@
+#!/usr/bin/mythryl
+# NOTE:  This script assumes that it will be run from the same directory it is found in.
+
+{
+
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
 
 verbose =  REF TRUE;
@@ -20,11 +25,13 @@ fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):  
 };
 
 
+
 fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):   String = {
   regex::replace_first  rx  replace  string
     except
     _ =  string;
 };
+
 
 
 fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   String = {
@@ -90,7 +97,7 @@ fun read_configuration( filename: String ):   Void = {
 #   list =  reverse( list );
 #   foreach list .{
 #     # Build `result` based on if the character matches.
-#     if ( #e == match_character )
+#     IF ( #e == match_character )
 #     else
 #     fi;
 #     printf "%c\n" #e;
@@ -111,6 +118,7 @@ fun string_to_list( string: String ):   List( String ) = {
 
   *result;
 };
+
 
 
 # TODO:  should testing be able to throw errors?
@@ -137,6 +145,8 @@ fun reveal_unprintable_characters( string: String ):   String = {
   string;
 };
 
+
+
 # TODO:  Make a general "assert_equal() which can handle all types.
 fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
   if   ( type == TRUE   and  one == two )
@@ -157,7 +167,6 @@ fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
     FALSE;
   fi;
 };
-
 fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
   assert_strings( TRUE, expected, result );
 };
@@ -174,7 +183,7 @@ fun test_assert_strings( _: Void ):   Bool = {
 
 # Append blank elements to the shorter list to make it the same length.
 # TODO:  Can I make this type-agnostic.
-fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):  List( List( String ) ) = {
+fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):   List( List( String ) ) = {
   list_one =  REF list_one;
   list_two =  REF list_two;
   # Given two lists.
@@ -218,7 +227,7 @@ fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
 
 
 
-fun string_multiplier( string: String,  n: Int ):  String = {
+fun string_multiplier( string: String,  n: Int ):   String = {
   if   ( n <  0 )
     # TODO:  Throw an error.
     printf "You want to multiply a string by a negative number? :  %d\n"  n;
@@ -229,7 +238,7 @@ fun string_multiplier( string: String,  n: Int ):  String = {
     cat( list::tabulate( n, fn _ = string ) );
   fi;
 };
-fun test_string_multiplier( _: Void ):  Bool = {
+fun test_string_multiplier( _: Void ):   Bool = {
   string   = "foo";
   n        = 2;
   expected = "foofoo";
@@ -413,10 +422,10 @@ fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: L
   fi;
   *result; 
 };
-fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):  Bool = {
+fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
   assert_lists_of_strings( TRUE, list_one, list_two );
 };
-fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):  Bool = {
+fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
   assert_lists_of_strings( FALSE, list_one, list_two );
 };
 
@@ -1234,7 +1243,7 @@ test_all_tests();
 
 # In source directory
 #   check if the equivalent file exists in the target directory.
-#   if no, re-create it.
+#   If no, re-create it.
 
 # FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
 # (update) this is probably an issue of trapping an error.  now that I know how, it should be easy enough to do.
@@ -1249,20 +1258,17 @@ fun sanity_check( _: Void ):   Void = {
 # sanity_check();
 
 
-# TODO:  Needs to be cleaned up a bit.
-filename =  "compiled-website.config";
-if ( exists( filename ) == FALSE )
-  filename = "git/my/" + filename;
-fi;
-read_configuration( filename );
+read_configuration( "compiled-website.config" );
 
-rebuild( 
+rebuild(
   *source_directory + "sandbox.asc",
   *target_directory + "sandbox.html"
 );
 
 
 rebuild(
-  *source_directory + "../index.asc",
-  *target_directory + "../index.html"
+  *source_directory + "index.asc",
+  *target_directory + "index.html"
 );
+
+};

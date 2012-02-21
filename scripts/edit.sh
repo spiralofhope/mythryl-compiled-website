@@ -36,12 +36,13 @@ live=$working/live
   "$repo/TODO.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
-  "$working/mine/header.html" \
-  "$working/mine/footer.html" \
+  "$repo/my/header.html" \
+  "$repo/my/footer.html" \
+  "$repo/demo/target/css/common.css" \
   ` # TODO:  CSS ` \
   "$repo/asc/sandbox.asc" \
-  "$working/compiled-website.config" \
   "$repo/my/compiled-website.config" \
+  ` # The original Ruby project: ` \
   "/z/compiled-website/git/rb/main.rb" \
   "/z/compiled-website/git/rb/tests/tc_main.rb" \
   "/z/compiled-website/git/rb/tests/tc_common.rb" \
@@ -50,18 +51,14 @@ live=$working/live
   "$repo/CHANGELOG.markdown" \
   &
 
-  #"$working/compiled-website.txt" \
-  #"$live/css/common.css" \
-  #"$repo/rb/header_and_footer.rb" \
-  #"$src/w/compiled-website-bugs.asc" \
-  #"$src/w/sandbox.asc" \
-  #"$repo/rb/lib/lib_main.rb" \
-  #"$repo/rb/tests/tc_main.rb" \
+cd $working/git/my/
 
 # lxterminal supports ansi cursor position save/restore.
 # https://github.com/spiralofhope/shell-random/blob/master/autotest.sh
-lxterminal --command="/l/Linux/bin/sh/autotest.sh \"$working/git/my/main.my\" --nodebug"
+lxterminal --command=" \
+  /l/Linux/bin/sh/autotest.sh \"main.my\" --nodebug" &
 
+# (All of this would need to be stashed in the above lxterminal commandline string.
 # TODO/FIXME:  If I'm using lxterminal above, then the stuff below would need to be patient.
 
 # Sync the examples from my live website into the git repository.
@@ -73,5 +70,6 @@ lxterminal --command="/l/Linux/bin/sh/autotest.sh \"$working/git/my/main.my\" --
 # It's not the pid of autotest.sh, it has to be determined from the /tmp pid files.
 #\killall mythryl mythryld
 
-# TODO:  This won't work.  Fix autotest to clean this up.
-# \rm --force $working/main.log~
+
+# TODO:  Fix autotest to do this.
+#\rm --force $working/main.log~
