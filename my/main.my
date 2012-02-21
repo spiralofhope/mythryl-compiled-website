@@ -989,20 +989,33 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
 # TODO:  Think up a better name.
 fun post_processing( content_string: String ):   String = {
   fun post_processing_redirect( content_string: String ):   String = {
-    match =  "<!--REDIRECT (.*)-->";
+    # TODO:  A case-insensitive match.
+    match =  "\\[{2}redirect (.*)\\]{2}";
     if ( ( content_string =~ match ) == FALSE )
       content_string;
     else
       page_name = regex::find_first_group 1  match  content_string;
-# ~~~~
-      content_string =  regex::replace_all  match  ( "<p>Redirecting to " + page_name + " ...</p>" )  content_string;
-      replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + "\">";
-      content_string =  regex::replace_first  "<head>"  replace  content_string;
+      content_string =  silent_regex_replace_all( match,  ( "<p>Redirecting to " + page_name + " ...</p>" ),  content_string );
+      replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + ".html\">";
+      content_string =  silent_regex_replace_first(  "<head>",  replace,  content_string );
       content_string;
     fi;
   };
 
+  # This removes all content, replacing it with the redirect.  This is a lazy way of having content be local-only.
+  fun post_processing_private( content_string: String ):   String = {
+    # TODO:  A case-insensitive match.
+    match =  "\\[{2}private\\]{2}";
+    if ( ( content_string =~ match ) == FALSE )
+      content_string;
+    else
+      "<html><head><meta http-equiv=\"refresh\" content=\"0;url=index.html\"></head><body></body></html>";
+    fi;
+  };
+
+
   content_string =  post_processing_redirect( content_string );
+  content_string =  post_processing_private( content_string );
 
   content_string;
 };
@@ -1224,6 +1237,7 @@ test_all_tests();
 #   if no, re-create it.
 
 # FIXME:  Sanity checking is impossible in this manner, because the initial "if ( winix::etc" is given an invalid directory then it'll just die then and there without passing false.  What the fuck.
+# (update) this is probably an issue of trapping an error.  now that I know how, it should be easy enough to do.
 # TODO:  Proper sanity-checking.
 #        How would I stop script processing if the checking finds a critical error?
 fun sanity_check( _: Void ):   Void = {
@@ -1248,7 +1262,7 @@ rebuild(
 );
 
 
-# rebuild(
-#   *source_directory + "../index.asc",
-#   *target_directory + "../index.html"
-# );
+rebuild(
+  *source_directory + "../index.asc",
+  *target_directory + "../index.html"
+);

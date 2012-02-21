@@ -36,10 +36,12 @@ live=$working/live
   "$repo/TODO.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
-  "$repo/my/header.html" \
-  "$repo/my/footer.html" \
+  "$working/mine/header.html" \
+  "$working/mine/footer.html" \
   ` # TODO:  CSS ` \
   "$repo/asc/sandbox.asc" \
+  "$working/compiled-website.config" \
+  "$repo/my/compiled-website.config" \
   "/z/compiled-website/git/rb/main.rb" \
   "/z/compiled-website/git/rb/tests/tc_main.rb" \
   "/z/compiled-website/git/rb/tests/tc_common.rb" \
@@ -67,8 +69,9 @@ lxterminal --command="/l/Linux/bin/sh/autotest.sh \"$working/git/my/main.my\" --
 #\cp --force  $src/w/compiled-website-demo.asc   $repo/examples/demo.asc
 #\cp --force   $live/compiled-website-demo.html  $repo/examples/demo.html
 
-# TODO:  Kill just the ruby pid on exit.
-# It's not the pid of autotest.sh, it has to be determine from the /tmp pid files.
-#\killall ruby
+# TODO:  Kill the daemon pid on exit.
+# It's not the pid of autotest.sh, it has to be determined from the /tmp pid files.
+#\killall mythryl mythryld
 
-\rm --force $working/main.log~
+# TODO:  This won't work.  Fix autotest to clean this up.
+# \rm --force $working/main.log~
