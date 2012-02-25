@@ -36,11 +36,11 @@ live=$working/live
   "$repo/TODO.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
-  "$repo/my/header.html" \
-  "$repo/my/footer.html" \
+  "$repo/demo/header.html" \
+  "$repo/demo/footer.html" \
   "$repo/demo/target/css/common.css" \
   ` # TODO:  CSS ` \
-  "$repo/asc/sandbox.asc" \
+  "$repo/demo/source/sandbox.asc" \
   "$repo/my/compiled-website.config" \
   ` # The original Ruby project: ` \
   "/z/compiled-website/git/rb/main.rb" \

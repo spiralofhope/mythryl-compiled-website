@@ -13,7 +13,9 @@ header            = REF "";
 footer            = REF "";
 site_name         = REF "";
 site_tagline      = REF "";
+site_url          = REF "";
 counter_code      = REF "";
+copyright         = REF "";
 
 
 
@@ -67,6 +69,8 @@ fun read_configuration( filename: String ):   Void = {
     footer           :=  silent_regex_find_first_group( 1,           "\nfooter += +(.*)", contents );
     site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
     site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
+    site_url         :=  silent_regex_find_first_group( 1,         "\nsite_url += +(.*)", contents );
+    copyright        :=  silent_regex_find_first_group( 1,        "\ncopyright += +(.*)", contents );
 
     # Because I don't know how to do a multi-line search, I'll cheat.
     contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
@@ -975,11 +979,14 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
 
     contents =  silent_regex_replace_all( "<!--SITE NAME-->"         , *site_name         , contents );
     contents =  silent_regex_replace_all( "<!--SITE TAGLINE-->"      , *site_tagline      , contents );
+    contents =  silent_regex_replace_all( "<!--SITE URL-->"          , *site_url          , contents );
     contents =  silent_regex_replace_all( "<!--TITLE-->"             ,  page_title        , contents );
     contents =  silent_regex_replace_all( "<!--TOC-->"               ,  toc               , contents );
     contents =  silent_regex_replace_all( "<!--RSS-->"               ,  rss               , contents );
+    contents =  silent_regex_replace_all( "<!--COPYRIGHT-->"         , *copyright         , contents );
     contents =  silent_regex_replace_all( ./\#\{compiling_filename\}/,  compiling_filename, contents );
     contents =  silent_regex_replace_all( ./\#\{counter_code\}/      , *counter_code      , contents );
+
 
     template_filename =  template_filename + "-rebuilt.html";
     file = file::open_for_write template_filename;
