@@ -1,0 +1,6 @@
+http://humanstxt.org/
+http://humanstxt.org/humans.txt
+
+/* TEAM */
+Chief Developer:  spiralofhope
+Contact:  @lavabit.com
