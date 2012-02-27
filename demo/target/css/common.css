@@ -1,0 +1,229 @@
+@charset "utf-8";
+
+
+
+/*
+    Header
+*/
+div.header {
+  min-width: 13em;
+  max-width: 1000px;
+  margin: 4em auto;
+  margin-top: -0px;
+  margin-bottom: -55px;
+  padding: 1em;
+  overflow: auto;
+}
+  div.float-left {
+    float: left;
+  }
+    div.top-t0 {
+      white-space: nowrap;
+/*
+      Since my image is 96px, I create three lines.  The top is a <br>, the second is the name, the third is the tagline.
+      96/3 = 32
+      I struggled at length to have the name and tagline next on top of one another and bottom-aligned, but this seems impossible without inelegant solutions.
+*/
+      line-height: 32px;
+    }
+      div.top-t0 img {
+        float: left;
+      }
+      div.top-t1 {
+        display: inline;
+        font-size: 1.5em;
+        margin-right: -0.3em;
+      }
+      div.top-t2 {
+        display: inline;
+        font-size: 1em;
+      }
+      div.top-t3 {
+        display: block;
+        font-size: 0.5em;
+      }
+  div.float-right {
+    float: right;
+    text-align: right;   /*this will align it right for IE*/
+    margin: 0 0 auto 0; /* ?? this will align it right for Mozilla*/
+  }
+
+
+
+/*
+    Search box
+*/
+div.float-right input {
+  text-align: right;   /*this will align it right for IE*/
+  margin: 0 0 auto 0; /* ?? this will align it right for Mozilla*/
+}
+div.toc {
+  text-align: left !important;   /*this will align it right for IE*/
+  margin: 0 auto 0 0 !important; /* ?? this will align it right for Mozilla*/
+}
+/*
+  Used mainly for the table of contents.
+*/
+p.hidden { display: none; }
+p.unhidden { display: block; }
+
+
+
+/*
+  The central text area, not the top and not the footer.
+*/
+div.main {
+  max-width: 1000px;
+  margin: 4em auto;
+  margin-bottom: -50px;
+  padding: 1em;
+}
+
+
+
+/*
+    Footer
+*/
+div.footer {
+/*
+  The footer text doesn't line up with paragraphs above, because paragraphs are usually in header-sections, which have a small margin/indent.
+*/
+  max-width: 1000px;
+  margin: 4em auto;
+  padding-left: 2em;
+/*
+  In-page anchors, like the table of contents, don't properly hop to links at the bottom of the document.  The user is expecting the anchor to show the content at the top of the page.  So I create padding at the bottom of the page.  The downside is that the scroll bar will appear with all documents, even small ones where it normally wouldn't.
+  
+  This amount is probably good enough except for very strange screen resolutions, text sizes or other madness.  Making this number any bigger would make the scroll grab area uncomfortably small for many pages.  I don't know who's smart idea it was to make that grab area change size.
+*/
+  margin-bottom: 100em;
+}
+
+
+
+/*
+FIXME:  All of this should be body-only.
+*/
+body table {
+  border-collapse: collapse;
+}
+body table caption {
+  margin-left: inherit;
+  margin-right: inherit;
+}
+/* replaced by the syntax highlighter:
+body code,
+*/
+body pre {
+  padding: 4px;
+}
+body tt {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+body hr {
+  height: 1px;
+  border: 0;
+  color: inherit;
+  background-color: #4682b4;
+}
+body hr.long {
+  width: 100%;
+  border: 0;
+  height: 1px;
+}
+body hr.short {
+  text-align: left;   /*this will align it left for IE*/
+  margin: 0 auto 0 0; /*this will align it left for Mozilla*/
+  width: 25%;
+}
+
+body h1 {
+  margin-bottom: -5px;
+  text-indent: 20px;
+}
+body h2 {
+  margin-bottom: 5px;
+  text-indent: 20px;
+}
+body h3 {
+  margin-bottom: 5px;
+  text-indent: 20px;
+}
+body h4 {
+  margin-bottom: 5px;
+  text-indent: 20px;
+}
+body h5 {
+  margin-bottom: 5px;
+  text-indent: 20px;
+}
+body h6 {
+  margin-bottom: 5px;
+  text-indent: 20px;
+}
+body a.h-link {
+  display: none;
+}
+
+
+
+/*
+FIXME:  All of this should be body-only.
+*/
+/*
+    Funky anchor links within headers (<h1> etc)
+*/
+body h1:hover a.h-link,
+body h2:hover a.h-link {
+/*
+  This was added to avoid an issue with the bottom border jumping around when this new different-font-item is unveiled.
+*/
+  display: inline;
+}
+body h3:hover a.h-link,
+body h4:hover a.h-link,
+body h5:hover a.h-link,
+body h6:hover a.h-link {
+  display: inline;
+}
+
+
+
+/*
+FIXME:  All of this should be body-only.
+*/
+/*
+    Paragraphs within headers (<h1> etc)
+*/
+body div.p1 {
+  padding-left: 10px;
+}
+body div.p2 {
+  padding-left: 10px;
+}
+body div.p3 {
+  padding-left: 10px;
+}
+body div.p4 {
+  padding-left: 10px;
+}
+body div.p5 {
+  padding-left: 10px;
+}
+body div.p6 {
+  padding-left: 10px;
+}
+
+
+
+/*
+  TODO: Manual Lists
+*/
+body div.list-number {
+  text-indent:  -1.4em;
+  padding-left: 2.4em;
+}
+
+
+

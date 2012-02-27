@@ -1,0 +1,216 @@
+@charset "utf-8";
+
+
+
+div.logo_dark {
+  display: none;
+}
+div.logo_default {
+}
+
+
+/*
+@charset "utf-8";
+*/
+
+/*
+http://www.w3schools.com/html/html_colornames.asp
+
+The W3C HTML and CSS standards have listed only 16 valid color names:
+aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, teal, white, and yellow.
+
+  steelblue         #4682B4
+  lightsteelblue    #B0C4DE
+  lightgrey         #D3D3D3
+  #8B0000           #8B0000
+*/
+
+/*
+  Everything
+*/
+a {
+/*color: #B0C4DE; */
+  background-color: inherit;
+  text-decoration: none;
+}
+a:visited {
+/*color: #4682b4; */
+  background-color: inherit;
+}
+a:hover {
+/*color: #b0c4de; */
+  background-color: #D3D3D3;
+}
+a:hover:visited {
+  color: inherit;
+  background-color: #D3D3D3;
+}
+div.main p a.new, ul a.new, li a.new, td a.new {
+  color: inherit;
+  background-color: inherit;
+}
+div.main p:hover a.new, ul:hover a.new, li:hover a.new, td:hover a.new {
+  color: red;
+  background-color: inherit;
+}
+div.main p:hover a.new:visited, ul:hover a.new:visited, li:hover a.new:visited, td:hover a.new:visited {
+  color: #8B0000;
+  background-color: inherit;
+}
+/*
+  Borders on image-links has to be the stupidest idea ever.
+*/
+a img{ border: 0; }
+body {
+  color: black;
+  background-color: #D3D3D3;
+}
+div.header {
+  border: 1px solid #4682b4;
+  color: inherit;
+  background-color: white;
+/*
+  Mozilla/Firefox-based browsers only, since there's no proper standard for this.
+  I'll be damned if I'm going to screw around with the "solutions" for rounded corners.  Hackish nested divs, images and javascript?  No way.
+  Besides, everyone else simply ignores these tags and displays a "good enough" normal corner.  No harm done.
+*/
+  -moz-border-radius: 10px;
+  -moz-padding-start: 30px;
+}
+      div.top-t1 {
+        color: #4682b4;
+        background-color: inherit;
+      }
+/*
+    Search box
+*/
+    div.float-right input {
+      color: black;
+      background-color: #f7f7f7;
+      font-size: 10px;
+      border: 1px #4682b4 dashed;
+    }
+  div.float-right {
+    float: right;
+    text-align: right;   /*this will align it right for IE*/
+    margin: 0 0 auto 0; /* ?? this will align it right for Mozilla*/
+  }
+
+/*
+  The central text area, not the top and not the footer.
+*/
+div.main {
+  border: 1px solid #4682b4;
+  color: inherit;
+  background-color: white;
+/*
+  Mozilla/Firefox-based browsers only.
+*/
+  -moz-border-radius: 10px;
+  -moz-padding-start: 30px;
+}
+div.footer {
+  color: black;
+  background-color: inherit;
+}
+div.footer a {
+  color: inherit;
+  background-color: inherit;
+}
+
+body table {
+  margin: 1em 1em 1em 0;
+  color: inherit;
+  background: #f7f7f7;
+  border: 1px #aaaaaa solid;
+}
+body table td {
+  border: 1px #aaaaaa solid;
+  padding: 0.2em;
+}
+body table th {
+  color: inherit;
+  background: #d0d0d0;
+  text-align: center;
+}
+/* replaced by the syntax highlighter:
+body code,
+*/
+body pre,
+body tt {
+  border: 1px #4682b4 dashed;
+  color: inherit;
+  background: #f7f7f7;
+}
+body h1 {
+  font: bold italic 2em/1em "Times New Roman", "MS Serif", "New York", serif;
+  border-top: solid #4682b4 thin;
+  border-bottom: solid #4682b4 medium;
+  color: inherit;
+  background-color: #f2f2f2;
+}
+body h2 {
+  font: bold italic 2em/1em "Times New Roman", "MS Serif", "New York", serif;
+  border-top: solid #4682b4 thin;
+  border-bottom: solid #4682b4 thin;
+  color: inherit;
+  background-color: #f8f8f8;
+}
+body h3 {
+  border-top: solid #D3D3D3 thin;
+  border-bottom: solid #D3D3D3 thin;
+  color: inherit;
+  background-color: #f8f8f8;
+}
+body h4 {
+  border-top: solid #D3D3D3 thin;
+  border-bottom: solid #D3D3D3 thin;
+  color: inherit;
+  background-color: #f8f8f8;
+}
+body h5 {
+  border-top: solid #D3D3D3 thin;
+  border-bottom: solid #D3D3D3 thin;
+  color: inherit;
+  background-color: #f8f8f8;
+}
+body h6 {
+  border-top: solid #D3D3D3 thin;
+  border-bottom: solid #D3D3D3 thin;
+  color: inherit;
+  background-color: #f8f8f8;
+}
+
+
+
+/*
+  Funky anchor links within headers (<h1> etc)
+*/
+body a.h-link {
+}
+body h1 a.h-link,
+body h2 a.h-link {
+  font: bold italic 2em/1em "Times New Roman", "MS Serif", "New York", serif;
+  font-size: 0.5em;
+}
+body h3 a.h-link,
+body h4 a.h-link,
+body h5 a.h-link,
+body h6 a.h-link {
+  font-size: 0.5em;
+}
+
+
+
+/*
+    Paragraphs within headers.
+*/
+body div.p1 {
+}
+body div.p2, 
+body div.p3, 
+body div.p4, 
+body div.p5, 
+body div.p6 {
+  border-left: 1px dashed #B0C4DE;
+}
