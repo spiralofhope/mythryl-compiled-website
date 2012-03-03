@@ -143,9 +143,13 @@ fun assert_not( bool: Bool ):   Bool = {
 
 
 fun reveal_unprintable_characters( string: String ):   String = {
-  # TODO:  Tabs?
+    #  Spaces
   string = silent_regex_replace_all( "\\ ", "·", string );
+    #  Newlines
   string = silent_regex_replace_all( "\\n", "↵\n", string );
+    #  Tabs
+  string = silent_regex_replace_all( "\\t", "»\n", string );
+    #
   string;
 };
 
