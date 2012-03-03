@@ -545,7 +545,7 @@ fun check_directory( string: String ):   Bool = {
   string == current_directory;
 };
 fun test_check_directory( _: Void ):   Bool = {
-  string =  "/mnt/ssd/mythryl/git/compiled-website/.";
+  string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
   result =  check_directory( string );
   expected = TRUE;
   assert_bools_are_equal( expected, result );
@@ -812,11 +812,14 @@ fun markup( string: String ):   String = {
 #       graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
 #       punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
       punct = "/[^!-~]/";
+      # FIXME:  Ok, what the fuck.  punct doesn't include a period?!
+      punct = punct + "|\\.";
       space =  "\\s";             # \s           =  [:space:]  =  whitespace
 
 
       left =
-          "^"
+          ""
+        + "|" + "^"                                                           # I think this works ok.
         + "|" + space
         ;
       left =
@@ -827,7 +830,8 @@ fun markup( string: String ):   String = {
       ;
 
       right =
-          "$"
+          ""
+        + "|" + "\\n"                                                   # "$" isn't appropriate for the way I'm doing things.
         + "|" + space
         ;
       right =
@@ -842,10 +846,17 @@ fun markup( string: String ):   String = {
         + "|" + "es" + right
         + "|" + "ed" + right
       ;
-      "(" + left + ")(" + rx_left + ")([^" + rx_left + "].*[^" + rx_right + "])(" + rx_right + ")(" + right + ")";
+
+        "("   + left     + ")"
+      + "("   + rx_left  + ")"
+      + "([^" + rx_left  + "].*[^" + rx_right + "])"
+      + "("   + rx_right + ")"
+      + "("   + right    + ")"
+      ;
     };
 
-    # TODO:    string =  split_string_html( string );
+    # TODO:  implement split_string_html
+    #        then do some kind of:   string =  split_string_html( string );
 
     rx = punctuation_regex( rx_left, rx_right );
     # TODO:  Implement silent_replace_all_via_fn() ?
@@ -876,7 +887,7 @@ fun markup( string: String ):   String = {
 
       # (with content only above)
       string =  regex::replace_all_via_fn
-        ./([^\n])\n-{3,}\n{2}/ .{
+        ./([^\n])\n-{2,}\n{2}/ .{
             ""
           + strcat( #stringlist )
           + hr
@@ -888,7 +899,7 @@ fun markup( string: String ):   String = {
 
       # (with content only below)
       string =  regex::replace_all_via_fn
-        ./\n{2}-{3,}\n([^\n])/ .{
+        ./\n{2}-{2,}\n([^\n])/ .{
           "\n"
           + hr
           + strcat( #stringlist )
@@ -900,7 +911,7 @@ fun markup( string: String ):   String = {
 
       # (with content above and below)
       string =  regex::replace_all_via_fn
-        ./\n-{3,}\n([^\n])/    .{
+        ./\n-{2,}\n([^\n])/    .{
             "\n"
           + hr
           + strcat( #stringlist );
@@ -942,8 +953,6 @@ fun test_markup( _: Void ):   Bool = {
 
   string =  "\n/emphasis/\n";
   expected =  "\n<em>emphasis</em>\n";
-  # FIXME:  Markup is chopping off the final \n.
-  expected =  "\n<em>emphasis</em>";
   result =  markup( string );
   assert_strings_are_equal( expected, result );
 
@@ -952,13 +961,12 @@ fun test_markup( _: Void ):   Bool = {
   result =  markup( string );
   assert_strings_are_equal( expected, result );
 
-  # FIXME:  The trailing \n is chomped.
-  string =  "/foo/.\n";
-  expected =  "<em>foo</em>.\n";
+  string =  "/foo/.\n ";
+  expected =  "<em>foo</em>.\n ";
   result =  markup( string );
   assert_strings_are_equal( expected, result );
 
-  string = "foo\n---\nbar\n";
+  string = "foo\n--\nbar\n";
   expected = "foo\n<hr class=\"short\">\nbar\n";
   result =  markup( string );
   assert_strings_are_equal( expected, result );
