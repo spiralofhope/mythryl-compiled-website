@@ -2,11 +2,13 @@
 # NOTE:  This script assumes that it will be run from the same directory it is found in.
 
 {
-
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
+
+# --
 
 verbose =  REF TRUE;
 
+# The setup for user variables.
 source_directory  = REF "";
 target_directory  = REF "";
 header            = REF "";
@@ -17,6 +19,10 @@ site_url          = REF "";
 counter_code      = REF "";
 copyright         = REF "";
 
+# --
+
+# FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
+separator = REF "\\/";
 
 
 
@@ -259,13 +265,12 @@ fun test_string_multiplier( _: Void ):   Bool = {
   result = ( string_multiplier( string, n ) );
   assert_strings_are_equal( expected, result );
 
-#   string   = "foo";
-#   n        = -1;
-#   expected = "";
+  string   = "foo";
+  n        = -1;
+  expected = "";
 #   result = ( string_multiplier( string, n ) );
-#   assert_strings_are_equal( expected, result );
+#   assert_strings_are_inequal( expected, result );
 
-  # TODO:  not_equal()
   string   = "foo";
   n        = 2;
   expected = "FAIL TEST";
@@ -302,7 +307,7 @@ fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,
 
   *result;
 };
-# TODO - proper assertions.
+# TODO: proper assertions.
 fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
   list = [ "one", "two", "three" ];
   prepended_text =  "'";
@@ -568,8 +573,7 @@ fun test_get_current_directory( _: Void ):   Void = {
 # FIXME:  This needs a better name.
 # Removes the path from a string, giving only the filename.
 fun get_filename( string: String ):   String = {
-  # FIXME Windows:  I need some sort of __SEPARATOR__ variable, which understands "/" on Linux, and "\" on Windows.
-  silent_regex_replace_all( "(.*)\\/", "", string );
+  silent_regex_replace_all( "(.*)" + *separator, "", string );
 };
 fun test_get_filename( _: Void ):   Bool = {
   string =  "/foo/bar/baz/filename.ext";
