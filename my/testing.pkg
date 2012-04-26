@@ -1,0 +1,444 @@
+#!/usr/bin/mythryl
+
+# --
+# -- Library-candidate functions, testing-related
+# --
+
+{
+
+# string_to_list() ideas
+# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
+#         http://mythryl.org/my-String_To_List.html
+#         String_To_List { first, between, last, string };
+
+# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
+# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
+#   match_character = "\n";
+#   result =  REF [];
+#   list =  explode( "abc\ndef\n" );
+# Ugh, I'd have to turn the list of chars into a list of strings.
+#   list =  reverse( list );
+#   foreach list .{
+#     # Build `result` based on if the character matches.
+#     IF ( #e == match_character )
+#     else
+#     fi;
+#     printf "%c\n" #e;
+#   };
+# apply  printf "'%s'\n" *result;
+
+fun string_to_list( string: String ):   List( String ) = {
+  result =  REF [];
+
+  if ( ( string =~ "\n" ) == FALSE )
+    result :=  [ string ];
+  else
+    list =  tokens .{ #c == '\n'; } string;
+    foreach list .{
+      result :=  *result @ [ #e + "\n" ];
+    };
+  fi;
+
+  *result;
+};
+
+
+
+# TODO:  should testing be able to throw errors?
+# TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
+# TODO:  Numbers, stats, etc.
+# TODO:  comparing Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
+# TODO:  Make an assert_not() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_foo test function.
+#        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
+
+fun assert_not( bool: Bool ):   Bool = {
+  if ( bool == TRUE )
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+
+
+
+fun reveal_unprintable_characters( string: String ):   String = {
+    #  Spaces
+  string = silent_regex_replace_all( "\\ ", "·", string );
+    #  Newlines
+  string = silent_regex_replace_all( "\\n", "↵\n", string );
+    #  Tabs
+  string = silent_regex_replace_all( "\\t", "»\n", string );
+    #
+  string;
+};
+
+
+
+# TODO:  Make a general "assert_equal() which can handle all types.
+fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
+  if   ( type == TRUE   and  one == two )
+    TRUE;
+  elif ( type == FALSE  and  one != two )
+    TRUE;
+  else
+    one =  reveal_unprintable_characters( one );
+    two =  reveal_unprintable_characters( two );
+    print "\n  * assert_strings: ";
+    if     ( type == TRUE )
+      print "Asserted TRUE, got FALSE.\n";
+      printf "%s\n => %s\n" one two;
+    else # ( type != TRUE )
+      print "Asserted FALSE, got TRUE.\n";
+      printf "%s\n" one;
+    fi;
+    FALSE;
+  fi;
+};
+fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
+  assert_strings( TRUE, expected, result );
+};
+fun assert_strings_are_inequal( expected: String,  result: String ):   Bool = {
+  assert_strings( FALSE, expected, result );
+};
+fun test_assert_strings( _: Void ):   Bool = {
+  assert_strings_are_equal( "", "" );
+  assert_strings_are_inequal( "one", "two" );
+};
+# test_assert_strings();
+
+
+
+# Append blank elements to the shorter list to make it the same length.
+# TODO:  Can I make this type-agnostic.
+fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):   List( List( String ) ) = {
+  list_one =  REF list_one;
+  list_two =  REF list_two;
+  # Given two lists.
+  # Determine which is longer.
+  # Determine how much longer it is.
+  l1 =  list::length( *list_one );
+  l2 =  list::length( *list_two );
+  if   ( l1 >  l2 )
+    ++l2;
+    foreach ( l2..l1 ) .{
+      throwaway =  #i;
+      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
+      list_two :=  *list_two @ [ "" ];
+    };
+  elif ( l1 <  l2 )
+    ++l1;
+    foreach ( l1..l2 ) .{
+      throwaway =  #i;
+      list_one :=  *list_one @ [ "" ];
+    };
+  fi;
+
+  [ *list_one, *list_two ];
+};
+
+
+
+# TODO:  Homework for the reader.
+#        1) Implement a function which reports the position of the longest string.
+#        2) What if multiple strings are the same length?
+#        2a) Implement another function to report how many n-length strings there are.
+#        2b) Implement another function to report the positions of all n-length strings.
+fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
+  n =  REF 0;
+  foreach list .{
+    len =  string::length( #e );
+    if ( len > *n ) n :=  len; fi;
+  };
+  *n;
+};
+
+
+
+fun string_multiplier( string: String,  n: Int ):   String = {
+  if   ( n <  0 )
+    # TODO:  Throw an error.
+    printf "You want to multiply a string by a negative number? :  %d\n"  n;
+    "";
+  elif ( n == 0 )
+    "";
+  else
+    cat( list::tabulate( n, fn _ = string ) );
+  fi;
+};
+fun test_string_multiplier( _: Void ):   Bool = {
+  string   = "foo";
+  n        = 2;
+  expected = "foofoo";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = 0;
+  expected = "";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = -1;
+  expected = "";
+#   result = ( string_multiplier( string, n ) );
+#   assert_strings_are_inequal( expected, result );
+
+  string   = "foo";
+  n        = 2;
+  expected = "FAIL TEST";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_inequal( expected, result );
+};
+# test_string_multiplier();
+
+
+
+fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,  appended_text ):   String = {
+  column_width =  longest_string_in_a_list_of_strings( list );
+  column_width =  column_width + string::length( prepended_text );
+  column_width =  column_width + string::length( appended_text  );
+
+  result =  REF "";
+  foreach list .{
+    n =
+        column_width
+      - string::length( #e )
+      - string::length( prepended_text )
+      - string::length( appended_text )
+      ;
+    spaces =  string_multiplier( " ", n );
+    result :=
+        *result
+      + prepended_text
+      + #e
+      + appended_text
+      + spaces
+      + "\n"
+      ;
+  };
+
+  *result;
+};
+# TODO: proper assertions.
+fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
+  list = [ "one", "two", "three" ];
+  prepended_text =  "'";
+  appended_text  =  "'";
+
+  result =  list_of_strings_to_columnized_string( list, prepended_text, appended_text );
+  print result;
+};
+# test_list_of_strings_to_columnized_string();
+
+
+
+fun two_strings_to_columnized_string( string_one: String,  string_two: String, separator: String ):   String = {
+  # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
+  list_one =  string_to_list( string_one );
+  list_two =  string_to_list( string_two );
+
+  # Ensure the two lists are the same length.
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+
+  result =  REF "";
+  i      =  REF -1;
+  foreach list_one .{
+    i :=  *i + 1;
+    one  =  REF "";
+    one :=  string::chomp( #e );
+    if ( *one == "" )
+      n =  longest_string_in_a_list_of_strings( list_one );
+      # I'm not sure why I need to do this, but whatever.
+      n =  n - 1;
+      one :=  string_multiplier( " ", n );
+    fi;
+    two =  list::nth( list_two, *i );
+    result :=
+        *result
+      + *one
+      + separator
+      + two
+      ;
+  };
+
+  *result;
+};
+fun test_two_strings_to_columnized_string( _: Void ):   Void = {
+  string_one =  "one\ntwo\n";
+  string_two =  "three\n";
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
+  print result;
+
+  string_one =  "one\ntwo";
+  string_two =  "three\nfour\nfive";
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
+  print result;
+};
+# test_two_strings_to_columnized_string();
+
+
+
+fun two_lists_of_strings_to_columnized_string( list_one: List( String ),  list_two: List( String ) ):   String = {
+  string_one =  list_of_strings_to_columnized_string( list_one, "'", "'" );
+  string_two =  list_of_strings_to_columnized_string( list_two, "'", "'" );
+  separator =  "   ";
+  two_strings_to_columnized_string( string_one, string_two, separator );
+};
+fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
+  list_one =  [ "one", "two", "three" ];
+  list_two =  [ "four", "five", "six" ];
+  # 'one'     'four'
+  # 'two'     'five'
+  # 'three'   'six'
+  # Odd bug, it's showing up with an extra space at the very end, like so:
+  # I'm not in the mood to hunt this crap down.  I probably won't be in the mood later either.  Sigh.
+  expected = "'one'     'four'\n'two'     'five'\n'three'   'six' \n";
+  
+  expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
+  result =  two_lists_of_strings_to_columnized_string( list_one, list_two );
+  assert_strings_are_equal( expected, result );
+};
+# test_two_lists_of_strings_to_columnized_string();
+
+
+
+fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+
+  result =  REF TRUE;
+
+  fun assert_lists_of_strings_check_content( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+    i =  REF -1;
+    return__assert_lists_of_strings_check_content =  REF TRUE;
+    foreach list_one .{
+      throwaway =  #e;
+      i :=  *i + 1;
+      one =  list::nth( list_one, *i );
+      two =  list::nth( list_two, *i );
+      assert_strings( type, one, two );
+    };
+    if     ( type == TRUE   and  *return__assert_lists_of_strings_check_content == TRUE  )
+      TRUE;
+    elif   ( type == FALSE  and  *return__assert_lists_of_strings_check_content == FALSE )
+      TRUE;
+    else
+      FALSE;
+    fi;
+  };
+
+
+  if     ( type == TRUE )
+    if     ( list::length( list_one ) == list::length( list_two ) )
+      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+    else # ( list::length( list_one ) != list::length( list_two ) )
+      tmp =  two_lists_of_strings_to_columnized_string( list_one, list_two );
+      tmp =  reveal_unprintable_characters( tmp );
+      print "  # FAIL - Lists are different lengths.\n";
+      result :=  FALSE;
+    fi;
+  else # ( type != TRUE )
+    if     ( list::length( list_one ) == list::length( list_two ) )
+      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+    else # ( list::length( list_one ) != list::length( list_two ) )
+      result :=  TRUE;
+    fi;
+  fi;
+  *result; 
+};
+fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_lists_of_strings( TRUE, list_one, list_two );
+};
+fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_lists_of_strings( FALSE, list_one, list_two );
+};
+
+
+
+fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
+  if   ( type == TRUE  and one == two )
+    TRUE;
+  elif ( type == FALSE and one != two )
+    TRUE;
+  else
+    printf "  # FAIL:  expected %d result %d\n"  one two;
+    FALSE;
+  fi;
+};
+
+fun assert_ints_are_equal( one: Int,  two: Int ):   Bool = {
+  assert_ints( TRUE, one, two );
+};
+fun assert_ints_are_inequal( one: Int,  two: Int ):   Bool = {
+  assert_ints( FALSE, one, two );
+};
+fun test_assert_ints( _: Void ):   Bool ={
+  expected =  1;
+  result   =  1;
+  assert_ints_are_equal( expected, result );
+
+  expected =  1;
+  result   =  2;
+  assert_ints_are_inequal( expected, result );
+};
+# test_assert_ints();
+
+
+
+fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
+  if   ( type == TRUE  and expected == result )
+    TRUE;
+  elif ( type == FALSE and expected != result )
+    TRUE;
+  else
+    print "\n  ** FAIL **\n";
+    print "expected ";
+    if ( expected ) print "TRUE"; else print "FALSE"; fi;
+    print ", result ";
+    if ( result ) print "TRUE\n"; else print "FALSE\n"; fi;
+    FALSE;
+  fi;
+};
+fun assert_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
+  assert_bools( TRUE, expected, result );
+};
+fun assert_bools_are_inequal( expected: Bool,  result: Bool ):   Bool = {
+  assert_bools( FALSE, expected, result );
+};
+fun test_assert_bools( _: Void ):  Bool = {
+  expected =  TRUE;
+  result   =  TRUE;
+  assert_bools_are_equal( expected, result );
+
+  expected =  TRUE;
+  result   =  FALSE;
+  assert_bools_are_inequal( expected, result );
+
+  expected =  FALSE;
+  result   =  TRUE;
+  assert_bools_are_inequal( expected, result );
+};
+# test_assert_bools();
+
+
+
+fun test_assert_lists_of_strings( _: Void ):  Bool = {
+  expected =  [ "one", "two" ];
+  result   =  expected;
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Different lengths
+  expected =  [ "one", "two" ];
+  result   =  [ "one" ];
+  assert_lists_of_strings_are_inequal( expected, result );
+
+  # Different content
+  expected =  [ "one", "two" ];
+  result   =  [ "three", "four" ];
+  assert_lists_of_strings_are_inequal( expected, result );
+};
+# test_assert_lists_of_strings();
+
+};

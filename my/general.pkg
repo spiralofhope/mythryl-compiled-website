@@ -1,0 +1,270 @@
+#!/usr/bin/mythryl
+
+# --
+# -- Library-candidate functions, general
+# --
+
+{
+
+fun check_directory( string: String ):   Bool = {
+  # See also http://mythryl.org/my-Get_current_directory.html
+  # getcwd ();
+
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  current_directory =  head( directory_list );
+  string == current_directory;
+};
+fun test_check_directory( _: Void ):   Bool = {
+  string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
+  result =  check_directory( string );
+  expected = TRUE;
+  assert_bools_are_equal( expected, result );
+};
+# test_check_directory();
+
+
+
+# TODO:  Only display the current directory's name.  (separate function?)
+fun get_current_directory( _: Void ):   String = {
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  head( directory_list );
+};
+# TODO:  A proper assertion.
+fun test_get_current_directory( _: Void ):   Void = {
+  result =  get_current_directory();
+  printf "%s\n" result;
+};
+# test_get_current_directory();
+
+
+
+# FIXME:  This needs a better name.
+# Removes the path from a string, giving only the filename.
+fun get_filename( string: String ):   String = {
+  silent_regex_replace_all( "(.*)" + *separator, "", string );
+};
+fun test_get_filename( _: Void ):   Bool = {
+  string =  "/foo/bar/baz/filename.ext";
+  expected =             "filename.ext";
+  result = get_filename( string );
+  assert_strings_are_equal( expected, result );
+  # TODO:  Additional testing.
+};
+# test_get_filename();
+
+
+
+# FIXME:  RENAME
+# Removes the extension(s) from a string.
+#   filename.ext     => filename
+#   filename.ext.ext => filename
+fun remove_extension( filename: String ):   String = {
+  silent_regex_replace_first( ./\..*$/, "", filename );
+};
+fun test_remove_extension( _: Void ):   Bool = {
+  string   = "filename.ext";
+  expected = "filename";
+  result = remove_extension( string );
+  assert_strings_are_equal( expected, result );
+
+  # TODO:  Additional testing.
+};
+# test_remove_extension();
+
+
+
+fun is_even( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    TRUE;
+  else
+    FALSE;
+  fi;
+};
+fun test_is_even( _: Void ):   Bool = {
+  n =  2;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  n =  1;
+  expected =  FALSE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  1;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_even();
+
+
+fun is_odd( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+fun test_is_odd( _: Void ):   Bool = {
+  n =  1;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  FALSE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_odd();
+
+
+
+# TODO:  Replace this with something easier to understand, using the standard take_n, drop_n and whatnot.
+fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = {
+    i =       REF -1;
+    result =  REF [];
+
+    foreach list .{
+      i :=  *i + 1;
+      if ( *i == n )
+        result := *result @ [ replacement ];
+      else
+        result := *result @ [ #e ];
+      fi;
+    };
+
+    *result;
+};
+# TODO:  fun test_replace_nth_string( foo ):   bar = {}
+# list =  [ "This ", "is ", "a ", "test.\n" ]; 
+# result =  replace_nth_string( 1, "was ", list );
+# apply  printf "%s" result; 
+
+
+
+
+# FIXME:               ( _: Void ):   List( String ) = {
+fun test_string_to_list( _: Void ) = {
+  # Simple
+  string =  "foo";
+  expected =  [ "foo" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Simple
+  string =  "foo\n";
+  expected =  [ "foo\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  string =  "HERE\nytesty\n";
+  expected =  [ "HERE\n", "ytesty\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_string_to_list();
+
+
+
+# This is down here because  assert_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
+fun test_pad_string_list( _: Void ):   Bool = {
+  list_one =  [ "one" ];
+  list_two =  [ "one", "two" ];
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+  expected =  [ "one", "" ];
+  result =  list_one;
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_pad_string_list();
+
+
+
+fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
+  list =  [ "one", "two", "three" ];
+  expected =  5;   # "three" is five characters long.
+  result =  longest_string_in_a_list_of_strings( list );
+  assert_ints_are_equal( expected, result );
+};
+# test_longest_string_in_a_list_of_strings();
+
+
+
+fun read_print( filename: String ):   Void = {
+  # Read from a source file.
+  # http://mythryl.org/my-File.html
+  # http://mythryl.org/my-Read_a_text_file.html
+  if ( exists( filename ) )
+    stream =  open_for_read( filename );
+    # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
+    # can_read : (Input_Stream , Int) -> Null_Or(Int );
+    list =  read_lines( stream );
+    apply printf "%s" list;
+  fi;
+};
+# TODO:  A proper assertion.
+# But to do that I'd have to touch the disk, which is stupid for tests to do.
+# I ought to make this just reading a file into a string, and printing can be something like:
+#   print ( read_file( filename ) );
+fun test_read_print( _: Void ):   Void = {
+  read_print( "compiled-website.txt" );
+};
+# test_read_print();
+
+
+# Write to a target file.
+# http://mythryl.org/my-File.html
+# http://mythryl.org/my-Write_a_text_file.html
+# TODO:  In the docs, what is a "Writer" ?
+# I can't realistically convert this into a two-parameter function.
+#   Basically I'd have to pass one List of Strings - the filename, and the content.
+#   (This is probably not true, but I don't know any better)
+#   But why do something as complex as that?  Just use the original simpler code.
+fun write_file( _: Void ):   Void = {
+  filename =  "test-write.txt";
+
+  file = file::open_for_write filename;
+  list = [ "line one\n", "line two" ];
+  apply fprintf file "%s" list;
+
+  # file::write       ( file, "There is no royal road to mathematics.\n" );
+  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
+  file::flush         file;
+  file::close_output  file;
+
+  # Display its contents.
+  if ( exists( filename ) )
+    printf "%s contains:\n--v\n" filename;
+
+    stream =  open_for_read( filename );
+    list =  read_lines( stream );
+    apply printf "%s" list;
+    winix::file::remove_file( filename );
+    print "--^\n";
+  else
+    printf "%s was not created!\n" filename;
+  fi;
+};
+# TODO:  A proper assertion.
+fun test_write_file( _: Void ):   Void = {
+  write_file();
+};
+# test_write_file();
+
+};

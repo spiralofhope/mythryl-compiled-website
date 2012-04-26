@@ -36,6 +36,9 @@ live=$working/live
   "$repo/TODO.markdown" \
   "$working/compiled-website.txt" \
   "$working/../../mythryl.txt" \
+  "$repo/my/testing.lib" \
+  "$repo/my/general.lib" \
+  "$repo/my/project.lib" \
   "$repo/demo/header.html" \
   "$repo/demo/footer.html" \
   "$repo/demo/target/css/common.css" \
@@ -56,7 +59,7 @@ cd $working/git/my/
 # lxterminal supports ansi cursor position save/restore.
 # https://github.com/spiralofhope/shell-random/blob/master/autotest.sh
 lxterminal --command=" \
-  /l/Linux/bin/sh/autotest.sh \"main.my\" --nodebug" &
+  /l/Linux/bin/sh/live/autotest.sh \"main.my\" --nodebug" &
 
 # (All of this would need to be stashed in the above lxterminal commandline string.
 # TODO/FIXME:  If I'm using lxterminal above, then the stuff below would need to be patient.
