@@ -1,12 +1,9 @@
-#!/usr/bin/mythryl
-
+package general {
 # --
 # -- Library-candidate functions, general
 # --
 
-{
-
-fun check_directory( string: String ):   Bool = {
+fun check_directory( string ) = {
   # See also http://mythryl.org/my-Get_current_directory.html
   # getcwd ();
 
@@ -16,25 +13,25 @@ fun check_directory( string: String ):   Bool = {
   current_directory =  head( directory_list );
   string == current_directory;
 };
-fun test_check_directory( _: Void ):   Bool = {
-  string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
+fun test_check_directory( string ) = {
   result =  check_directory( string );
   expected = TRUE;
   assert_bools_are_equal( expected, result );
 };
-# test_check_directory();
+# string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
+# test_check_directory( string );
 
 
 
 # TODO:  Only display the current directory's name.  (separate function?)
-fun get_current_directory( _: Void ):   String = {
+fun get_current_directory = {
   directory_list =  dir::entries''( "." );
   # TODO:  Is it necessary to sort dir::entries  ?
   directory_list =  strsort( directory_list );
   head( directory_list );
 };
 # TODO:  A proper assertion.
-fun test_get_current_directory( _: Void ):   Void = {
+fun test_get_current_directory = {
   result =  get_current_directory();
   printf "%s\n" result;
 };
@@ -47,7 +44,7 @@ fun test_get_current_directory( _: Void ):   Void = {
 fun get_filename( string: String ):   String = {
   silent_regex_replace_all( "(.*)" + *separator, "", string );
 };
-fun test_get_filename( _: Void ):   Bool = {
+fun test_get_filename = {
   string =  "/foo/bar/baz/filename.ext";
   expected =             "filename.ext";
   result = get_filename( string );
@@ -62,7 +59,7 @@ fun test_get_filename( _: Void ):   Bool = {
 # Removes the extension(s) from a string.
 #   filename.ext     => filename
 #   filename.ext.ext => filename
-fun remove_extension( filename: String ):   String = {
+fun remove_extension( filename ) = {
   silent_regex_replace_first( ./\..*$/, "", filename );
 };
 fun test_remove_extension( _: Void ):   Bool = {
@@ -77,64 +74,8 @@ fun test_remove_extension( _: Void ):   Bool = {
 
 
 
-fun is_even( i: Int ):   Bool = {
-  if ( ( i % 2 ) == 0 )
-    TRUE;
-  else
-    FALSE;
-  fi;
-};
-fun test_is_even( _: Void ):   Bool = {
-  n =  2;
-  expected =  TRUE;
-  result =  is_even( n );
-  assert_bools_are_equal( expected, result );
-
-  n =  1;
-  expected =  FALSE;
-  result =  is_even( n );
-  assert_bools_are_equal( expected, result );
-
-  # Meant to fail.
-  n =  1;
-  expected =  TRUE;
-  result =  is_even( n );
-  assert_bools_are_equal( expected, result );
-};
-# test_is_even();
-
-
-fun is_odd( i: Int ):   Bool = {
-  if ( ( i % 2 ) == 0 )
-    FALSE;
-  else
-    TRUE;
-  fi;
-};
-fun test_is_odd( _: Void ):   Bool = {
-  n =  1;
-  expected =  TRUE;
-  result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
-
-  # Meant to fail.
-  n =  2;
-  expected =  FALSE;
-  result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
-
-  # Meant to fail.
-  n =  2;
-  expected =  TRUE;
-  result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
-};
-# test_is_odd();
-
-
-
 # TODO:  Replace this with something easier to understand, using the standard take_n, drop_n and whatnot.
-fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = {
+fun replace_nth_string( n, replacement, list ) = {
     i =       REF -1;
     result =  REF [];
 
@@ -156,9 +97,42 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
 
 
 
+# string_to_list() ideas
+# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
+#         http://mythryl.org/my-String_To_List.html
+#         String_To_List { first, between, last, string };
 
-# FIXME:               ( _: Void ):   List( String ) = {
-fun test_string_to_list( _: Void ) = {
+# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
+# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
+#   match_character = "\n";
+#   result =  REF [];
+#   list =  explode( "abc\ndef\n" );
+# Ugh, I'd have to turn the list of chars into a list of strings.
+#   list =  reverse( list );
+#   foreach list .{
+#     # Build `result` based on if the character matches.
+#     IF ( #e == match_character )
+#     else
+#     fi;
+#     printf "%c\n" #e;
+#   };
+# apply  printf "'%s'\n" *result;
+
+fun string_to_list( string ) = {
+  result =  REF [];
+
+  if ( ( string =~ "\n" ) == FALSE )
+    result :=  [ string ];
+  else
+    list =  tokens .{ #c == '\n'; } string;
+    foreach list .{
+      result :=  *result @ [ #e + "\n" ];
+    };
+  fi;
+
+  *result;
+};
+fun test_string_to_list = {
   # Simple
   string =  "foo";
   expected =  [ "foo" ];
@@ -180,8 +154,34 @@ fun test_string_to_list( _: Void ) = {
 
 
 
-# This is down here because  assert_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
-fun test_pad_string_list( _: Void ):   Bool = {
+# Append blank elements to the shorter list to make it the same length.
+# TODO:  Can I make this type-agnostic.
+fun pad_string_list( list_one, list_two ) = {
+  list_one =  REF list_one;
+  list_two =  REF list_two;
+  # Given two lists.
+  # Determine which is longer.
+  # Determine how much longer it is.
+  l1 =  list::length( *list_one );
+  l2 =  list::length( *list_two );
+  if   ( l1 >  l2 )
+    ++l2;
+    foreach ( l2..l1 ) .{
+      throwaway =  #i;
+      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
+      list_two :=  *list_two @ [ "" ];
+    };
+  elif ( l1 <  l2 )
+    ++l1;
+    foreach ( l1..l2 ) .{
+      throwaway =  #i;
+      list_one :=  *list_one @ [ "" ];
+    };
+  fi;
+
+  [ *list_one, *list_two ];
+};
+fun test_pad_string_list = {
   list_one =  [ "one" ];
   list_two =  [ "one", "two" ];
   pad_string_list =  pad_string_list( list_one, list_two );
@@ -196,7 +196,20 @@ fun test_pad_string_list( _: Void ):   Bool = {
 
 
 
-fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
+# TODO:  Homework for the reader.
+#        1) Implement a function which reports the position of the longest string.
+#        2) What if multiple strings are the same length?
+#        2a) Implement another function to report how many n-length strings there are.
+#        2b) Implement another function to report the positions of all n-length strings.
+fun longest_string_in_a_list_of_strings( list ) = {
+  n =  REF 0;
+  foreach list .{
+    len =  string::length( #e );
+    if ( len > *n ) n :=  len; fi;
+  };
+  *n;
+};
+fun test_longest_string_in_a_list_of_strings = {
   list =  [ "one", "two", "three" ];
   expected =  5;   # "three" is five characters long.
   result =  longest_string_in_a_list_of_strings( list );
@@ -206,7 +219,7 @@ fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
 
 
 
-fun read_print( filename: String ):   Void = {
+fun read_print( filename ) = {
   # Read from a source file.
   # http://mythryl.org/my-File.html
   # http://mythryl.org/my-Read_a_text_file.html
@@ -236,7 +249,7 @@ fun test_read_print( _: Void ):   Void = {
 #   Basically I'd have to pass one List of Strings - the filename, and the content.
 #   (This is probably not true, but I don't know any better)
 #   But why do something as complex as that?  Just use the original simpler code.
-fun write_file( _: Void ):   Void = {
+fun write_file = {
   filename =  "test-write.txt";
 
   file = file::open_for_write filename;

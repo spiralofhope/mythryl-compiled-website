@@ -72,7 +72,3 @@ lxterminal --command=" \
 # TODO:  Kill the daemon pid on exit.
 # It's not the pid of autotest.sh, it has to be determined from the /tmp pid files.
 #\killall mythryl mythryld
-
-
-# TODO:  Fix autotest to do this.
-#\rm --force $working/main.log~

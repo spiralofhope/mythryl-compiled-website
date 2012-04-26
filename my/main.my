@@ -1,9 +1,9 @@
 #!/usr/bin/mythryl
 # NOTE:  This script assumes that it will be run from the same directory it is found in.
 
-load "testing.lib";
-load "general.lib";
-load "project.lib";
+# Does load order matter?
+# What happens when one library has requirements from another?
+load "main.lib";
 
 {
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.

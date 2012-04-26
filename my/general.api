@@ -1,1 +1,21 @@
-TODO
+api General {
+  check_directory: String -> Bool;
+  test_check_directory: String -> Bool;
+  get_current_directory: Void -> String;
+  test_get_current_directory: Void -> Void;
+  get_filename: String -> String;
+  test_get_filename: Void -> Bool;
+  remove_extension: String ->String;
+  test_remove_extension: Void -> Bool;
+  replace_nth_string( Int, String,  List( String ) ) -> List( String );
+  string_to_list: String -> List( String );
+  test_string_to_list: Void -> Bool;
+  read_print: String -> Void;
+  test_read_print: Void -> Void;
+  write_file: Void -> Void;
+  test_write_file: Void -> Void;
+  pad_string_list: ( List( String ), List( String ) ) -> List( List( String ) );
+  test_pad_string_list: Void -> Bool;
+  longest_string_in_a_list_of_strings: List( String ) -> Int;
+  test_longest_string_in_a_list_of_strings: Void -> Bool;
+};

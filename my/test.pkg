@@ -1,46 +1,7 @@
-#!/usr/bin/mythryl
-
+package test {
 # --
 # -- Library-candidate functions, testing-related
 # --
-
-{
-
-# string_to_list() ideas
-# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
-#         http://mythryl.org/my-String_To_List.html
-#         String_To_List { first, between, last, string };
-
-# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
-# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
-#   match_character = "\n";
-#   result =  REF [];
-#   list =  explode( "abc\ndef\n" );
-# Ugh, I'd have to turn the list of chars into a list of strings.
-#   list =  reverse( list );
-#   foreach list .{
-#     # Build `result` based on if the character matches.
-#     IF ( #e == match_character )
-#     else
-#     fi;
-#     printf "%c\n" #e;
-#   };
-# apply  printf "'%s'\n" *result;
-
-fun string_to_list( string: String ):   List( String ) = {
-  result =  REF [];
-
-  if ( ( string =~ "\n" ) == FALSE )
-    result :=  [ string ];
-  else
-    list =  tokens .{ #c == '\n'; } string;
-    foreach list .{
-      result :=  *result @ [ #e + "\n" ];
-    };
-  fi;
-
-  *result;
-};
 
 
 
@@ -61,7 +22,7 @@ fun assert_not( bool: Bool ):   Bool = {
 
 
 
-fun reveal_unprintable_characters( string: String ):   String = {
+fun reveal_unprintable_characters( string ) = {
     #  Spaces
   string = silent_regex_replace_all( "\\ ", "·", string );
     #  Newlines
@@ -75,7 +36,7 @@ fun reveal_unprintable_characters( string: String ):   String = {
 
 
 # TODO:  Make a general "assert_equal() which can handle all types.
-fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
+fun assert_strings( type, one, two ) = {
   if   ( type == TRUE   and  one == two )
     TRUE;
   elif ( type == FALSE  and  one != two )
@@ -94,67 +55,20 @@ fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
     FALSE;
   fi;
 };
-fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
+fun assert_strings_are_equal( expected, result ) = {
   assert_strings( TRUE, expected, result );
 };
-fun assert_strings_are_inequal( expected: String,  result: String ):   Bool = {
+fun assert_strings_are_inequal( expected, result ) = {
   assert_strings( FALSE, expected, result );
 };
-fun test_assert_strings( _: Void ):   Bool = {
+fun test_assert_strings = {
   assert_strings_are_equal( "", "" );
   assert_strings_are_inequal( "one", "two" );
 };
 # test_assert_strings();
 
 
-
-# Append blank elements to the shorter list to make it the same length.
-# TODO:  Can I make this type-agnostic.
-fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):   List( List( String ) ) = {
-  list_one =  REF list_one;
-  list_two =  REF list_two;
-  # Given two lists.
-  # Determine which is longer.
-  # Determine how much longer it is.
-  l1 =  list::length( *list_one );
-  l2 =  list::length( *list_two );
-  if   ( l1 >  l2 )
-    ++l2;
-    foreach ( l2..l1 ) .{
-      throwaway =  #i;
-      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
-      list_two :=  *list_two @ [ "" ];
-    };
-  elif ( l1 <  l2 )
-    ++l1;
-    foreach ( l1..l2 ) .{
-      throwaway =  #i;
-      list_one :=  *list_one @ [ "" ];
-    };
-  fi;
-
-  [ *list_one, *list_two ];
-};
-
-
-
-# TODO:  Homework for the reader.
-#        1) Implement a function which reports the position of the longest string.
-#        2) What if multiple strings are the same length?
-#        2a) Implement another function to report how many n-length strings there are.
-#        2b) Implement another function to report the positions of all n-length strings.
-fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
-  n =  REF 0;
-  foreach list .{
-    len =  string::length( #e );
-    if ( len > *n ) n :=  len; fi;
-  };
-  *n;
-};
-
-
-
-fun string_multiplier( string: String,  n: Int ):   String = {
+fun string_multiplier( string, n ) = {
   if   ( n <  0 )
     # TODO:  Throw an error.
     printf "You want to multiply a string by a negative number? :  %d\n"  n;
@@ -165,7 +79,7 @@ fun string_multiplier( string: String,  n: Int ):   String = {
     cat( list::tabulate( n, fn _ = string ) );
   fi;
 };
-fun test_string_multiplier( _: Void ):   Bool = {
+fun test_string_multiplier = {
   string   = "foo";
   n        = 2;
   expected = "foofoo";
@@ -194,7 +108,7 @@ fun test_string_multiplier( _: Void ):   Bool = {
 
 
 
-fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,  appended_text ):   String = {
+fun list_of_strings_to_columnized_string( list, prepended_text, appended_text ) = {
   column_width =  longest_string_in_a_list_of_strings( list );
   column_width =  column_width + string::length( prepended_text );
   column_width =  column_width + string::length( appended_text  );
@@ -221,7 +135,7 @@ fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,
   *result;
 };
 # TODO: proper assertions.
-fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
+fun test_list_of_strings_to_columnized_string = {
   list = [ "one", "two", "three" ];
   prepended_text =  "'";
   appended_text  =  "'";
@@ -233,7 +147,7 @@ fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
 
 
 
-fun two_strings_to_columnized_string( string_one: String,  string_two: String, separator: String ):   String = {
+fun two_strings_to_columnized_string( string_one, string_two, separator ) = {
   # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
   list_one =  string_to_list( string_one );
   list_two =  string_to_list( string_two );
@@ -267,7 +181,7 @@ fun two_strings_to_columnized_string( string_one: String,  string_two: String, s
 
   *result;
 };
-fun test_two_strings_to_columnized_string( _: Void ):   Void = {
+fun test_two_strings_to_columnized_string = {
   string_one =  "one\ntwo\n";
   string_two =  "three\n";
   result =  two_strings_to_columnized_string( string_one, string_two, "   " );
@@ -282,13 +196,13 @@ fun test_two_strings_to_columnized_string( _: Void ):   Void = {
 
 
 
-fun two_lists_of_strings_to_columnized_string( list_one: List( String ),  list_two: List( String ) ):   String = {
+fun two_lists_of_strings_to_columnized_string( list_one, list_two ) = {
   string_one =  list_of_strings_to_columnized_string( list_one, "'", "'" );
   string_two =  list_of_strings_to_columnized_string( list_two, "'", "'" );
   separator =  "   ";
   two_strings_to_columnized_string( string_one, string_two, separator );
 };
-fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
+fun test_two_lists_of_strings_to_columnized_string = {
   list_one =  [ "one", "two", "three" ];
   list_two =  [ "four", "five", "six" ];
   # 'one'     'four'
@@ -306,7 +220,7 @@ fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
 
 
 
-fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+fun assert_lists_of_strings( type, list_one, list_two ) = {
 
   result =  REF TRUE;
 
@@ -348,16 +262,16 @@ fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: L
   fi;
   *result; 
 };
-fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+fun assert_lists_of_strings_are_equal( list_one, list_two ) = {
   assert_lists_of_strings( TRUE, list_one, list_two );
 };
-fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+fun assert_lists_of_strings_are_inequal( list_one, list_two ) = {
   assert_lists_of_strings( FALSE, list_one, list_two );
 };
 
 
 
-fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
+fun assert_ints( type, one, two ) = {
   if   ( type == TRUE  and one == two )
     TRUE;
   elif ( type == FALSE and one != two )
@@ -368,13 +282,13 @@ fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
   fi;
 };
 
-fun assert_ints_are_equal( one: Int,  two: Int ):   Bool = {
+fun assert_ints_are_equal( one, two ) = {
   assert_ints( TRUE, one, two );
 };
-fun assert_ints_are_inequal( one: Int,  two: Int ):   Bool = {
+fun assert_ints_are_inequal( one, two ) = {
   assert_ints( FALSE, one, two );
 };
-fun test_assert_ints( _: Void ):   Bool ={
+fun test_assert_ints ={
   expected =  1;
   result   =  1;
   assert_ints_are_equal( expected, result );
@@ -387,7 +301,7 @@ fun test_assert_ints( _: Void ):   Bool ={
 
 
 
-fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
+fun assert_bools( type, expected, result ) = {
   if   ( type == TRUE  and expected == result )
     TRUE;
   elif ( type == FALSE and expected != result )
@@ -401,13 +315,13 @@ fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
     FALSE;
   fi;
 };
-fun assert_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
+fun assert_bools_are_equal( expected, result ) = {
   assert_bools( TRUE, expected, result );
 };
-fun assert_bools_are_inequal( expected: Bool,  result: Bool ):   Bool = {
+fun assert_bools_are_inequal( expected, result ) = {
   assert_bools( FALSE, expected, result );
 };
-fun test_assert_bools( _: Void ):  Bool = {
+fun test_assert_bools = {
   expected =  TRUE;
   result   =  TRUE;
   assert_bools_are_equal( expected, result );
@@ -424,7 +338,7 @@ fun test_assert_bools( _: Void ):  Bool = {
 
 
 
-fun test_assert_lists_of_strings( _: Void ):  Bool = {
+fun test_assert_lists_of_strings = {
   expected =  [ "one", "two" ];
   result   =  expected;
   assert_lists_of_strings_are_equal( expected, result );
@@ -440,5 +354,62 @@ fun test_assert_lists_of_strings( _: Void ):  Bool = {
   assert_lists_of_strings_are_inequal( expected, result );
 };
 # test_assert_lists_of_strings();
+
+
+
+fun is_even( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    TRUE;
+  else
+    FALSE;
+  fi;
+};
+fun test_is_even( _: Void ):   Bool = {
+  n =  2;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  n =  1;
+  expected =  FALSE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  1;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_even();
+
+
+fun is_odd( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+fun test_is_odd( _: Void ):   Bool = {
+  n =  1;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  FALSE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_odd();
+
 
 };

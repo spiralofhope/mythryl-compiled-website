@@ -1,12 +1,9 @@
-#!/usr/bin/mythryl
-
+package project {
 # --
 # -- Library-candidate functions, project-specific
 # --
 
-{
-
-fun markup( string: String ):   String = {
+fun markup( string ) = {
   # FIXME - fuck, all punctuation is broken.
   # FIXME:  _underlined_.   all on one line, will fail.  .$  isn't being caught on the right?
 
@@ -180,7 +177,7 @@ fun test_markup( _: Void ):   Bool = {
 
 
 
-fun rebuild_template( template_filename: String,  compiling_filename: String ):   Void = {
+fun rebuild_template( template_filename, compiling_filename ) = {
   if ( exists( template_filename ) == FALSE )
     printf "rebuild_template():  File doesn't exist:  '%s'\n" template_filename;
   else
@@ -288,7 +285,7 @@ fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
 # Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
 # The idea is to break a string down so that a function can be applied to specific parts of it.
 # For example, I want to apply markup, but not to text inside of blocks of html.
-fun block_matcher( string: String ):   List( String ) = {
+fun block_matcher( string ) = {
   list =  string_to_list( string );
 
   fun block_matcher_bool( string: String ):   Bool = {
@@ -347,7 +344,7 @@ fun block_matcher( string: String ):   List( String ) = {
 
   *result @ [ *buffer ];
 };
-fun test_block_matcher( _: Void ):   Bool = {
+fun test_block_matcher = {
   # Not a match
   string =  "nomatch";
   expected =  [ "nomatch" ];
