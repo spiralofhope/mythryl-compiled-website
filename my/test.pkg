@@ -5,6 +5,7 @@ package test {
 
 
 
+
 # TODO:  should testing be able to throw errors?
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
 # TODO:  Numbers, stats, etc.
@@ -18,19 +19,6 @@ fun assert_not( bool: Bool ):   Bool = {
   else
     TRUE;
   fi;
-};
-
-
-
-fun reveal_unprintable_characters( string ) = {
-    #  Spaces
-  string = silent_regex_replace_all( "\\ ", "·", string );
-    #  Newlines
-  string = silent_regex_replace_all( "\\n", "↵\n", string );
-    #  Tabs
-  string = silent_regex_replace_all( "\\t", "»\n", string );
-    #
-  string;
 };
 
 
@@ -56,167 +44,16 @@ fun assert_strings( type, one, two ) = {
   fi;
 };
 fun assert_strings_are_equal( expected, result ) = {
-  assert_strings( TRUE, expected, result );
+  test::assert_strings( TRUE, expected, result );
 };
 fun assert_strings_are_inequal( expected, result ) = {
-  assert_strings( FALSE, expected, result );
+  test::assert_strings( FALSE, expected, result );
 };
 fun test_assert_strings = {
-  assert_strings_are_equal( "", "" );
-  assert_strings_are_inequal( "one", "two" );
+  test::assert_strings_are_equal( "", "" );
+  test::assert_strings_are_inequal( "one", "two" );
 };
 # test_assert_strings();
-
-
-fun string_multiplier( string, n ) = {
-  if   ( n <  0 )
-    # TODO:  Throw an error.
-    printf "You want to multiply a string by a negative number? :  %d\n"  n;
-    "";
-  elif ( n == 0 )
-    "";
-  else
-    cat( list::tabulate( n, fn _ = string ) );
-  fi;
-};
-fun test_string_multiplier = {
-  string   = "foo";
-  n        = 2;
-  expected = "foofoo";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-
-  string   = "foo";
-  n        = 0;
-  expected = "";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-
-  string   = "foo";
-  n        = -1;
-  expected = "";
-#   result = ( string_multiplier( string, n ) );
-#   assert_strings_are_inequal( expected, result );
-
-  string   = "foo";
-  n        = 2;
-  expected = "FAIL TEST";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_inequal( expected, result );
-};
-# test_string_multiplier();
-
-
-
-fun list_of_strings_to_columnized_string( list, prepended_text, appended_text ) = {
-  column_width =  longest_string_in_a_list_of_strings( list );
-  column_width =  column_width + string::length( prepended_text );
-  column_width =  column_width + string::length( appended_text  );
-
-  result =  REF "";
-  foreach list .{
-    n =
-        column_width
-      - string::length( #e )
-      - string::length( prepended_text )
-      - string::length( appended_text )
-      ;
-    spaces =  string_multiplier( " ", n );
-    result :=
-        *result
-      + prepended_text
-      + #e
-      + appended_text
-      + spaces
-      + "\n"
-      ;
-  };
-
-  *result;
-};
-# TODO: proper assertions.
-fun test_list_of_strings_to_columnized_string = {
-  list = [ "one", "two", "three" ];
-  prepended_text =  "'";
-  appended_text  =  "'";
-
-  result =  list_of_strings_to_columnized_string( list, prepended_text, appended_text );
-  print result;
-};
-# test_list_of_strings_to_columnized_string();
-
-
-
-fun two_strings_to_columnized_string( string_one, string_two, separator ) = {
-  # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
-  list_one =  string_to_list( string_one );
-  list_two =  string_to_list( string_two );
-
-  # Ensure the two lists are the same length.
-  pad_string_list =  pad_string_list( list_one, list_two );
-  list_one =  list::nth( pad_string_list, 0 );
-  list_two =  list::nth( pad_string_list, 1 );
-
-
-  result =  REF "";
-  i      =  REF -1;
-  foreach list_one .{
-    i :=  *i + 1;
-    one  =  REF "";
-    one :=  string::chomp( #e );
-    if ( *one == "" )
-      n =  longest_string_in_a_list_of_strings( list_one );
-      # I'm not sure why I need to do this, but whatever.
-      n =  n - 1;
-      one :=  string_multiplier( " ", n );
-    fi;
-    two =  list::nth( list_two, *i );
-    result :=
-        *result
-      + *one
-      + separator
-      + two
-      ;
-  };
-
-  *result;
-};
-fun test_two_strings_to_columnized_string = {
-  string_one =  "one\ntwo\n";
-  string_two =  "three\n";
-  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
-  print result;
-
-  string_one =  "one\ntwo";
-  string_two =  "three\nfour\nfive";
-  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
-  print result;
-};
-# test_two_strings_to_columnized_string();
-
-
-
-fun two_lists_of_strings_to_columnized_string( list_one, list_two ) = {
-  string_one =  list_of_strings_to_columnized_string( list_one, "'", "'" );
-  string_two =  list_of_strings_to_columnized_string( list_two, "'", "'" );
-  separator =  "   ";
-  two_strings_to_columnized_string( string_one, string_two, separator );
-};
-fun test_two_lists_of_strings_to_columnized_string = {
-  list_one =  [ "one", "two", "three" ];
-  list_two =  [ "four", "five", "six" ];
-  # 'one'     'four'
-  # 'two'     'five'
-  # 'three'   'six'
-  # Odd bug, it's showing up with an extra space at the very end, like so:
-  # I'm not in the mood to hunt this crap down.  I probably won't be in the mood later either.  Sigh.
-  expected = "'one'     'four'\n'two'     'five'\n'three'   'six' \n";
-  
-  expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
-  result =  two_lists_of_strings_to_columnized_string( list_one, list_two );
-  assert_strings_are_equal( expected, result );
-};
-# test_two_lists_of_strings_to_columnized_string();
 
 
 
@@ -232,7 +69,7 @@ fun assert_lists_of_strings( type, list_one, list_two ) = {
       i :=  *i + 1;
       one =  list::nth( list_one, *i );
       two =  list::nth( list_two, *i );
-      assert_strings( type, one, two );
+      test::assert_strings( type, one, two );
     };
     if     ( type == TRUE   and  *return__assert_lists_of_strings_check_content == TRUE  )
       TRUE;
@@ -248,8 +85,8 @@ fun assert_lists_of_strings( type, list_one, list_two ) = {
     if     ( list::length( list_one ) == list::length( list_two ) )
       result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
     else # ( list::length( list_one ) != list::length( list_two ) )
-      tmp =  two_lists_of_strings_to_columnized_string( list_one, list_two );
-      tmp =  reveal_unprintable_characters( tmp );
+      tmp =  general::two_lists_of_strings_to_columnized_string( list_one, list_two );
+      tmp =  general::reveal_unprintable_characters( tmp );
       print "  # FAIL - Lists are different lengths.\n";
       result :=  FALSE;
     fi;
@@ -263,10 +100,10 @@ fun assert_lists_of_strings( type, list_one, list_two ) = {
   *result; 
 };
 fun assert_lists_of_strings_are_equal( list_one, list_two ) = {
-  assert_lists_of_strings( TRUE, list_one, list_two );
+  test::assert_lists_of_strings( TRUE, list_one, list_two );
 };
 fun assert_lists_of_strings_are_inequal( list_one, list_two ) = {
-  assert_lists_of_strings( FALSE, list_one, list_two );
+  test::assert_lists_of_strings( FALSE, list_one, list_two );
 };
 
 
@@ -283,19 +120,19 @@ fun assert_ints( type, one, two ) = {
 };
 
 fun assert_ints_are_equal( one, two ) = {
-  assert_ints( TRUE, one, two );
+  test::assert_ints( TRUE, one, two );
 };
 fun assert_ints_are_inequal( one, two ) = {
-  assert_ints( FALSE, one, two );
+  test::assert_ints( FALSE, one, two );
 };
 fun test_assert_ints ={
   expected =  1;
   result   =  1;
-  assert_ints_are_equal( expected, result );
+  test::assert_ints_are_equal( expected, result );
 
   expected =  1;
   result   =  2;
-  assert_ints_are_inequal( expected, result );
+  test::assert_ints_are_inequal( expected, result );
 };
 # test_assert_ints();
 
@@ -316,23 +153,23 @@ fun assert_bools( type, expected, result ) = {
   fi;
 };
 fun assert_bools_are_equal( expected, result ) = {
-  assert_bools( TRUE, expected, result );
+  test::assert_bools( TRUE, expected, result );
 };
 fun assert_bools_are_inequal( expected, result ) = {
-  assert_bools( FALSE, expected, result );
+  test::assert_bools( FALSE, expected, result );
 };
 fun test_assert_bools = {
   expected =  TRUE;
   result   =  TRUE;
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 
   expected =  TRUE;
   result   =  FALSE;
-  assert_bools_are_inequal( expected, result );
+  test::assert_bools_are_inequal( expected, result );
 
   expected =  FALSE;
   result   =  TRUE;
-  assert_bools_are_inequal( expected, result );
+  test::assert_bools_are_inequal( expected, result );
 };
 # test_assert_bools();
 
@@ -341,17 +178,17 @@ fun test_assert_bools = {
 fun test_assert_lists_of_strings = {
   expected =  [ "one", "two" ];
   result   =  expected;
-  assert_lists_of_strings_are_equal( expected, result );
+  test::assert_lists_of_strings_are_equal( expected, result );
 
   # Different lengths
   expected =  [ "one", "two" ];
   result   =  [ "one" ];
-  assert_lists_of_strings_are_inequal( expected, result );
+  test::assert_lists_of_strings_are_inequal( expected, result );
 
   # Different content
   expected =  [ "one", "two" ];
   result   =  [ "three", "four" ];
-  assert_lists_of_strings_are_inequal( expected, result );
+  test::assert_lists_of_strings_are_inequal( expected, result );
 };
 # test_assert_lists_of_strings();
 
@@ -368,18 +205,18 @@ fun test_is_even( _: Void ):   Bool = {
   n =  2;
   expected =  TRUE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 
   n =  1;
   expected =  FALSE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  1;
   expected =  TRUE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 };
 # test_is_even();
 
@@ -395,21 +232,53 @@ fun test_is_odd( _: Void ):   Bool = {
   n =  1;
   expected =  TRUE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  2;
   expected =  FALSE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  2;
   expected =  TRUE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  test::assert_bools_are_equal( expected, result );
 };
 # test_is_odd();
 
+
+
+
+
+
+fun test_all_tests = {
+  test_assert_strings();
+  test_string_multiplier();
+
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_two_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_two_lists_of_strings_to_columnized_string();
+
+  test_assert_ints();
+  test_assert_bools();
+  test_assert_lists_of_strings();
+
+  # TODO:  test_not_equal
+#   test_is_even();
+
+  # TODO:  test_not_equal
+#   test_is_odd();
+
+};
 
 };

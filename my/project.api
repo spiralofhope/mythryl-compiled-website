@@ -1,9 +1,10 @@
 api Project {
+  read_configuration: String -> Void;
   markup: String -> String;
   test_markup: Void -> Bool;
-  rebuild_template( String, String ) -> Void;
+  rebuild_template: ( String, String ) -> Void;
   post_processing: String -> String;
-  rebuild( String, String ) -> Void;
+  rebuild: ( String, String ) -> Void;
   block_matcher: String -> List( String );
   test_block_matcher: Void -> Bool;
   test_all_tests: Void -> Bool;

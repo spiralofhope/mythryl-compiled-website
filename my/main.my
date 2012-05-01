@@ -30,74 +30,6 @@ separator = REF "\\/";
 
 
 
-fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):   String = {
-  regex::replace_all  rx  replace  string
-    except
-    _ =  string;
-};
-
-
-
-fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):   String = {
-  regex::replace_first  rx  replace  string
-    except
-    _ =  string;
-};
-
-
-
-fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   String = {
-  regex::find_first_group  n  rx  string
-    except
-    _ = {
-      if ( *verbose )
-        printf "\nsilent_regex_find_first_group():  Warning, found nothing:  '%d' | '%s'\n" n rx;
-        printf "--v\n'%s'\n--^\n" string;
-      fi;
-      "";
-    };
-};
-
-
-
-# TODO:  It would be nice if I could somehow make this code reusable.  It would pick up the variable names from the configuration file itself.  This isn't reasonable to implement right now.  It may not even be possible.
-fun read_configuration( filename: String ):   Void = {
-  # Read a file by line.
-  if ( exists( filename ) == FALSE )
-    printf "read_configuration():  File doesn't exist:  '%s'\n" filename;
-  else
-    stream =  open_for_read( filename );
-    # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
-    # can_read : (Input_Stream , Int) -> Null_Or(Int );
-    contents =  read_lines( stream );
-    contents =  join "\n" contents;
-
-    # Read in the user variables.
-    source_directory :=  silent_regex_find_first_group( 1, "\nsource_directory += +(.*)", contents );
-    target_directory :=  silent_regex_find_first_group( 1, "\ntarget_directory += +(.*)", contents );
-    header           :=  silent_regex_find_first_group( 1,           "\nheader += +(.*)", contents );
-    footer           :=  silent_regex_find_first_group( 1,           "\nfooter += +(.*)", contents );
-    site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
-    site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
-    site_url         :=  silent_regex_find_first_group( 1,         "\nsite_url += +(.*)", contents );
-    copyright        :=  silent_regex_find_first_group( 1,        "\ncopyright += +(.*)", contents );
-
-    # Because I don't know how to do a multi-line search, I'll cheat.
-    contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
-    # Searching between {{{ and }}}
-    counter_code     :=  silent_regex_find_first_group( 1,     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
-    counter_code     :=  silent_regex_replace_all( "\t", "\n", *counter_code );
-  fi;
-};
-
-
-# ~~~~~~~~~~~~~~ testing
-
-# ~~~~~~~~~~~~~~ general
-
-# ~~~~~~~~~~~~~~ project
-
-
 # ---
 # ---  Actual programming
 # ---
@@ -119,17 +51,22 @@ fun sanity_check( _: Void ):   Void = {
 # sanity_check();
 
 
-read_configuration( "compiled-website.config" );
+project::read_configuration( "compiled-website.config" );
 
-rebuild(
+project::rebuild(
   *source_directory + "sandbox.asc",
   *target_directory + "sandbox.html"
 );
 
 
-rebuild(
+project::rebuild(
   *source_directory + "index.asc",
   *target_directory + "index.html"
 );
+
+
+test::test_all_tests();
+general::test_all_tests();
+project::test_all_tests();
 
 };
