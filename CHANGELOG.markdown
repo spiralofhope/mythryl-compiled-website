@@ -1,7 +1,16 @@
+### 2012-05-01
+
+  - I reverted to the previous stuff.
+    - I forgot to do all that in a branch.  Sigh.
+    - Working with libraries was an unmitigated disaster because mine are intricately tied together.  I might be able to split them off into just one .api and .pkg .. but why bother?
+    - Also, I hate git.  Or git hates me.  Probably both.
+
+
 ### 2012-02-19
 
   - Implemented multi-line variables in the user configuration file.
     - This is good for things like stat counter code.
+
 
 ### 2012-02-15
 
