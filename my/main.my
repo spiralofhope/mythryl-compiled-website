@@ -1,10 +1,6 @@
 #!/usr/bin/mythryl
 # NOTE:  This script assumes that it will be run from the same directory it is found in.
 
-# Does load order matter?
-# What happens when one library has requirements from another?
-load "main.lib";
-
 {
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
 
@@ -30,6 +26,1240 @@ separator = REF "\\/";
 
 
 
+fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):   String = {
+  regex::replace_all  rx  replace  string
+    except
+    _ =  string;
+};
+
+
+
+fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):   String = {
+  regex::replace_first  rx  replace  string
+    except
+    _ =  string;
+};
+
+
+
+fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   String = {
+  regex::find_first_group  n  rx  string
+    except
+    _ = {
+      if ( *verbose )
+        printf "\nsilent_regex_find_first_group():  Warning, found nothing:  '%d' | '%s'\n" n rx;
+        printf "--v\n'%s'\n--^\n" string;
+      fi;
+      "";
+    };
+};
+
+
+
+# TODO:  It would be nice if I could somehow make this code reusable.  It would pick up the variable names from the configuration file itself.  This isn't reasonable to implement right now.  It may not even be possible.
+fun read_configuration( filename: String ):   Void = {
+  # Read a file by line.
+  if ( exists( filename ) == FALSE )
+    printf "read_configuration():  File doesn't exist:  '%s'\n" filename;
+  else
+    stream =  open_for_read( filename );
+    # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
+    # can_read : (Input_Stream , Int) -> Null_Or(Int );
+    contents =  read_lines( stream );
+    contents =  join "\n" contents;
+
+    # Read in the user variables.
+    source_directory :=  silent_regex_find_first_group( 1, "\nsource_directory += +(.*)", contents );
+    target_directory :=  silent_regex_find_first_group( 1, "\ntarget_directory += +(.*)", contents );
+    header           :=  silent_regex_find_first_group( 1,           "\nheader += +(.*)", contents );
+    footer           :=  silent_regex_find_first_group( 1,           "\nfooter += +(.*)", contents );
+    site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
+    site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
+    site_url         :=  silent_regex_find_first_group( 1,         "\nsite_url += +(.*)", contents );
+    copyright        :=  silent_regex_find_first_group( 1,        "\ncopyright += +(.*)", contents );
+
+    # Because I don't know how to do a multi-line search, I'll cheat.
+    contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
+    # Searching between {{{ and }}}
+    counter_code     :=  silent_regex_find_first_group( 1,     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
+    counter_code     :=  silent_regex_replace_all( "\t", "\n", *counter_code );
+  fi;
+};
+
+
+
+# --
+# -- Library-candidate functions, testing-related
+# --
+
+
+# string_to_list() ideas
+# TODO?:  Consider the existing string_to_list, maybe it can do what I want.
+#         http://mythryl.org/my-String_To_List.html
+#         String_To_List { first, between, last, string };
+
+# Shit, this is way too complex to bother finishing.  There has to be something like this already available..
+# I wonder if there is an "apply" or "map" usable on strings, to treat it as a list of characters.
+#   match_character = "\n";
+#   result =  REF [];
+#   list =  explode( "abc\ndef\n" );
+# Ugh, I'd have to turn the list of chars into a list of strings.
+#   list =  reverse( list );
+#   foreach list .{
+#     # Build `result` based on if the character matches.
+#     IF ( #e == match_character )
+#     else
+#     fi;
+#     printf "%c\n" #e;
+#   };
+# apply  printf "'%s'\n" *result;
+
+fun string_to_list( string: String ):   List( String ) = {
+  result =  REF [];
+
+  if ( ( string =~ "\n" ) == FALSE )
+    result :=  [ string ];
+  else
+    list =  tokens .{ #c == '\n'; } string;
+    foreach list .{
+      result :=  *result @ [ #e + "\n" ];
+    };
+  fi;
+
+  *result;
+};
+
+
+
+# TODO:  should testing be able to throw errors?
+# TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
+# TODO:  Numbers, stats, etc.
+# TODO:  comparing Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
+# TODO:  Make an assert_not() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_foo test function.
+#        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
+
+fun assert_not( bool: Bool ):   Bool = {
+  if ( bool == TRUE )
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+
+
+
+fun reveal_unprintable_characters( string: String ):   String = {
+    #  Spaces
+  string = silent_regex_replace_all( "\\ ", "·", string );
+    #  Newlines
+  string = silent_regex_replace_all( "\\n", "↵\n", string );
+    #  Tabs
+  string = silent_regex_replace_all( "\\t", "»\n", string );
+    #
+  string;
+};
+
+
+
+# TODO:  Make a general "assert_equal() which can handle all types.
+fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
+  if   ( type == TRUE   and  one == two )
+    TRUE;
+  elif ( type == FALSE  and  one != two )
+    TRUE;
+  else
+    one =  reveal_unprintable_characters( one );
+    two =  reveal_unprintable_characters( two );
+    print "\n  * assert_strings: ";
+    if     ( type == TRUE )
+      print "Asserted TRUE, got FALSE.\n";
+      printf "%s\n => %s\n" one two;
+    else # ( type != TRUE )
+      print "Asserted FALSE, got TRUE.\n";
+      printf "%s\n" one;
+    fi;
+    FALSE;
+  fi;
+};
+fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
+  assert_strings( TRUE, expected, result );
+};
+fun assert_strings_are_inequal( expected: String,  result: String ):   Bool = {
+  assert_strings( FALSE, expected, result );
+};
+fun test_assert_strings( _: Void ):   Bool = {
+  assert_strings_are_equal( "", "" );
+  assert_strings_are_inequal( "one", "two" );
+};
+# test_assert_strings();
+
+
+
+# Append blank elements to the shorter list to make it the same length.
+# TODO:  Can I make this type-agnostic.
+fun pad_string_list( list_one: List( String ),  list_two: List( String ) ):   List( List( String ) ) = {
+  list_one =  REF list_one;
+  list_two =  REF list_two;
+  # Given two lists.
+  # Determine which is longer.
+  # Determine how much longer it is.
+  l1 =  list::length( *list_one );
+  l2 =  list::length( *list_two );
+  if   ( l1 >  l2 )
+    ++l2;
+    foreach ( l2..l1 ) .{
+      throwaway =  #i;
+      # TODO:  If I wanted to make this type-agnostic, I'd have to learn how to append a blank element.
+      list_two :=  *list_two @ [ "" ];
+    };
+  elif ( l1 <  l2 )
+    ++l1;
+    foreach ( l1..l2 ) .{
+      throwaway =  #i;
+      list_one :=  *list_one @ [ "" ];
+    };
+  fi;
+
+  [ *list_one, *list_two ];
+};
+
+
+
+# TODO:  Homework for the reader.
+#        1) Implement a function which reports the position of the longest string.
+#        2) What if multiple strings are the same length?
+#        2a) Implement another function to report how many n-length strings there are.
+#        2b) Implement another function to report the positions of all n-length strings.
+fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
+  n =  REF 0;
+  foreach list .{
+    len =  string::length( #e );
+    if ( len > *n ) n :=  len; fi;
+  };
+  *n;
+};
+
+
+
+fun string_multiplier( string: String,  n: Int ):   String = {
+  if   ( n <  0 )
+    # TODO:  Throw an error.
+    printf "You want to multiply a string by a negative number? :  %d\n"  n;
+    "";
+  elif ( n == 0 )
+    "";
+  else
+    cat( list::tabulate( n, fn _ = string ) );
+  fi;
+};
+fun test_string_multiplier( _: Void ):   Bool = {
+  string   = "foo";
+  n        = 2;
+  expected = "foofoo";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = 0;
+  expected = "";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_equal( expected, result );
+
+  string   = "foo";
+  n        = -1;
+  expected = "";
+#   result = ( string_multiplier( string, n ) );
+#   assert_strings_are_inequal( expected, result );
+
+  string   = "foo";
+  n        = 2;
+  expected = "FAIL TEST";
+  result = ( string_multiplier( string, n ) );
+  assert_strings_are_inequal( expected, result );
+};
+# test_string_multiplier();
+
+
+
+fun list_of_strings_to_columnized_string( list: List( String ),  prepended_text,  appended_text ):   String = {
+  column_width =  longest_string_in_a_list_of_strings( list );
+  column_width =  column_width + string::length( prepended_text );
+  column_width =  column_width + string::length( appended_text  );
+
+  result =  REF "";
+  foreach list .{
+    n =
+        column_width
+      - string::length( #e )
+      - string::length( prepended_text )
+      - string::length( appended_text )
+      ;
+    spaces =  string_multiplier( " ", n );
+    result :=
+        *result
+      + prepended_text
+      + #e
+      + appended_text
+      + spaces
+      + "\n"
+      ;
+  };
+
+  *result;
+};
+# TODO: proper assertions.
+fun test_list_of_strings_to_columnized_string( _: Void ):   Void = {
+  list = [ "one", "two", "three" ];
+  prepended_text =  "'";
+  appended_text  =  "'";
+
+  result =  list_of_strings_to_columnized_string( list, prepended_text, appended_text );
+  print result;
+};
+# test_list_of_strings_to_columnized_string();
+
+
+
+fun two_strings_to_columnized_string( string_one: String,  string_two: String, separator: String ):   String = {
+  # FIXME:  Remember that  string_to_list()  is bugged.  It removes consecutive \n's
+  list_one =  string_to_list( string_one );
+  list_two =  string_to_list( string_two );
+
+  # Ensure the two lists are the same length.
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+
+  result =  REF "";
+  i      =  REF -1;
+  foreach list_one .{
+    i :=  *i + 1;
+    one  =  REF "";
+    one :=  string::chomp( #e );
+    if ( *one == "" )
+      n =  longest_string_in_a_list_of_strings( list_one );
+      # I'm not sure why I need to do this, but whatever.
+      n =  n - 1;
+      one :=  string_multiplier( " ", n );
+    fi;
+    two =  list::nth( list_two, *i );
+    result :=
+        *result
+      + *one
+      + separator
+      + two
+      ;
+  };
+
+  *result;
+};
+fun test_two_strings_to_columnized_string( _: Void ):   Void = {
+  string_one =  "one\ntwo\n";
+  string_two =  "three\n";
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
+  print result;
+
+  string_one =  "one\ntwo";
+  string_two =  "three\nfour\nfive";
+  result =  two_strings_to_columnized_string( string_one, string_two, "   " );
+  print result;
+};
+# test_two_strings_to_columnized_string();
+
+
+
+fun two_lists_of_strings_to_columnized_string( list_one: List( String ),  list_two: List( String ) ):   String = {
+  string_one =  list_of_strings_to_columnized_string( list_one, "'", "'" );
+  string_two =  list_of_strings_to_columnized_string( list_two, "'", "'" );
+  separator =  "   ";
+  two_strings_to_columnized_string( string_one, string_two, separator );
+};
+fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
+  list_one =  [ "one", "two", "three" ];
+  list_two =  [ "four", "five", "six" ];
+  # 'one'     'four'
+  # 'two'     'five'
+  # 'three'   'six'
+  # Odd bug, it's showing up with an extra space at the very end, like so:
+  # I'm not in the mood to hunt this crap down.  I probably won't be in the mood later either.  Sigh.
+  expected = "'one'     'four'\n'two'     'five'\n'three'   'six' \n";
+  
+  expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
+  result =  two_lists_of_strings_to_columnized_string( list_one, list_two );
+  assert_strings_are_equal( expected, result );
+};
+# test_two_lists_of_strings_to_columnized_string();
+
+
+
+fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+
+  result =  REF TRUE;
+
+  fun assert_lists_of_strings_check_content( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+    i =  REF -1;
+    return__assert_lists_of_strings_check_content =  REF TRUE;
+    foreach list_one .{
+      throwaway =  #e;
+      i :=  *i + 1;
+      one =  list::nth( list_one, *i );
+      two =  list::nth( list_two, *i );
+      assert_strings( type, one, two );
+    };
+    if     ( type == TRUE   and  *return__assert_lists_of_strings_check_content == TRUE  )
+      TRUE;
+    elif   ( type == FALSE  and  *return__assert_lists_of_strings_check_content == FALSE )
+      TRUE;
+    else
+      FALSE;
+    fi;
+  };
+
+
+  if     ( type == TRUE )
+    if     ( list::length( list_one ) == list::length( list_two ) )
+      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+    else # ( list::length( list_one ) != list::length( list_two ) )
+      tmp =  two_lists_of_strings_to_columnized_string( list_one, list_two );
+      tmp =  reveal_unprintable_characters( tmp );
+      print "  # FAIL - Lists are different lengths.\n";
+      result :=  FALSE;
+    fi;
+  else # ( type != TRUE )
+    if     ( list::length( list_one ) == list::length( list_two ) )
+      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+    else # ( list::length( list_one ) != list::length( list_two ) )
+      result :=  TRUE;
+    fi;
+  fi;
+  *result; 
+};
+fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_lists_of_strings( TRUE, list_one, list_two );
+};
+fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_lists_of_strings( FALSE, list_one, list_two );
+};
+
+
+
+fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
+  if   ( type == TRUE  and one == two )
+    TRUE;
+  elif ( type == FALSE and one != two )
+    TRUE;
+  else
+    printf "  # FAIL:  expected %d result %d\n"  one two;
+    FALSE;
+  fi;
+};
+
+fun assert_ints_are_equal( one: Int,  two: Int ):   Bool = {
+  assert_ints( TRUE, one, two );
+};
+fun assert_ints_are_inequal( one: Int,  two: Int ):   Bool = {
+  assert_ints( FALSE, one, two );
+};
+fun test_assert_ints( _: Void ):   Bool ={
+  expected =  1;
+  result   =  1;
+  assert_ints_are_equal( expected, result );
+
+  expected =  1;
+  result   =  2;
+  assert_ints_are_inequal( expected, result );
+};
+# test_assert_ints();
+
+
+
+fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
+  if   ( type == TRUE  and expected == result )
+    TRUE;
+  elif ( type == FALSE and expected != result )
+    TRUE;
+  else
+    print "\n  ** FAIL **\n";
+    print "expected ";
+    if ( expected ) print "TRUE"; else print "FALSE"; fi;
+    print ", result ";
+    if ( result ) print "TRUE\n"; else print "FALSE\n"; fi;
+    FALSE;
+  fi;
+};
+fun assert_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
+  assert_bools( TRUE, expected, result );
+};
+fun assert_bools_are_inequal( expected: Bool,  result: Bool ):   Bool = {
+  assert_bools( FALSE, expected, result );
+};
+fun test_assert_bools( _: Void ):  Bool = {
+  expected =  TRUE;
+  result   =  TRUE;
+  assert_bools_are_equal( expected, result );
+
+  expected =  TRUE;
+  result   =  FALSE;
+  assert_bools_are_inequal( expected, result );
+
+  expected =  FALSE;
+  result   =  TRUE;
+  assert_bools_are_inequal( expected, result );
+};
+# test_assert_bools();
+
+
+
+fun test_assert_lists_of_strings( _: Void ):  Bool = {
+  expected =  [ "one", "two" ];
+  result   =  expected;
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Different lengths
+  expected =  [ "one", "two" ];
+  result   =  [ "one" ];
+  assert_lists_of_strings_are_inequal( expected, result );
+
+  # Different content
+  expected =  [ "one", "two" ];
+  result   =  [ "three", "four" ];
+  assert_lists_of_strings_are_inequal( expected, result );
+};
+# test_assert_lists_of_strings();
+
+
+
+# --
+# --  Library-candidate functions, general
+# --
+
+fun check_directory( string: String ):   Bool = {
+  # See also http://mythryl.org/my-Get_current_directory.html
+  # getcwd ();
+
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  current_directory =  head( directory_list );
+  string == current_directory;
+};
+fun test_check_directory( _: Void ):   Bool = {
+  string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
+  result =  check_directory( string );
+  expected = TRUE;
+  assert_bools_are_equal( expected, result );
+};
+# test_check_directory();
+
+
+
+# TODO:  Only display the current directory's name.  (separate function?)
+fun get_current_directory( _: Void ):   String = {
+  directory_list =  dir::entries''( "." );
+  # TODO:  Is it necessary to sort dir::entries  ?
+  directory_list =  strsort( directory_list );
+  head( directory_list );
+};
+# TODO:  A proper assertion.
+fun test_get_current_directory( _: Void ):   Void = {
+  result =  get_current_directory();
+  printf "%s\n" result;
+};
+# test_get_current_directory();
+
+
+
+# FIXME:  This needs a better name.
+# Removes the path from a string, giving only the filename.
+fun get_filename( string: String ):   String = {
+  silent_regex_replace_all( "(.*)" + *separator, "", string );
+};
+fun test_get_filename( _: Void ):   Bool = {
+  string =  "/foo/bar/baz/filename.ext";
+  expected =             "filename.ext";
+  result = get_filename( string );
+  assert_strings_are_equal( expected, result );
+  # TODO:  Additional testing.
+};
+# test_get_filename();
+
+
+
+# FIXME:  RENAME
+# Removes the extension(s) from a string.
+#   filename.ext     => filename
+#   filename.ext.ext => filename
+fun remove_extension( filename: String ):   String = {
+  silent_regex_replace_first( ./\..*$/, "", filename );
+};
+fun test_remove_extension( _: Void ):   Bool = {
+  string   = "filename.ext";
+  expected = "filename";
+  result = remove_extension( string );
+  assert_strings_are_equal( expected, result );
+
+  # TODO:  Additional testing.
+};
+# test_remove_extension();
+
+
+
+fun is_even( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    TRUE;
+  else
+    FALSE;
+  fi;
+};
+fun test_is_even( _: Void ):   Bool = {
+  n =  2;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  n =  1;
+  expected =  FALSE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  1;
+  expected =  TRUE;
+  result =  is_even( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_even();
+
+
+fun is_odd( i: Int ):   Bool = {
+  if ( ( i % 2 ) == 0 )
+    FALSE;
+  else
+    TRUE;
+  fi;
+};
+fun test_is_odd( _: Void ):   Bool = {
+  n =  1;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  FALSE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+
+  # Meant to fail.
+  n =  2;
+  expected =  TRUE;
+  result =  is_odd( n );
+  assert_bools_are_equal( expected, result );
+};
+# test_is_odd();
+
+
+
+# TODO:  Replace this with something easier to understand, using the standard take_n, drop_n and whatnot.
+fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):   List( String ) = {
+    i =       REF -1;
+    result =  REF [];
+
+    foreach list .{
+      i :=  *i + 1;
+      if ( *i == n )
+        result := *result @ [ replacement ];
+      else
+        result := *result @ [ #e ];
+      fi;
+    };
+
+    *result;
+};
+# TODO:  fun test_replace_nth_string( foo ):   bar = {}
+# list =  [ "This ", "is ", "a ", "test.\n" ]; 
+# result =  replace_nth_string( 1, "was ", list );
+# apply  printf "%s" result; 
+
+
+
+
+# FIXME:               ( _: Void ):   List( String ) = {
+fun test_string_to_list( _: Void ) = {
+  # Simple
+  string =  "foo";
+  expected =  [ "foo" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Simple
+  string =  "foo\n";
+  expected =  [ "foo\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  string =  "HERE\nytesty\n";
+  expected =  [ "HERE\n", "ytesty\n" ];
+  result =  string_to_list( string );
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_string_to_list();
+
+
+
+# This is down here because  assert_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
+fun test_pad_string_list( _: Void ):   Bool = {
+  list_one =  [ "one" ];
+  list_two =  [ "one", "two" ];
+  pad_string_list =  pad_string_list( list_one, list_two );
+  list_one =  list::nth( pad_string_list, 0 );
+  list_two =  list::nth( pad_string_list, 1 );
+
+  expected =  [ "one", "" ];
+  result =  list_one;
+  assert_lists_of_strings_are_equal( expected, result );
+};
+# test_pad_string_list();
+
+
+
+fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
+  list =  [ "one", "two", "three" ];
+  expected =  5;   # "three" is five characters long.
+  result =  longest_string_in_a_list_of_strings( list );
+  assert_ints_are_equal( expected, result );
+};
+# test_longest_string_in_a_list_of_strings();
+
+
+
+fun read_print( filename: String ):   Void = {
+  # Read from a source file.
+  # http://mythryl.org/my-File.html
+  # http://mythryl.org/my-Read_a_text_file.html
+  if ( exists( filename ) )
+    stream =  open_for_read( filename );
+    # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
+    # can_read : (Input_Stream , Int) -> Null_Or(Int );
+    list =  read_lines( stream );
+    apply printf "%s" list;
+  fi;
+};
+# TODO:  A proper assertion.
+# But to do that I'd have to touch the disk, which is stupid for tests to do.
+# I ought to make this just reading a file into a string, and printing can be something like:
+#   print ( read_file( filename ) );
+fun test_read_print( _: Void ):   Void = {
+  read_print( "compiled-website.txt" );
+};
+# test_read_print();
+
+
+# Write to a target file.
+# http://mythryl.org/my-File.html
+# http://mythryl.org/my-Write_a_text_file.html
+# TODO:  In the docs, what is a "Writer" ?
+# I can't realistically convert this into a two-parameter function.
+#   Basically I'd have to pass one List of Strings - the filename, and the content.
+#   (This is probably not true, but I don't know any better)
+#   But why do something as complex as that?  Just use the original simpler code.
+fun write_file( _: Void ):   Void = {
+  filename =  "test-write.txt";
+
+  file = file::open_for_write filename;
+  list = [ "line one\n", "line two" ];
+  apply fprintf file "%s" list;
+
+  # file::write       ( file, "There is no royal road to mathematics.\n" );
+  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
+  file::flush         file;
+  file::close_output  file;
+
+  # Display its contents.
+  if ( exists( filename ) )
+    printf "%s contains:\n--v\n" filename;
+
+    stream =  open_for_read( filename );
+    list =  read_lines( stream );
+    apply printf "%s" list;
+    winix::file::remove_file( filename );
+    print "--^\n";
+  else
+    printf "%s was not created!\n" filename;
+  fi;
+};
+# TODO:  A proper assertion.
+fun test_write_file( _: Void ):   Void = {
+  write_file();
+};
+# test_write_file();
+
+
+
+# --
+# --  Library-candidate functions, project-specific
+# --
+
+fun markup( string: String ):   String = {
+  # FIXME - fuck, all punctuation is broken.
+  # FIXME:  _underlined_.   all on one line, will fail.  .$  isn't being caught on the right?
+
+  # TODO:  RENAME
+  fun markup_needs_a_name( string: String,  rx_left: String,  rx_right: String,  replace_left: String,  replace_right: String ):   String = {
+    fun punctuation_regex( rx_left: String,  rx_right: String ):   String = {
+      # TODO:  Why can't I directly use [:graph:], [:space:], etc?
+#       graph =  "[\\x21-\\x7E]";   # [\x21-\x7E]  =  [:graph:]  =  printable characters, also doable as [^\s] (not whitespace)
+#       punct =  "[^\\32-\\151]";   # [^\32-\151]  =  [:punct:]  =  punctuation
+      punct = "/[^!-~]/";
+      # FIXME:  Ok, what the fuck.  punct doesn't include a period?!
+      punct = punct + "|\\.";
+      space =  "\\s";             # \s           =  [:space:]  =  whitespace
+
+
+      left =
+          ""
+        + "|" + "^"                                                           # I think this works ok.
+        + "|" + space
+        ;
+      left =
+          left
+        + "|" + left + punct
+        + "|" + left + "\\("
+        + "|" + left + "--"
+      ;
+
+      right =
+          ""
+        + "|" + "\\n"                                                   # "$" isn't appropriate for the way I'm doing things.
+        + "|" + space
+        ;
+      right =
+          right
+        + "|" + punct + right
+        + "|" + "\\)" + right
+        + "|" + "--"  + right
+      ;
+      right =
+          right
+        + "|" + "s"  + right
+        + "|" + "es" + right
+        + "|" + "ed" + right
+      ;
+
+        "("   + left     + ")"
+      + "("   + rx_left  + ")"
+      + "([^" + rx_left  + "].*[^" + rx_right + "])"
+      + "("   + rx_right + ")"
+      + "("   + right    + ")"
+      ;
+    };
+
+    # TODO:  implement split_string_html
+    #        then do some kind of:   string =  split_string_html( string );
+
+    rx = punctuation_regex( rx_left, rx_right );
+    # TODO:  Implement silent_replace_all_via_fn() ?
+    string =  regex::replace_all_via_fn  rx .{
+        ( list::nth( #stringlist, 0 ) )
+      + replace_left
+      + ( list::nth( #stringlist, 2 ) )
+      + replace_right
+      + ( list::nth( #stringlist, 4 ) )
+      ;
+    } string
+      except
+      _ =  string;
+    string;
+  };
+
+
+
+  fun markup_horizontal_rules( string: String ):   String = {
+    # With an empty space above and below.
+    fun markup_horizontal_rules_long( string: String ):   String = {
+      silent_regex_replace_all( ./\n{2}\-{3,}\n{2}/, "\n<hr class=\"long\">\n", string );
+    };
+
+    # TODO:  Pull this out of the main markup function, and make separate test cases for this.
+    fun markup_horizontal_rules_short( string: String ):   String = {
+      hr = "<hr class=\"short\">\n";
+
+      # (with content only above)
+      string =  regex::replace_all_via_fn
+        ./([^\n])\n-{2,}\n{2}/ .{
+            ""
+          + strcat( #stringlist )
+          + hr
+          ;
+        } string
+          except
+          _ =  string;
+
+
+      # (with content only below)
+      string =  regex::replace_all_via_fn
+        ./\n{2}-{2,}\n([^\n])/ .{
+          "\n"
+          + hr
+          + strcat( #stringlist )
+          ;
+        } string
+          except
+          _ =  string;
+
+
+      # (with content above and below)
+      string =  regex::replace_all_via_fn
+        ./\n-{2,}\n([^\n])/    .{
+            "\n"
+          + hr
+          + strcat( #stringlist );
+        } string;
+      string
+        except
+        _ =  string;
+    };
+
+    string =  markup_horizontal_rules_long ( string );
+    string =  markup_horizontal_rules_short( string );
+    string;
+  };
+
+  fun markup_paragraphs( string: String ):   String = {
+    # \n\n  =  Paragraph
+    regex::replace_all_via_fn  ./(\n{2,})/ .{
+      n =  string::length( strcat( #stringlist ) );
+      string_multiplier( "\n<br />", n );
+    } string
+      except
+      _ =  string;
+  };
+
+  string =  markup_needs_a_name( string, "\\/", "\\/", "<em>"    , "</em>"     );
+  string =  markup_needs_a_name( string, "-"  , "-"  , "<del>"   , "</del>"    );
+  string =  markup_needs_a_name( string, "\\*", "\\*", "<strong>", "</strong>" );
+  string =  markup_needs_a_name( string, "_"  , "_"  , "<u>"     , "</u>"      );
+  string =  markup_horizontal_rules( string );
+  string =  markup_paragraphs( string );
+  string;
+};   # markup( string: String ):   String
+# TODO:  Absorb the test cases from the Ruby project.
+fun test_markup( _: Void ):   Bool = {
+  string =  "test";
+  expected =  "test";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string =  "\n/emphasis/\n";
+  expected =  "\n<em>emphasis</em>\n";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string =  "/emphasis/";
+  expected =  "<em>emphasis</em>";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string =  "/foo/.\n ";
+  expected =  "<em>foo</em>.\n ";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+
+  string = "foo\n--\nbar\n";
+  expected = "foo\n<hr class=\"short\">\nbar\n";
+  result =  markup( string );
+  assert_strings_are_equal( expected, result );
+};
+# test_markup();
+
+
+
+fun rebuild_template( template_filename: String,  compiling_filename: String ):   Void = {
+  if ( exists( template_filename ) == FALSE )
+    printf "rebuild_template():  File doesn't exist:  '%s'\n" template_filename;
+  else
+    # TODO sanity:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
+    # can_read : (Input_Stream , Int) -> Null_Or(Int );
+    stream =  open_for_read( template_filename );
+    contents =  read_lines( stream );
+    contents =  join "" contents;
+
+    page_title =  get_filename( compiling_filename );
+    page_title =  remove_extension( page_title );
+    # TODO:  Table of Contents
+    toc =  "<br>TO DO";
+    # TODO:  RSS
+    #        rss-feed-icon-16px-svg.png
+    rss =  "";
+
+    contents =  silent_regex_replace_all( "<!--SITE NAME-->"         , *site_name         , contents );
+    contents =  silent_regex_replace_all( "<!--SITE TAGLINE-->"      , *site_tagline      , contents );
+    contents =  silent_regex_replace_all( "<!--SITE URL-->"          , *site_url          , contents );
+    contents =  silent_regex_replace_all( "<!--TITLE-->"             ,  page_title        , contents );
+    contents =  silent_regex_replace_all( "<!--TOC-->"               ,  toc               , contents );
+    contents =  silent_regex_replace_all( "<!--RSS-->"               ,  rss               , contents );
+    contents =  silent_regex_replace_all( "<!--COPYRIGHT-->"         , *copyright         , contents );
+    contents =  silent_regex_replace_all( ./\#\{compiling_filename\}/,  compiling_filename, contents );
+    contents =  silent_regex_replace_all( ./\#\{counter_code\}/      , *counter_code      , contents );
+
+
+    template_filename =  template_filename + "-rebuilt.html";
+    file = file::open_for_write template_filename;
+    file::write( file, contents );
+    file::flush         file;
+    file::close_output  file;
+  fi;
+};   # rebuild_template( template_filename: String,  compiling_filename: String ):   Void
+# TODO:  A proper full test case.
+# fun test_rebuild_template( _: Void ):   Bool = {
+# };
+# test_rebuild_template();
+
+
+
+# TODO:  Think up a better name.
+fun post_processing( content_string: String ):   String = {
+  fun post_processing_redirect( content_string: String ):   String = {
+    # TODO:  A case-insensitive match.
+    match =  "\\[{2}redirect (.*)\\]{2}";
+    if ( ( content_string =~ match ) == FALSE )
+      content_string;
+    else
+      page_name = regex::find_first_group 1  match  content_string;
+      content_string =  silent_regex_replace_all( match,  ( "<p>Redirecting to " + page_name + " ...</p>" ),  content_string );
+      replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + ".html\">";
+      content_string =  silent_regex_replace_first(  "<head>",  replace,  content_string );
+      content_string;
+    fi;
+  };
+
+  # This removes all content, replacing it with the redirect.  This is a lazy way of having content be local-only.
+  fun post_processing_private( content_string: String ):   String = {
+    # TODO:  A case-insensitive match.
+    match =  "\\[{2}private\\]{2}";
+    if ( ( content_string =~ match ) == FALSE )
+      content_string;
+    else
+      "<html><head><meta http-equiv=\"refresh\" content=\"0;url=index.html\"></head><body></body></html>";
+    fi;
+  };
+
+
+  content_string =  post_processing_redirect( content_string );
+  content_string =  post_processing_private( content_string );
+
+  content_string;
+};
+# TODO:  A proper full test case.
+# fun test_post_processing( _: Void ):   Bool = {
+# };
+# test_post_processing();
+
+
+
+fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
+  if ( exists( compiling_filename ) == FALSE )
+    printf "rebuild():  File doesn't exist:  '%s'\n" compiling_filename;
+  else
+    rebuild_template( *header, compiling_filename );
+    rebuild_template( *footer, compiling_filename );
+
+    content_string =                                 strcat( lines( *header + "-rebuilt.html" ) );
+    content_string =  content_string + markup( strcat( lines( compiling_filename ) ) );
+    content_string =  content_string +               strcat( lines( *footer + "-rebuilt.html" ) );
+    content_string =  post_processing( content_string );
+
+    f =  file::open_for_write  target_filename;
+    file::write       ( f, content_string );
+    file::flush         f;
+    file::close_output  f;
+  fi;
+};
+# TODO:  fun test_rebuild  ?
+
+
+
+# Take a string, and break it into a list of strings.  That list of strings is odd-even, where odd is of one type and even is of another type.
+# The idea is to break a string down so that a function can be applied to specific parts of it.
+# For example, I want to apply markup, but not to text inside of blocks of html.
+fun block_matcher( string: String ):   List( String ) = {
+  list =  string_to_list( string );
+
+  fun block_matcher_bool( string: String ):   Bool = {
+    # TODO:  If the regex is a match.
+    if ( string =~ ./^\ *\-/ )
+      TRUE;
+    else
+      FALSE;
+    fi;
+  };
+
+  result   =  REF [];
+  buffer   =  REF "";
+  # We begin at an even position, element 0 in the `result` list.
+  position =  REF "even";
+
+  # Iterate through the list of strings.
+  foreach list .{
+    # For each line, refer to a function which gives a Bool result.
+    bool =  block_matcher_bool( #e );
+    # Based on the Bool, either append to a working string or append to the list and begin an empty working string.
+
+    if ( bool == TRUE )
+      if ( *position == "even" )
+        # We have a match, but we're in the even position.  Matches are supposed to be placed in the odd position.
+
+        # Dump the buffer into the last element of the result.
+        result :=  *result @ [ *buffer ];
+        buffer :=  "";
+
+        # Switch to the odd position.
+        position :=  "odd";
+      fi;
+    else  # ( bool == FALSE )
+      if ( *position == "odd" )
+        # We don't have a match, but we're still in the odd position.  Non-matches are supposed to be placed in the even position.
+
+        # Dump the buffer into the last element of the result.
+        result :=  *result @ [ *buffer ];
+        buffer :=  "";
+
+        # Switch to the odd position.
+        position :=  "even";
+      fi;
+    fi;
+    # Append to the buffer.
+    buffer :=  *buffer + #e;
+
+#     print "--v\n";
+#     printf "#e       '%s'\n" #e;
+#     printf "*buffer  '%s'\n" *buffer;
+#     print "*result\n";
+#     apply  printf "'%s'\n" *result;
+#     print "--^\n";
+  };
+
+  *result @ [ *buffer ];
+};
+fun test_block_matcher( _: Void ):   Bool = {
+  # Not a match
+  string =  "nomatch";
+  expected =  [ "nomatch" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Only a match
+  string =  "- bullet";
+  expected =  [ "", "- bullet" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Match, not a match
+  string =  "- bullet\nytesty\n";
+  expected =  [ "", "- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Not a match, match
+  string =  "ytesty\n- bullet\n";
+  expected =  [ "ytesty\n", "- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Two consecutive matches only
+  string =  "- bullet\n- bullet\n";
+  expected =  [ "", "- bullet\n- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Two consecutive matches, not a match
+  string =  "- bullet\n- bullet\nytesty\n";
+  expected =  [ "", "- bullet\n- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Not a match, two consecutive matches, not a match
+  string =  "foo\n- bullet\n- bullet\nytesty\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n", "ytesty\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Not a match, two consecutive matches
+  string =  "foo\n- bullet\n- bullet\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # Oh hell, let's get silly.
+  string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n";
+  expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n" ];
+  result =  block_matcher( string );
+  assert_lists_of_strings_are_equal( expected, result );
+
+  # FIXME:  string_to_list() chops out any duplicate \n like here             ---v
+  # string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n\n";
+  # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
+  # result =  block_matcher( string );
+  # assert_lists_of_strings_are_equal( expected, result );
+};
+# test_block_matcher();
+
+
+
+fun test_all_tests( _: Void ):   Bool = {
+  test_assert_strings();
+  test_string_multiplier();
+
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_list_of_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_two_strings_to_columnized_string();
+
+  # TODO:  Proper assertions.
+#   test_two_lists_of_strings_to_columnized_string();
+
+  test_assert_ints();
+  test_assert_bools();
+  test_assert_lists_of_strings();
+  test_check_directory();
+
+  # TODO:  A proper assertion.
+#   test_get_current_directory();
+
+  # TODO:  A proper assertion.
+#   test_get_current_directory();
+
+  test_get_filename();
+  test_remove_extension();
+
+  # TODO:  test_not_equal
+#   test_is_even();
+
+  # TODO:  test_not_equal
+#   test_is_odd();
+
+  test_string_to_list();
+  test_pad_string_list();
+  test_longest_string_in_a_list_of_strings();
+
+  # TODO:  A proper assertion.
+#   test_read_print();
+
+  # TODO:  A proper assertion.
+#   test_write_file();
+
+  test_markup();
+  test_block_matcher();
+};
+test_all_tests();
+
+
+
 # ---
 # ---  Actual programming
 # ---
@@ -51,22 +1281,17 @@ fun sanity_check( _: Void ):   Void = {
 # sanity_check();
 
 
-project::read_configuration( "compiled-website.config" );
+read_configuration( "compiled-website.config" );
 
-project::rebuild(
+rebuild(
   *source_directory + "sandbox.asc",
   *target_directory + "sandbox.html"
 );
 
 
-project::rebuild(
+rebuild(
   *source_directory + "index.asc",
   *target_directory + "index.html"
 );
-
-
-test::test_all_tests();
-general::test_all_tests();
-project::test_all_tests();
 
 };
