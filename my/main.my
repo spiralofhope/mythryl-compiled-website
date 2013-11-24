@@ -3,6 +3,7 @@
 
 # FIXME - Major problems to be investigated:
 # Stuff has been removed or renamed:
+# fprintf - WORKING
 # winix_text_file_for_posix::Output_Stream
 
 {
@@ -74,23 +75,20 @@ fun read_configuration( filename: String ):   Void = {
     contents =  read_lines( stream );
     contents =  string::join  "\n"  contents;
 
-    # From here onwards used to have   variable_name := whatever   , but I don't remember what := means..
-    source_directory =  silent_regex_find_first_group( "\nsource_directory += +(.*)", contents );
-    target_directory =  silent_regex_find_first_group( "\ntarget_directory += +(.*)", contents );
-    header           =  silent_regex_find_first_group(           "\nheader += +(.*)", contents );
-    footer           =  silent_regex_find_first_group(           "\nfooter += +(.*)", contents );
-    site_name        =  silent_regex_find_first_group(        "\nsite_name += +(.*)", contents );
-    site_tagline     =  silent_regex_find_first_group(     "\nsite_tagline += +(.*)", contents );
-    site_url         =  silent_regex_find_first_group(         "\nsite_url += +(.*)", contents );
-    copyright        =  silent_regex_find_first_group(        "\ncopyright += +(.*)", contents );
+    source_directory :=  silent_regex_find_first_group( "\nsource_directory += +(.*)", contents );
+    target_directory :=  silent_regex_find_first_group( "\ntarget_directory += +(.*)", contents );
+    header           :=  silent_regex_find_first_group(           "\nheader += +(.*)", contents );
+    footer           :=  silent_regex_find_first_group(           "\nfooter += +(.*)", contents );
+    site_name        :=  silent_regex_find_first_group(        "\nsite_name += +(.*)", contents );
+    site_tagline     :=  silent_regex_find_first_group(     "\nsite_tagline += +(.*)", contents );
+    site_url         :=  silent_regex_find_first_group(         "\nsite_url += +(.*)", contents );
+    copyright        :=  silent_regex_find_first_group(        "\ncopyright += +(.*)", contents );
 
     # Because I don't know how to do a multi-line search, I'll cheat.
     contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
     # Searching between {{{ and }}}
-    counter_code     =  silent_regex_find_first_group(     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
-    # The old one had  *counter_code  for reasons I don't remember..
-    # counter_code     =  silent_regex_replace_all( "\t", "\n", *counter_code );
-    counter_code     =  silent_regex_replace_all( "\t", "\n", counter_code );
+    counter_code     :=  silent_regex_find_first_group(     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
+    counter_code     :=  silent_regex_replace_all( "\t", "\n", *counter_code );
   fi;
 };
 
@@ -751,45 +749,45 @@ fun test_read_print( _: Void ):   Void = {
 
 
 
+# Write to a target file.
+# http://mythryl.org/my-File.html
+# http://mythryl.org/my-Write_a_text_file.html
+# TODO:  In the docs, what is a "Writer" ?
+# I can't realistically convert this into a two-parameter function.
+#   Basically I'd have to pass one List of Strings - the filename, and the content.
+#   (This is probably not true, but I don't know any better)
+#   But why do something as complex as that?  Just use the original simpler code.
+fun write_file( _: Void ):   Void = {
+  filename =  "test-write.txt";
+
+  file = file::open_for_write filename;
+  list = [ "line one\n", "line two" ];
 ###~~~
-# # Write to a target file.
-# # http://mythryl.org/my-File.html
-# # http://mythryl.org/my-Write_a_text_file.html
-# # TODO:  In the docs, what is a "Writer" ?
-# # I can't realistically convert this into a two-parameter function.
-# #   Basically I'd have to pass one List of Strings - the filename, and the content.
-# #   (This is probably not true, but I don't know any better)
-# #   But why do something as complex as that?  Just use the original simpler code.
-# fun write_file( _: Void ):   Void = {
-  # filename =  "test-write.txt";
+  apply fprintf file "%s" list;
 
-  # file = file::open_for_write filename;
-  # list = [ "line one\n", "line two" ];
-  # apply fprintf file "%s" list;
+  # file::write       ( file, "There is no royal road to mathematics.\n" );
+  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
+  file::flush         file;
+  file::close_output  file;
 
-  # # file::write       ( file, "There is no royal road to mathematics.\n" );
-  # # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
-  # file::flush         file;
-  # file::close_output  file;
+  # Display its contents.
+  if ( exists( filename ) )
+    printf "%s contains:\n--v\n" filename;
 
-  # # Display its contents.
-  # if ( exists( filename ) )
-    # printf "%s contains:\n--v\n" filename;
-
-    # stream =  open_for_read( filename );
-    # list =  read_lines( stream );
-    # apply printf "%s" list;
-    # winix::file::remove_file( filename );
-    # print "--^\n";
-  # else
-    # printf "%s was not created!\n" filename;
-  # fi;
-# };
-# # TODO:  A proper assertion.
-# fun test_write_file( _: Void ):   Void = {
-  # write_file();
-# };
-# # test_write_file();
+    stream =  open_for_read( filename );
+    list =  read_lines( stream );
+    apply printf "%s" list;
+    winix::file::remove_file( filename );
+    print "--^\n";
+  else
+    printf "%s was not created!\n" filename;
+  fi;
+};
+# TODO:  A proper assertion.
+fun test_write_file( _: Void ):   Void = {
+  write_file();
+};
+# test_write_file();
 
 
 
