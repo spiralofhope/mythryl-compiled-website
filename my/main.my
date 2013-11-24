@@ -2,9 +2,7 @@
 # NOTE:  This script assumes that it will be run from the same directory it is found in.
 
 # FIXME - Major problems to be investigated:
-# Stuff has been removed or renamed:
-# fprintf - WORKING
-# winix_text_file_for_posix::Output_Stream
+# rebuild() and associated functionality isn't actually working.
 
 {
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
@@ -759,29 +757,25 @@ fun test_read_print( _: Void ):   Void = {
 #   But why do something as complex as that?  Just use the original simpler code.
 fun write_file( _: Void ):   Void = {
   filename =  "test-write.txt";
-
-  file = file::open_for_write filename;
   list = [ "line one\n", "line two" ];
-###~~~
-  apply fprintf file "%s" list;
 
-  # file::write       ( file, "There is no royal road to mathematics.\n" );
-  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
-  file::flush         file;
-  file::close_output  file;
+  # Write the file out.
+  file::from_lines  filename  list;
 
   # Display its contents.
   if ( exists( filename ) )
     printf "%s contains:\n--v\n" filename;
-
     stream =  open_for_read( filename );
     list =  read_lines( stream );
     apply printf "%s" list;
-    winix::file::remove_file( filename );
     print "--^\n";
   else
     printf "%s was not created!\n" filename;
   fi;
+
+  # Teardown.
+  winix::file::remove_file( filename );
+  # TODO - how can I directly test that the above succeeded, without resorting to a manual "if exists" ?
 };
 # TODO:  A proper assertion.
 fun test_write_file( _: Void ):   Void = {
@@ -969,7 +963,7 @@ fun test_markup( _: Void ):   Bool = {
 
 
 
-fun rebuild_template( template_filename: String,  compiling_filename: String ):   Void = {
+fun rebuild_template( template_filename:String,  compiling_filename:String ):   Void = {
   if ( exists( template_filename ) == FALSE )
     printf "rebuild_template():  File doesn't exist:  '%s'\n" template_filename;
   else
@@ -999,10 +993,12 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
 
 
     template_filename =  template_filename + "-rebuilt.html";
-    file = file::open_for_write template_filename;
-    file::write( file, contents );
-    file::flush         file;
-    file::close_output  file;
+    # file = file::open_for_write template_filename;
+    # file::write( file, contents );
+    # file::flush         file;
+    # file::close_output  file;
+    # TODO - this is a more simple way of doing things:
+    file::from_lines  template_filename  [ contents ];
   fi;
 };   # rebuild_template( template_filename: String,  compiling_filename: String ):   Void
 # TODO:  A proper full test case.
@@ -1052,25 +1048,27 @@ fun post_processing( content_string:String ):   String = {
 
 
 
-# fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
-  # if ( exists( compiling_filename ) == FALSE )
-    # printf "rebuild():  File doesn't exist:  '%s'\n" compiling_filename;
-  # else
-    # rebuild_template( *header, compiling_filename );
-    # rebuild_template( *footer, compiling_filename );
+fun rebuild( source_filename:String,  target_filename:String ):   Void = {
+  if ( exists( source_filename ) == FALSE )
+    printf "rebuild():  File doesn't exist:  '%s'\n" source_filename;
+  else
+    rebuild_template( *header, source_filename );
+    # rebuild_template( *footer, source_filename );
 
-    # content_string =                                 strcat( file::as_lines( *header + "-rebuilt.html" ) );
-    # content_string =  content_string + markup( strcat( file::as_lines( compiling_filename ) ) );
-    # content_string =  content_string +               strcat( file::as_lines( *footer + "-rebuilt.html" ) );
-    # content_string =  post_processing( content_string );
+    content_string =                                 strcat( file::as_lines( *header + "-rebuilt.html" ) );
+    content_string =  content_string + markup( strcat( file::as_lines( source_filename ) ) );
+    content_string =  content_string +               strcat( file::as_lines( *footer + "-rebuilt.html" ) );
+    content_string =  post_processing( content_string );
 
-    # f =  file::open_for_write  target_filename;
-    # file::write       ( f, content_string );
-    # file::flush         f;
-    # file::close_output  f;
-  # fi;
-# };
-# # TODO:  fun test_rebuild  ?
+    f =  file::open_for_write  target_filename;
+    file::write       ( f, content_string );
+    file::flush         f;
+    file::close_output  f;
+    # TODO - this is a more simple way of doing things:
+    # file::from_lines  target_filename  [ content_string ];
+  fi;
+};
+# TODO:  fun test_rebuild  ?
 
 
 
@@ -1277,11 +1275,10 @@ fun sanity_check( _: Void ):   Void = {
 
 read_configuration( "compiled-website.config" );
 
-###~~~
-# rebuild(
-  # *source_directory + "sandbox.asc",
-  # *target_directory + "sandbox.html"
-# );
+rebuild(
+  *source_directory + "sandbox.asc",
+  *target_directory + "sandbox.html"
+);
 
 
 # rebuild(

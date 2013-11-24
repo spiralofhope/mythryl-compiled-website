@@ -4,6 +4,7 @@
     - lines()  =>  file::as_lines()
     - regex::find_first_group()  needed to be reworked for the new semi-exception handling.  See  silent_regex_find_first_group()  for the case statement I'm using.
     - list::tabulate()  was removed.  See  string_multiplier()  for the for loop I'm using.
+    - fprintf  and file-related stuff had to be reworked, mainly using  file::from_lines  .. there's more left to do though.
 
 
 ### 2012-05-01
