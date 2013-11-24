@@ -1,3 +1,9 @@
+### 2013-11-24
+
+  - Several changes within Mythryl broke my scripting.
+    - lines()  =>  file::as_lines()
+
+
 ### 2012-05-01
 
   - I reverted to the previous stuff.
