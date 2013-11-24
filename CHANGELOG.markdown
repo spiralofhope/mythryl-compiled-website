@@ -2,6 +2,7 @@
 
   - Several changes within Mythryl broke my scripting.
     - lines()  =>  file::as_lines()
+    - regex::find_first_group()  needed to be reworked for the new semi-exception handling.  See  silent_regex_find_first_group()  for the case statement I'm using.
 
 
 ### 2012-05-01

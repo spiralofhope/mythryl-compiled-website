@@ -4,7 +4,7 @@
 # FIXME - Major problems to be investigated:
 # Stuff has been removed or renamed:
 # list::tabulate
-# regex::find_first_group
+# winix_text_file_for_posix::Output_Stream
 
 {
 # TODO:  Trap exceptions for file operations.  Determine what other functions have exceptions.
@@ -32,6 +32,7 @@ separator = REF "\\/";
 
 
 fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):   String = {
+  # Odd, why don't I have to rework this to use the case( regex )-type code, as with  silent_regex_find_first_group()  ?
   regex::replace_all  rx  replace  string
     except
     _ =  string;
@@ -47,16 +48,18 @@ fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):
 
 
 
-fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   String = {
-  regex::find_first_group  n  rx  string
-    except
-    _ = {
+# REWORKED AND WORKING REGEX STUFF:
+fun silent_regex_find_first_group( rx:String,  string:String ):   String = {
+  case( regex::find_first_match_to_ith_group  1  rx  string )
+    THE x => x;
+    NULL => {
       if ( *verbose )
-        printf "\nsilent_regex_find_first_group():  Warning, found nothing:  '%d' | '%s'\n" n rx;
-        printf "--v\n'%s'\n--^\n" string;
+        printf  "\nsilent_regex_find_first_group():  Warning, found nothing:  '%s'\n"  rx;
+        printf  "--v\n'%s'\n--^\n"  string;
       fi;
       "";
     };
+  esac;
 };
 
 
@@ -64,33 +67,34 @@ fun silent_regex_find_first_group( n: Int,  rx: String,  string: String ):   Str
 # TODO:  It would be nice if I could somehow make this code reusable.  It would pick up the variable names from the configuration file itself.  This isn't reasonable to implement right now.  It may not even be possible.
 fun read_configuration( filename: String ):   Void = {
   # Read a file by line.
-  if ( exists( filename ) == FALSE )
-    printf "read_configuration():  File doesn't exist:  '%s'\n" filename;
+  if ( file::exists( filename ) == FALSE )
+    printf  "read_configuration():  File doesn't exist:  '%s'\n" filename;
   else
     stream =  open_for_read( filename );
     # TODO:  Can I read it?  http://mythryl.org/my-Check_File_Readability.html
     # can_read : (Input_Stream , Int) -> Null_Or(Int );
     contents =  read_lines( stream );
-    contents =  join "\n" contents;
+    contents =  string::join  "\n"  contents;
 
-    # Read in the user variables.
-    source_directory :=  silent_regex_find_first_group( 1, "\nsource_directory += +(.*)", contents );
-    target_directory :=  silent_regex_find_first_group( 1, "\ntarget_directory += +(.*)", contents );
-    header           :=  silent_regex_find_first_group( 1,           "\nheader += +(.*)", contents );
-    footer           :=  silent_regex_find_first_group( 1,           "\nfooter += +(.*)", contents );
-    site_name        :=  silent_regex_find_first_group( 1,        "\nsite_name += +(.*)", contents );
-    site_tagline     :=  silent_regex_find_first_group( 1,     "\nsite_tagline += +(.*)", contents );
-    site_url         :=  silent_regex_find_first_group( 1,         "\nsite_url += +(.*)", contents );
-    copyright        :=  silent_regex_find_first_group( 1,        "\ncopyright += +(.*)", contents );
+    # From here onwards used to have   variable_name := whatever   , but I don't remember what := means..
+    source_directory =  silent_regex_find_first_group( "\nsource_directory += +(.*)", contents );
+    target_directory =  silent_regex_find_first_group( "\ntarget_directory += +(.*)", contents );
+    header           =  silent_regex_find_first_group(           "\nheader += +(.*)", contents );
+    footer           =  silent_regex_find_first_group(           "\nfooter += +(.*)", contents );
+    site_name        =  silent_regex_find_first_group(        "\nsite_name += +(.*)", contents );
+    site_tagline     =  silent_regex_find_first_group(     "\nsite_tagline += +(.*)", contents );
+    site_url         =  silent_regex_find_first_group(         "\nsite_url += +(.*)", contents );
+    copyright        =  silent_regex_find_first_group(        "\ncopyright += +(.*)", contents );
 
     # Because I don't know how to do a multi-line search, I'll cheat.
     contents          =  silent_regex_replace_all( "\n", "\t",  contents     );
     # Searching between {{{ and }}}
-    counter_code     :=  silent_regex_find_first_group( 1,     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
-    counter_code     :=  silent_regex_replace_all( "\t", "\n", *counter_code );
+    counter_code     =  silent_regex_find_first_group(     "\tcounter_code += +\\{{3}(.*)\\}{3}", contents );
+    # The old one had  *counter_code  for reasons I don't remember..
+    # counter_code     =  silent_regex_replace_all( "\t", "\n", *counter_code );
+    counter_code     =  silent_regex_replace_all( "\t", "\n", counter_code );
   fi;
 };
-
 
 
 # --
@@ -683,9 +687,9 @@ fun replace_nth_string( n: Int,  replacement: String,  list: List( String ) ):  
     *result;
 };
 # TODO:  fun test_replace_nth_string( foo ):   bar = {}
-# list =  [ "This ", "is ", "a ", "test.\n" ]; 
+# list =  [ "This ", "is ", "a ", "test.\n" ];
 # result =  replace_nth_string( 1, "was ", list );
-# apply  printf "%s" result; 
+# apply  printf "%s" result;
 
 
 
@@ -761,6 +765,8 @@ fun test_read_print( _: Void ):   Void = {
 # test_read_print();
 
 
+
+###~~~
 # Write to a target file.
 # http://mythryl.org/my-File.html
 # http://mythryl.org/my-Write_a_text_file.html
@@ -1024,15 +1030,15 @@ fun rebuild_template( template_filename: String,  compiling_filename: String ): 
 
 
 # TODO:  Think up a better name.
-fun post_processing( content_string: String ):   String = {
-  fun post_processing_redirect( content_string: String ):   String = {
+fun post_processing( content_string:String ):   String = {
+  fun post_processing_redirect( content_string:String ):   String = {
     # TODO:  A case-insensitive match.
-    match =  "\\[{2}redirect (.*)\\]{2}";
-    if ( ( content_string =~ match ) == FALSE )
+    rx =  "\\[{2}redirect (.*)\\]{2}";
+    if ( ( content_string =~ rx ) == FALSE )
       content_string;
     else
-      page_name = regex::find_first_group 1  match  content_string;
-      content_string =  silent_regex_replace_all( match,  ( "<p>Redirecting to " + page_name + " ...</p>" ),  content_string );
+      page_name = silent_regex_find_first_group( rx,  content_string );
+      content_string =  silent_regex_replace_all( rx,  ( "<p>Redirecting to " + page_name + " ...</p>" ),  content_string );
       replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + ".html\">";
       content_string =  silent_regex_replace_first(  "<head>",  replace,  content_string );
       content_string;
@@ -1042,8 +1048,8 @@ fun post_processing( content_string: String ):   String = {
   # This removes all content, replacing it with the redirect.  This is a lazy way of having content be local-only.
   fun post_processing_private( content_string: String ):   String = {
     # TODO:  A case-insensitive match.
-    match =  "\\[{2}private\\]{2}";
-    if ( ( content_string =~ match ) == FALSE )
+    rx =  "\\[{2}private\\]{2}";
+    if ( ( content_string =~ rx ) == FALSE )
       content_string;
     else
       "<html><head><meta http-equiv=\"refresh\" content=\"0;url=index.html\"></head><body></body></html>";
@@ -1063,25 +1069,25 @@ fun post_processing( content_string: String ):   String = {
 
 
 
-fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
-  if ( exists( compiling_filename ) == FALSE )
-    printf "rebuild():  File doesn't exist:  '%s'\n" compiling_filename;
-  else
-    rebuild_template( *header, compiling_filename );
-    rebuild_template( *footer, compiling_filename );
+# fun rebuild( compiling_filename: String,  target_filename: String ):   Void = {
+  # if ( exists( compiling_filename ) == FALSE )
+    # printf "rebuild():  File doesn't exist:  '%s'\n" compiling_filename;
+  # else
+    # rebuild_template( *header, compiling_filename );
+    # rebuild_template( *footer, compiling_filename );
 
-    content_string =                                 strcat( file::as_lines( *header + "-rebuilt.html" ) );
-    content_string =  content_string + markup( strcat( file::as_lines( compiling_filename ) ) );
-    content_string =  content_string +               strcat( file::as_lines( *footer + "-rebuilt.html" ) );
-    content_string =  post_processing( content_string );
+    # content_string =                                 strcat( file::as_lines( *header + "-rebuilt.html" ) );
+    # content_string =  content_string + markup( strcat( file::as_lines( compiling_filename ) ) );
+    # content_string =  content_string +               strcat( file::as_lines( *footer + "-rebuilt.html" ) );
+    # content_string =  post_processing( content_string );
 
-    f =  file::open_for_write  target_filename;
-    file::write       ( f, content_string );
-    file::flush         f;
-    file::close_output  f;
-  fi;
-};
-# TODO:  fun test_rebuild  ?
+    # f =  file::open_for_write  target_filename;
+    # file::write       ( f, content_string );
+    # file::flush         f;
+    # file::close_output  f;
+  # fi;
+# };
+# # TODO:  fun test_rebuild  ?
 
 
 
@@ -1288,15 +1294,16 @@ fun sanity_check( _: Void ):   Void = {
 
 read_configuration( "compiled-website.config" );
 
-rebuild(
-  *source_directory + "sandbox.asc",
-  *target_directory + "sandbox.html"
-);
+###~~~
+# rebuild(
+  # *source_directory + "sandbox.asc",
+  # *target_directory + "sandbox.html"
+# );
 
 
-rebuild(
-  *source_directory + "index.asc",
-  *target_directory + "index.html"
-);
+# rebuild(
+  # *source_directory + "index.asc",
+  # *target_directory + "index.html"
+# );
 
 };
