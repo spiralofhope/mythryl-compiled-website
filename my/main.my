@@ -3,7 +3,6 @@
 
 # FIXME - Major problems to be investigated:
 # Stuff has been removed or renamed:
-# list::tabulate
 # winix_text_file_for_posix::Output_Stream
 
 {
@@ -48,7 +47,6 @@ fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):
 
 
 
-# REWORKED AND WORKING REGEX STUFF:
 fun silent_regex_find_first_group( rx:String,  string:String ):   String = {
   case( regex::find_first_match_to_ith_group  1  rx  string )
     THE x => x;
@@ -143,11 +141,11 @@ fun string_to_list( string: String ):   List( String ) = {
 # TODO:  should testing be able to throw errors?
 # TODO:  Tallying:  Number of tests, passes and fails.  Time spent processing.
 # TODO:  Numbers, stats, etc.
-# TODO:  comparing Lists of Ints, etc?  I can't re-use test_assert_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
-# TODO:  Make an assert_not() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_foo test function.
-#        For example, make assert_strings_are_not_equal() but leverage the existing assert_strings_are_equal() and pass it through assert_not() somehow or other.  You can do it.
+# TODO:  comparing Lists of Ints, etc?  I can't re-use test_assert_that_lists_of_strings_are_equal() if printf needs %s to display contents.  How do I deal with this?
+# TODO:  Make an assert_is_false() which will flip TRUE=>FALSE and FALSE=>TRUE.  Then leverage that with a 'not' for each assert_that_foo test function.
+#        For example, make assert_that_strings_are_not_equal() but leverage the existing assert_that_strings_are_equal() and pass it through assert_is_false() somehow or other.  You can do it.
 
-fun assert_not( bool: Bool ):   Bool = {
+fun assert_is_false( bool:Bool ):   Bool = {
   if ( bool == TRUE )
     FALSE;
   else
@@ -157,7 +155,7 @@ fun assert_not( bool: Bool ):   Bool = {
 
 
 
-fun reveal_unprintable_characters( string: String ):   String = {
+fun reveal_unprintable_characters( string:String ):   String = {
     #  Spaces
   string = silent_regex_replace_all( "\\ ", "·", string );
     #  Newlines
@@ -170,8 +168,8 @@ fun reveal_unprintable_characters( string: String ):   String = {
 
 
 
-# TODO:  Make a general "assert_equal() which can handle all types.
-fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
+# TODO:  Make a general "assert_that_equal() which can handle all types.
+fun assert_that_strings( type: Bool,  one: String,  two: String ):   Bool = {
   if   ( type == TRUE   and  one == two )
     TRUE;
   elif ( type == FALSE  and  one != two )
@@ -179,28 +177,29 @@ fun assert_strings( type: Bool,  one: String,  two: String ):   Bool = {
   else
     one =  reveal_unprintable_characters( one );
     two =  reveal_unprintable_characters( two );
-    print "\n  * assert_strings: ";
     if     ( type == TRUE )
+      print "\n  * assert_that_strings_are_equal(): ";
       print "Asserted TRUE, got FALSE.\n";
       printf "%s\n => %s\n" one two;
     else # ( type != TRUE )
+      print "\n  * assert_that_strings_are_inequal(): ";
       print "Asserted FALSE, got TRUE.\n";
       printf "%s\n" one;
     fi;
     FALSE;
   fi;
 };
-fun assert_strings_are_equal( expected: String,  result: String ):   Bool = {
-  assert_strings( TRUE, expected, result );
+fun assert_that_strings_are_equal( expected: String,  result: String ):   Bool = {
+  assert_that_strings( TRUE, expected, result );
 };
-fun assert_strings_are_inequal( expected: String,  result: String ):   Bool = {
-  assert_strings( FALSE, expected, result );
+fun assert_that_strings_are_inequal( expected: String,  result: String ):   Bool = {
+  assert_that_strings( FALSE, expected, result );
 };
-fun test_assert_strings( _: Void ):   Bool = {
-  assert_strings_are_equal( "", "" );
-  assert_strings_are_inequal( "one", "two" );
+fun test_assert_that_strings( _: Void ):   Bool = {
+  assert_that_strings_are_equal( "", "" );
+  assert_that_strings_are_inequal( "one", "two" );
 };
-# test_assert_strings();
+# test_assert_that_strings();
 
 
 
@@ -249,42 +248,26 @@ fun longest_string_in_a_list_of_strings( list: List( String ) ):   Int = {
 };
 
 
-
-fun string_multiplier( string: String,  n: Int ):   String = {
+fun string_multiplier( string:String,  n:Int ):   String = {
   if   ( n <  0 )
-    # TODO:  Throw an error.
-    printf "You want to multiply a string by a negative number? :  %d\n"  n;
-    "";
+    "TODO - Throw an error.";
+    # printf "You want to multiply a string by a negative number? :  %d\n"  n;
   elif ( n == 0 )
     "";
   else
-    cat( list::tabulate( n, fn _ = string ) );
+    tmp = REF "";
+      for ( i = n; i > 0; --i ) {
+      tmp := *tmp + string;
+      # printf "%d - %s\n"  i  *tmp;
+    };
+    *tmp;
   fi;
 };
-fun test_string_multiplier( _: Void ):   Bool = {
-  string   = "foo";
-  n        = 2;
-  expected = "foofoo";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-
-  string   = "foo";
-  n        = 0;
-  expected = "";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_equal( expected, result );
-
-  string   = "foo";
-  n        = -1;
-  expected = "";
-#   result = ( string_multiplier( string, n ) );
-#   assert_strings_are_inequal( expected, result );
-
-  string   = "foo";
-  n        = 2;
-  expected = "FAIL TEST";
-  result = ( string_multiplier( string, n ) );
-  assert_strings_are_inequal( expected, result );
+fun test_string_multiplier( _:Void ):   Bool = {
+  assert_that_strings_are_equal(   string_multiplier( "a", 2 ), "aa" );
+  assert_that_strings_are_equal(   string_multiplier( "a", 0 ), ""   );
+  assert_that_strings_are_inequal( string_multiplier( "a", -1 ), "x" );
+  assert_that_strings_are_inequal( string_multiplier( "a", 2  ), "x" );
 };
 # test_string_multiplier();
 
@@ -396,29 +379,29 @@ fun test_two_lists_of_strings_to_columnized_string( _: Void ):   Bool = {
   
   expected = "'one'     'four'\n'two'     'five'\n'three'   'six'\n";
   result =  two_lists_of_strings_to_columnized_string( list_one, list_two );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 };
 # test_two_lists_of_strings_to_columnized_string();
 
 
 
-fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+fun assert_that_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
 
   result =  REF TRUE;
 
-  fun assert_lists_of_strings_check_content( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  fun assert_that_lists_of_strings_check_content( type: Bool,  list_one: List( String ),  list_two: List( String ) ):   Bool = {
     i =  REF -1;
-    return__assert_lists_of_strings_check_content =  REF TRUE;
+    return__assert_that_lists_of_strings_check_content =  REF TRUE;
     foreach list_one .{
       throwaway =  #e;
       i :=  *i + 1;
       one =  list::nth( list_one, *i );
       two =  list::nth( list_two, *i );
-      assert_strings( type, one, two );
+      assert_that_strings( type, one, two );
     };
-    if     ( type == TRUE   and  *return__assert_lists_of_strings_check_content == TRUE  )
+    if     ( type == TRUE   and  *return__assert_that_lists_of_strings_check_content == TRUE  )
       TRUE;
-    elif   ( type == FALSE  and  *return__assert_lists_of_strings_check_content == FALSE )
+    elif   ( type == FALSE  and  *return__assert_that_lists_of_strings_check_content == FALSE )
       TRUE;
     else
       FALSE;
@@ -428,7 +411,7 @@ fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: L
 
   if     ( type == TRUE )
     if     ( list::length( list_one ) == list::length( list_two ) )
-      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+      result :=  assert_that_lists_of_strings_check_content( type, list_one, list_two );
     else # ( list::length( list_one ) != list::length( list_two ) )
       tmp =  two_lists_of_strings_to_columnized_string( list_one, list_two );
       tmp =  reveal_unprintable_characters( tmp );
@@ -437,23 +420,23 @@ fun assert_lists_of_strings( type: Bool,  list_one: List( String ),  list_two: L
     fi;
   else # ( type != TRUE )
     if     ( list::length( list_one ) == list::length( list_two ) )
-      result :=  assert_lists_of_strings_check_content( type, list_one, list_two );
+      result :=  assert_that_lists_of_strings_check_content( type, list_one, list_two );
     else # ( list::length( list_one ) != list::length( list_two ) )
       result :=  TRUE;
     fi;
   fi;
   *result; 
 };
-fun assert_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
-  assert_lists_of_strings( TRUE, list_one, list_two );
+fun assert_that_lists_of_strings_are_equal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_that_lists_of_strings( TRUE, list_one, list_two );
 };
-fun assert_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
-  assert_lists_of_strings( FALSE, list_one, list_two );
+fun assert_that_lists_of_strings_are_inequal( list_one: List( String ),  list_two: List( String ) ):   Bool = {
+  assert_that_lists_of_strings( FALSE, list_one, list_two );
 };
 
 
 
-fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
+fun assert_that_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
   if   ( type == TRUE  and one == two )
     TRUE;
   elif ( type == FALSE and one != two )
@@ -464,26 +447,27 @@ fun assert_ints( type: Bool,  one: Int,  two: Int ):   Bool = {
   fi;
 };
 
-fun assert_ints_are_equal( one: Int,  two: Int ):   Bool = {
-  assert_ints( TRUE, one, two );
+fun assert_that_ints_are_equal( one: Int,  two: Int ):   Bool = {
+  assert_that_ints( TRUE, one, two );
 };
-fun assert_ints_are_inequal( one: Int,  two: Int ):   Bool = {
-  assert_ints( FALSE, one, two );
+fun assert_that_ints_are_inequal( one: Int,  two: Int ):   Bool = {
+  assert_that_ints( FALSE, one, two );
 };
-fun test_assert_ints( _: Void ):   Bool ={
+fun test_assert_that_ints( _: Void ):   Bool ={
   expected =  1;
   result   =  1;
-  assert_ints_are_equal( expected, result );
+  assert_that_ints_are_equal( expected, result );
 
   expected =  1;
   result   =  2;
-  assert_ints_are_inequal( expected, result );
+  assert_that_ints_are_inequal( expected, result );
 };
-# test_assert_ints();
+# test_assert_that_ints();
 
 
 
-fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
+# TODO - Ugh, this needs to be cleaned up for greater clarity..  mention assert_as_true() or assert_as_false() on failure..
+fun assert_that_bools( type:Bool,  expected:Bool,  result:Bool ):   Bool = {
   if   ( type == TRUE  and expected == result )
     TRUE;
   elif ( type == FALSE and expected != result )
@@ -497,45 +481,45 @@ fun assert_bools( type: Bool,  expected: Bool,  result: Bool ):   Bool = {
     FALSE;
   fi;
 };
-fun assert_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
-  assert_bools( TRUE, expected, result );
+fun assert_that_bools_are_equal( expected: Bool,  result: Bool ):   Bool = {
+  assert_that_bools( TRUE, expected, result );
 };
-fun assert_bools_are_inequal( expected: Bool,  result: Bool ):   Bool = {
-  assert_bools( FALSE, expected, result );
+fun assert_that_bools_are_inequal( expected: Bool,  result: Bool ):   Bool = {
+  assert_that_bools( FALSE, expected, result );
 };
-fun test_assert_bools( _: Void ):  Bool = {
+fun test_assert_that_bools( _: Void ):  Bool = {
   expected =  TRUE;
   result   =  TRUE;
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 
   expected =  TRUE;
   result   =  FALSE;
-  assert_bools_are_inequal( expected, result );
+  assert_that_bools_are_inequal( expected, result );
 
   expected =  FALSE;
   result   =  TRUE;
-  assert_bools_are_inequal( expected, result );
+  assert_that_bools_are_inequal( expected, result );
 };
-# test_assert_bools();
+# test_assert_that_bools();
 
 
 
-fun test_assert_lists_of_strings( _: Void ):  Bool = {
+fun test_assert_that_lists_of_strings( _: Void ):  Bool = {
   expected =  [ "one", "two" ];
   result   =  expected;
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Different lengths
   expected =  [ "one", "two" ];
   result   =  [ "one" ];
-  assert_lists_of_strings_are_inequal( expected, result );
+  assert_that_lists_of_strings_are_inequal( expected, result );
 
   # Different content
   expected =  [ "one", "two" ];
   result   =  [ "three", "four" ];
-  assert_lists_of_strings_are_inequal( expected, result );
+  assert_that_lists_of_strings_are_inequal( expected, result );
 };
-# test_assert_lists_of_strings();
+# test_assert_that_lists_of_strings();
 
 
 
@@ -553,11 +537,12 @@ fun check_directory( string: String ):   Bool = {
   current_directory =  head( directory_list );
   string == current_directory;
 };
-fun test_check_directory( _: Void ):   Bool = {
-  string =  "/mnt/ssd/mythryl/git/compiled-website/git/my/.";
+fun test_check_directory( _:Void ):   Bool = {
+  # This one will fail if I move things around..  =/
+  string =  "/mnt/ssd-data/mythryl/compiled-website/git/my/.";
   result =  check_directory( string );
   expected = TRUE;
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 };
 # test_check_directory();
 
@@ -588,7 +573,7 @@ fun test_get_filename( _: Void ):   Bool = {
   string =  "/foo/bar/baz/filename.ext";
   expected =             "filename.ext";
   result = get_filename( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
   # TODO:  Additional testing.
 };
 # test_get_filename();
@@ -606,7 +591,7 @@ fun test_remove_extension( _: Void ):   Bool = {
   string   = "filename.ext";
   expected = "filename";
   result = remove_extension( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 
   # TODO:  Additional testing.
 };
@@ -625,18 +610,18 @@ fun test_is_even( _: Void ):   Bool = {
   n =  2;
   expected =  TRUE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 
   n =  1;
   expected =  FALSE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  1;
   expected =  TRUE;
   result =  is_even( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 };
 # test_is_even();
 
@@ -652,19 +637,19 @@ fun test_is_odd( _: Void ):   Bool = {
   n =  1;
   expected =  TRUE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  2;
   expected =  FALSE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 
   # Meant to fail.
   n =  2;
   expected =  TRUE;
   result =  is_odd( n );
-  assert_bools_are_equal( expected, result );
+  assert_that_bools_are_equal( expected, result );
 };
 # test_is_odd();
 
@@ -700,24 +685,24 @@ fun test_string_to_list( _: Void ) = {
   string =  "foo";
   expected =  [ "foo" ];
   result =  string_to_list( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Simple
   string =  "foo\n";
   expected =  [ "foo\n" ];
   result =  string_to_list( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   string =  "HERE\nytesty\n";
   expected =  [ "HERE\n", "ytesty\n" ];
   result =  string_to_list( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 };
 # test_string_to_list();
 
 
 
-# This is down here because  assert_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
+# This is down here because  assert_that_lists_of_strings_are_equal()  and  pad_string_list()  are mutually-dependant.
 fun test_pad_string_list( _: Void ):   Bool = {
   list_one =  [ "one" ];
   list_two =  [ "one", "two" ];
@@ -727,7 +712,7 @@ fun test_pad_string_list( _: Void ):   Bool = {
 
   expected =  [ "one", "" ];
   result =  list_one;
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 };
 # test_pad_string_list();
 
@@ -737,7 +722,7 @@ fun test_longest_string_in_a_list_of_strings( _: Void ):   Bool = {
   list =  [ "one", "two", "three" ];
   expected =  5;   # "three" is five characters long.
   result =  longest_string_in_a_list_of_strings( list );
-  assert_ints_are_equal( expected, result );
+  assert_that_ints_are_equal( expected, result );
 };
 # test_longest_string_in_a_list_of_strings();
 
@@ -767,44 +752,44 @@ fun test_read_print( _: Void ):   Void = {
 
 
 ###~~~
-# Write to a target file.
-# http://mythryl.org/my-File.html
-# http://mythryl.org/my-Write_a_text_file.html
-# TODO:  In the docs, what is a "Writer" ?
-# I can't realistically convert this into a two-parameter function.
-#   Basically I'd have to pass one List of Strings - the filename, and the content.
-#   (This is probably not true, but I don't know any better)
-#   But why do something as complex as that?  Just use the original simpler code.
-fun write_file( _: Void ):   Void = {
-  filename =  "test-write.txt";
+# # Write to a target file.
+# # http://mythryl.org/my-File.html
+# # http://mythryl.org/my-Write_a_text_file.html
+# # TODO:  In the docs, what is a "Writer" ?
+# # I can't realistically convert this into a two-parameter function.
+# #   Basically I'd have to pass one List of Strings - the filename, and the content.
+# #   (This is probably not true, but I don't know any better)
+# #   But why do something as complex as that?  Just use the original simpler code.
+# fun write_file( _: Void ):   Void = {
+  # filename =  "test-write.txt";
 
-  file = file::open_for_write filename;
-  list = [ "line one\n", "line two" ];
-  apply fprintf file "%s" list;
+  # file = file::open_for_write filename;
+  # list = [ "line one\n", "line two" ];
+  # apply fprintf file "%s" list;
 
-  # file::write       ( file, "There is no royal road to mathematics.\n" );
-  # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
-  file::flush         file;
-  file::close_output  file;
+  # # file::write       ( file, "There is no royal road to mathematics.\n" );
+  # # fprintf             file  "Mathematics is the %s of the sciences.\n" "queen";
+  # file::flush         file;
+  # file::close_output  file;
 
-  # Display its contents.
-  if ( exists( filename ) )
-    printf "%s contains:\n--v\n" filename;
+  # # Display its contents.
+  # if ( exists( filename ) )
+    # printf "%s contains:\n--v\n" filename;
 
-    stream =  open_for_read( filename );
-    list =  read_lines( stream );
-    apply printf "%s" list;
-    winix::file::remove_file( filename );
-    print "--^\n";
-  else
-    printf "%s was not created!\n" filename;
-  fi;
-};
-# TODO:  A proper assertion.
-fun test_write_file( _: Void ):   Void = {
-  write_file();
-};
-# test_write_file();
+    # stream =  open_for_read( filename );
+    # list =  read_lines( stream );
+    # apply printf "%s" list;
+    # winix::file::remove_file( filename );
+    # print "--^\n";
+  # else
+    # printf "%s was not created!\n" filename;
+  # fi;
+# };
+# # TODO:  A proper assertion.
+# fun test_write_file( _: Void ):   Void = {
+  # write_file();
+# };
+# # test_write_file();
 
 
 
@@ -960,27 +945,27 @@ fun test_markup( _: Void ):   Bool = {
   string =  "test";
   expected =  "test";
   result =  markup( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 
   string =  "\n/emphasis/\n";
   expected =  "\n<em>emphasis</em>\n";
   result =  markup( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 
   string =  "/emphasis/";
   expected =  "<em>emphasis</em>";
   result =  markup( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 
   string =  "/foo/.\n ";
   expected =  "<em>foo</em>.\n ";
   result =  markup( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 
   string = "foo\n--\nbar\n";
   expected = "foo\n<hr class=\"short\">\nbar\n";
   result =  markup( string );
-  assert_strings_are_equal( expected, result );
+  assert_that_strings_are_equal( expected, result );
 };
 # test_markup();
 
@@ -1158,68 +1143,68 @@ fun test_block_matcher( _: Void ):   Bool = {
   string =  "nomatch";
   expected =  [ "nomatch" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Only a match
   string =  "- bullet";
   expected =  [ "", "- bullet" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Match, not a match
   string =  "- bullet\nytesty\n";
   expected =  [ "", "- bullet\n", "ytesty\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Not a match, match
   string =  "ytesty\n- bullet\n";
   expected =  [ "ytesty\n", "- bullet\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Two consecutive matches only
   string =  "- bullet\n- bullet\n";
   expected =  [ "", "- bullet\n- bullet\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Two consecutive matches, not a match
   string =  "- bullet\n- bullet\nytesty\n";
   expected =  [ "", "- bullet\n- bullet\n", "ytesty\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Not a match, two consecutive matches, not a match
   string =  "foo\n- bullet\n- bullet\nytesty\n";
   expected =  [ "foo\n", "- bullet\n- bullet\n", "ytesty\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Not a match, two consecutive matches
   string =  "foo\n- bullet\n- bullet\n";
   expected =  [ "foo\n", "- bullet\n- bullet\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # Oh hell, let's get silly.
   string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n";
   expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n" ];
   result =  block_matcher( string );
-  assert_lists_of_strings_are_equal( expected, result );
+  assert_that_lists_of_strings_are_equal( expected, result );
 
   # FIXME:  string_to_list() chops out any duplicate \n like here             ---v
   # string =  "foo\n- bullet\n- bullet\nbar\nbaz\nargh\n- bullet\nbla\n- bullet\n\n";
   # expected =  [ "foo\n", "- bullet\n- bullet\n", "bar\nbaz\nargh\n", "- bullet\n", "bla\n", "- bullet\n\n" ];
   # result =  block_matcher( string );
-  # assert_lists_of_strings_are_equal( expected, result );
+  # assert_that_lists_of_strings_are_equal( expected, result );
 };
 # test_block_matcher();
 
 
 
 fun test_all_tests( _: Void ):   Bool = {
-  test_assert_strings();
+  test_assert_that_strings();
   test_string_multiplier();
 
   # TODO:  Proper assertions.
@@ -1234,9 +1219,9 @@ fun test_all_tests( _: Void ):   Bool = {
   # TODO:  Proper assertions.
 #   test_two_lists_of_strings_to_columnized_string();
 
-  test_assert_ints();
-  test_assert_bools();
-  test_assert_lists_of_strings();
+  test_assert_that_ints();
+  test_assert_that_bools();
+  test_assert_that_lists_of_strings();
   test_check_directory();
 
   # TODO:  A proper assertion.
