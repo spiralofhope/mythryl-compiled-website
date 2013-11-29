@@ -32,7 +32,7 @@ separator = REF "\\/";
 fun silent_regex_find_first_group( rx:String,  string:String ):   String = {
   case( regex::find_first_match_to_ith_group  1  rx  string )
     THE x => x;
-    NULL => {
+    NULL  => {
       if ( *verbose )
         printf  "\nsilent_regex_find_first_group():  Warning, found nothing:  '%s'\n"  rx;
         printf  "--v\n'%s'\n--^\n"  string;
@@ -829,7 +829,7 @@ fun markup( string: String ):   String = {
     #        then do some kind of:   string =  split_string_html( string );
 
     rx = punctuation_regex( rx_left, rx_right );
-    # TODO:  Implement silent_replace_all_via_fn() ?
+    # TODO - After the recent-ish Mythryl changes to regular expressions, this can probably be replaced with a simple regex::replace_all and the `except` can be dropped.
     string =  regex::replace_all_via_fn  rx .{
         ( list::nth( #stringlist, 0 ) )
       + replace_left
@@ -858,6 +858,8 @@ fun markup( string: String ):   String = {
     fun markup_horizontal_rules_short( string: String ):   String = {
       hr = "<hr class=\"short\">\n";
 
+      # TODO - After the recent-ish Mythryl changes to regular expressions, this can probably be replaced with a simple regex::replace_all and the `except` can be dropped.
+      #
       # (with content only above)
       string =  regex::replace_all_via_fn
         ./([^\n])\n-{2,}\n{2}/ .{
@@ -870,6 +872,8 @@ fun markup( string: String ):   String = {
           _ =  string;
 
 
+      # TODO - After the recent-ish Mythryl changes to regular expressions, this can probably be replaced with a simple regex::replace_all and the `except` can be dropped.
+      #
       # (with content only below)
       string =  regex::replace_all_via_fn
         ./\n{2}-{2,}\n([^\n])/ .{
@@ -882,6 +886,8 @@ fun markup( string: String ):   String = {
           _ =  string;
 
 
+      # TODO - After the recent-ish Mythryl changes to regular expressions, this can probably be replaced with a simple regex::replace_all and the `except` can be dropped.
+      #
       # (with content above and below)
       string =  regex::replace_all_via_fn
         ./\n-{2,}\n([^\n])/    .{
@@ -901,6 +907,7 @@ fun markup( string: String ):   String = {
 
   fun markup_paragraphs( string: String ):   String = {
     # \n\n  =  Paragraph
+    # TODO - After the recent-ish Mythryl changes to regular expressions, this can probably be replaced with a simple regex::replace_all and the `except` can be dropped.
     regex::replace_all_via_fn  ./(\n{2,})/ .{
       n =  string::length( strcat( #stringlist ) );
       string_multiplier( "\n<br />", n );
