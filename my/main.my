@@ -38,14 +38,6 @@ fun silent_regex_replace_all( rx: String,  replace: String,  string: String ):  
 
 
 
-fun silent_regex_replace_first( rx: String,  replace: String,  string: String ):   String = {
-  regex::replace_first  rx  replace  string
-    except
-    _ =  string;
-};
-
-
-
 fun silent_regex_find_first_group( rx:String,  string:String ):   String = {
   case( regex::find_first_match_to_ith_group  1  rx  string )
     THE x => x;
@@ -581,7 +573,7 @@ fun test_get_filename( _: Void ):   Bool = {
 #   filename.ext     => filename
 #   filename.ext.ext => filename
 fun remove_extension( filename: String ):   String = {
-  silent_regex_replace_first( ./\..*$/, "", filename );
+  regex::replace_first ./\..*$/  ""  filename;
 };
 fun test_remove_extension( _: Void ):   Bool = {
   string   = "filename.ext";
@@ -1019,7 +1011,7 @@ fun post_processing( content_string:String ):   String = {
       page_name = silent_regex_find_first_group( rx,  content_string );
       content_string =  silent_regex_replace_all( rx,  ( "<p>Redirecting to " + page_name + " ...</p>" ),  content_string );
       replace =  "<head><meta http-equiv=\"refresh\" content=\"2;url=" + page_name + ".html\">";
-      content_string =  silent_regex_replace_first(  "<head>",  replace,  content_string );
+      content_string =  regex::replace_first "<head>" replace content_string;
       content_string;
     fi;
   };
