@@ -514,7 +514,7 @@ fun check_directory( string: String ):   Bool = {
 };
 fun test_check_directory( _:Void ):   Bool = {
   # This one will fail if I move things around..  =/
-  string =  "/mnt/ssd-data/mythryl/compiled-website/git/my/.";
+  string =  "/l/mythryl/compiled-website/git/my/.";
   result =  check_directory( string );
   expected = TRUE;
   assert_that_bools_are_equal( expected, result );
